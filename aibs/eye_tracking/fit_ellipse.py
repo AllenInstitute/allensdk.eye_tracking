@@ -206,7 +206,6 @@ def test_fit():
     candidate_points = np.vstack([outlier_points, candidate_points])
 
     yt, xt = candidate_points.T
-    print xt
 
     #center, angle, (axis1,axis2) = fit_ellipse(candidate_points)
 
@@ -214,11 +213,6 @@ def test_fit():
     result = fe.ransac_fit(candidate_points)
     if result!=None:
         center, angle, (axis1,axis2) = fe.ransac_fit(candidate_points)
-
-    print "center = ", center
-    print "angle = ", angle
-    print "axis1 = ", axis1
-    print "axis2 = ", axis2
 
     fig,ax=plt.subplots(1)
     ax.plot(x,yp,'bo')

@@ -130,8 +130,6 @@ def sobel_grad(image_array):
     grad_y = sobel(image_array.astype(np.float64),0)
     grad_x = sobel(image_array.astype(np.float64),1)
 
-    #print "grad_x dtype = ", grad_x.dtype
-
     mag = np.sqrt(grad_y**2 + grad_x**2) + 1e-16
 
     return mag, grad_x, grad_y
@@ -148,10 +146,8 @@ def medfilt_custom(x, kernel_size=3):
     else:
         x_med[0] = np.median(window)
 
-    # print window
     for t in range(1,T):
         window = x[t-delta:t+delta+1]
-        # print window
         if np.any(np.isnan(window)):
             x_med[t] = np.nan
         else:
