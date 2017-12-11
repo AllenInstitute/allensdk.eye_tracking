@@ -1,801 +1,412 @@
-import numpy as np
-import sys
-import os
-import subprocess as sp
-from PIL import Image, ImageDraw
-from scipy.misc import imsave
-from scipy.signal import medfilt2d
-import ast
-import json
-
-from .fit_ellipse import fit_ellipse, FitEllipse
-from .utils import generate_rays, initial_pupil_point, initial_cr_point, sobel_grad
 import logging
+from scipy.signal import medfilt2d
+import numpy as np
 
-import matplotlib.pyplot as plt
+from .fit_ellipse import EllipseFitter, not_on_ellipse
+from .utils import generate_ray_indices, get_ray_values
+from .feature_extraction import (get_circle_mask, max_image_at_value,
+                                 max_convolution_positions)
+from .plotting import Annotator, ellipse_points
 
-# import cv2
+SMOOTHING_KERNEL_SIZE = 3
+DEFAULT_MIN_PUPIL_VALUE = 0
+DEFAULT_MAX_PUPIL_VALUE = 30
+DEFAULT_CR_RECOLOR_SCALE_FACTOR = 2.0
+DEFAULT_CR_MASK_RADIUS = 10
+DEFAULT_PUPIL_MASK_RADIUS = 40
 
-color_list = ['b','g','r','c','m','y','k']
 
-class iTracker (object):
-    def __init__(self, output_folder, 
-                 im_shape, num_frames, 
-                 input_stream, 
-                 threshold_factor=1.3, auto=True,
-                 cutoff_pixels=10,
-                 bbox_pupil=None,
-                 bbox_cr=None):
+class PointGenerator(object):
+    """Class to find candidate points for ellipse fitting.
 
-        self.im_shape = im_shape
-        self.num_frames = num_frames
-        self.movie_shape = (num_frames, im_shape[0], im_shape[1])
-        self.input_stream = input_stream
+    Candidates points are found by drawing rays from a seed point and
+    checking for the first threshold crossing of each ray.
 
+    Parameters
+    ----------
+    index_length : int
+        Initial default length for ray indices.
+    n_rays : int
+        The number of rays to check.
+    threshold_factor : float
+        Multiplicative factor for threshold.
+    threshold_pixels : int
+        Number of pixels (from beginning of ray) to use to determine
+        threshold.
+    """
+    def __init__(self, index_length, n_rays, threshold_factor,
+                 threshold_pixels):
+        self.xs, self.ys = generate_ray_indices(index_length, n_rays)
+        self.threshold_pixels = threshold_pixels
         self.threshold_factor = threshold_factor
-        self.auto = auto
-        self.folder = output_folder
-        self.cutoff_pixels = cutoff_pixels
-        self.bbox_pupil = bbox_pupil
-        self.bbox_cr = bbox_cr
 
-        self._mean_frame = None
+    def get_candidate_points(self, image, seed_point, above_threshold=True,
+                             filter_function=None, filter_args=()):
+        """Get candidate points for ellipse fitting.
 
-        if not os.path.exists(self.folder):
-            os.mkdir(self.folder)
+        Parameters
+        ----------
+        image : np.ndarray
+            Image to check for threshold crossings.
+        seed_point : tuple
+            (y, x) center point for ray burst.
+        above_threshold : bool
+            Whether looking for transitions above or below a threshold.
 
-        self.run_params_file = os.path.join(self.folder, 'run_params.json')
-        self.run_params = { 'threshold_factor': threshold_factor,
-                            'auto':  auto,
-                            'cutoff_pixels': cutoff_pixels,
-                            'movie_shape':  self.movie_shape,
-                            'im_shape':  im_shape,
-                            'bbox_pupil':  bbox_pupil,
-                            'bbox_cr':  bbox_cr }
-        with open(self.run_params_file, 'w') as f:
-            f.write(json.dumps(self.run_params))
+        Returns
+        -------
+        list
+            List of (y, x) candidate points.
+        """
+        xs = self.xs + seed_point[1]
+        ys = self.ys + seed_point[0]
+        ray_values = get_ray_values(xs, ys, image)
+        filtered_out = 0
+        threshold_not_crossed = 0
+        candidate_points = []
+        for i, values in enumerate(ray_values):
+            try:
+                point = self.threshold_crossing(xs[i], ys[i], values,
+                                                above_threshold)
+                if filter_function is not None:
+                    if filter_function(point, *filter_args):
+                        candidate_points.append(point)
+                    else:
+                        filtered_out += 1
+                else:
+                    candidate_points.append(point)
+            except ValueError:
+                threshold_not_crossed += 1
+        if threshold_not_crossed or filtered_out:
+            logging.debug(("%s candidate points returned, %s filtered out, %s "
+                           "not generated because threshold not crossed"),
+                          len(candidate_points), filtered_out,
+                          threshold_not_crossed)
+        return candidate_points
 
-        self.movie_path_storage_file = os.path.join(self.folder, 'movie_path.txt')
-        if os.path.exists(self.movie_path_storage_file):
-            with open(self.movie_path_storage_file, 'r') as f:
-                self.movie_path = f.read()
+    def threshold_crossing(self, xs, ys, values, above_threshold=True):
+        """Check a ray for where it crosses a threshold.
+
+        The threshold is calculated using `get_threshold`.
+
+        Parameters
+        ----------
+        xs : np.ndarray
+            X indices of ray.
+        ys : np.ndarray
+            Y indices of ray.
+        values : np.ndarray
+            Image values along ray.
+        above_threshold : bool
+            Whether to look for transitions above or below a threshold.
+
+        Returns
+        -------
+        int
+            Y index of threshold crossing.
+        int
+            X index of threshold crossing.
+
+        Raises
+        ------
+        ValueError
+            If no threshold crossing found.
+        """
+        threshold = self.get_threshold(values)
+        if above_threshold:
+            comparison = values[self.threshold_pixels:] > threshold
         else:
-            self.movie_path = None
+            comparison = values[self.threshold_pixels:] < threshold
+        sub_index = np.argmax(comparison)
+        if comparison[sub_index]:
+            index = self.threshold_pixels + sub_index
+            return ys[index], xs[index]
+        else:
+            raise ValueError("No value in array crosses: {}".format(threshold))
 
-        self.input_image_folder = os.path.join(self.folder, 'input_images')
-        if not os.path.exists(self.input_image_folder):
-            os.mkdir(self.input_image_folder)
+    def get_threshold(self, ray_values):
+        """Calculate the threshold from the ray values.
 
-        self.results_folder = os.path.join(self.folder,'results')
+        The threshold is determined from `threshold_factor` times the
+        mean of the first `threshold_pixels` values.
 
-        if not os.path.exists(self.results_folder):
-            os.mkdir(self.results_folder)
+        Parameters
+        ----------
+        ray_values : np.ndarray
+            Values of the ray.
+        
+        Returns
+        -------
+        float
+            Threshold to set for candidate point.
+        """
+        sub_ray = ray_values[:self.threshold_pixels]
 
-        # self.rays_folder = os.path.join(self.results_folder,'rays')
-        # if not os.path.exists(self.rays_folder):
-        #     os.mkdir(self.rays_folder)
-
-        self.qc_folder = os.path.join(self.results_folder,'qc')
-        if not os.path.exists(self.qc_folder):
-            os.mkdir(self.qc_folder)
-
-        self.frames_folder = os.path.join(self.results_folder,'output_frames')
-        if not os.path.exists(self.frames_folder):
-            os.mkdir(self.frames_folder)
-
-        self.pupil_file = os.path.join(self.results_folder, 'pupil_params.npy')
-        self.cr_file = os.path.join(self.results_folder, 'cr_params.npy')
-        self.mean_frame_file = os.path.join(self.results_folder, 'mean_frame.npy')
-        self.annotated_movie_file = os.path.join(self.results_folder, 'annotated_movie.mp4')
-
-        # add variables to determine whether to provide diagnostic, QC and other output
-        # method to regnerate image frames, with or without results?
+        return self.threshold_factor*np.mean(sub_ray)
 
 
-    # fix this so it sets an absolute path
-    def set_movie(self, file_path):
-        logging.debug("Setting movie_path to: %s", file_path)
-        self.movie_path = file_path
-        with open(self.movie_path_storage_file, 'w') as f:
-            f.write(self.movie_path)
+class EyeTracker(object):
+    """Mouse Eye-Tracker.
+    
+    Parameters
+    ----------
+    im_shape : tuple
+        (height, width) of images.
+    input_stream : generator
+        Generator that yields numpy.ndarray frames to analyze.
+    output_stream : stream
+        Stream that accepts numpuy.ndarrays in the write method. None if
+        not outputting annotations.
+    starburst_params : dict
+        Dictionary of keyword arguments for `PointGenerator`.
+    ransac_params : dict
+        Dictionary of keyword arguments for `EllipseFitter`.
+    pupil_bounding_box : numpy.ndarray
+        [xmin xmax ymin ymax] bounding box for pupil seed point search.
+    cr_bounding_box : numpy.ndarray
+        [xmin xmax ymin ymax] bounding box for cr seed point search.
+    generate_QC_output : bool
+        Flag to compute extra QC data on frames.
+    **kwargs
+        pupil_min_value : int
+        pupil_max_value : int
+        cr_mask_radius : int
+        pupil_mask_radius : int
+        cr_recolor_scale_factor : float
+        recolor_cr : bool
+    """
+    def __init__(self, im_shape, input_stream, output_stream, starburst_params,
+                 ransac_params, pupil_bounding_box=None, cr_bounding_box=None,
+                 generate_QC_output=False, **kwargs):
+        self.point_generator = PointGenerator(**starburst_params)
+        self.ellipse_fitter = EllipseFitter(**ransac_params)
+        self.annotator = Annotator(output_stream)
+        self.im_shape = im_shape
+        self.input_stream = input_stream
+        if pupil_bounding_box is None or len(pupil_bounding_box) == 0:
+            pupil_bounding_box = default_bounding_box(im_shape)
+        if cr_bounding_box is None or len(cr_bounding_box) == 0:
+            cr_bounding_box = default_bounding_box(im_shape)
+        self.pupil_bounding_box = pupil_bounding_box
+        self.cr_bounding_box = cr_bounding_box
+        self.pupil_parameters = []
+        self.cr_parameters = []
+        self.generate_QC_output = generate_QC_output
+        self.current_image = None
+        self.blurred_image = None
+        self.cr_filled_image = None
+        self.pupil_max_image = None
+        self._mean_frame = None
+        self._init_kwargs(**kwargs)
+        self.frame_index = 0
 
-    def set_bbox_pupil(self, bbox):
-        self.bbox_pupil = bbox
-        self.run_params['bbox_pupil']=self.bbox_pupil
-        with open(self.run_params_file, 'w') as f:
-            f.write(json.dumps(self.run_params))
-
-    def set_bbox_cr(self, bbox):
-        self.bbox_cr = bbox
-        self.run_params['bbox_cr']=self.bbox_cr
-        with open(self.run_params_file, 'w') as f:
-            f.write(json.dumps(self.run_params))
-
-    def create_input_images(self, image_type='png'):
-        self.input_stream.create_images(self.input_image_folder, image_type)
+    def _init_kwargs(self, **kwargs):
+        self.min_pupil_value = kwargs.get("min_pupil_value",
+                                          DEFAULT_MIN_PUPIL_VALUE)
+        self.max_pupil_value = kwargs.get("max_pupil_value",
+                                          DEFAULT_MAX_PUPIL_VALUE)
+        self.last_pupil_color = self.min_pupil_value
+        self.cr_recolor_scale_factor = kwargs.get(
+            "cr_recolor_scale_factor", DEFAULT_CR_RECOLOR_SCALE_FACTOR)
+        self.recolor_cr = kwargs.get("recolor_cr", True)
+        self.cr_mask = get_circle_mask(
+            kwargs.get("cr_mask_radius", DEFAULT_CR_MASK_RADIUS))
+        self.pupil_mask = get_circle_mask(
+            kwargs.get("pupil_mask_radius", DEFAULT_PUPIL_MASK_RADIUS))
 
     @property
     def mean_frame(self):
         if self._mean_frame is None:
-            self._mean_frame = self.compute_mean_frame()
+            mean_frame = np.zeros(self.im_shape, dtype=np.float64)
+            frame_count = 0
+            for frame in self.input_stream:
+                mean_frame += frame
+                frame_count += 1
+            self._mean_frame = (mean_frame / frame_count).astype(np.uint8)
         return self._mean_frame
 
-    @mean_frame.setter
-    def mean_frame(self, mean_frame):
-        self._mean_frame = mean_frame
+    def find_corneal_reflection(self):
+        """Estimate the position of the corneal reflection.
 
-    def estimate_bbox_from_mean_frame(self, margin=75, image_type='png'):
+        Returns
+        -------
+        numpy.ndarray
+            [x, y, r, a, b] ellipse parameters.
+        """
+        seed_point = max_convolution_positions(self.blurred_image,
+                                               self.cr_mask,
+                                               self.cr_bounding_box)
+        candidate_points = self.point_generator.get_candidate_points(
+            self.blurred_image, seed_point, False)
+        return self.ellipse_fitter.fit(candidate_points)
+
+    def setup_pupil_finder(self, cr_parameters):
+        """Initialize image and ransac filter for pupil fitting.
+
+        If recoloring the corneal_reflection, color it in and provide a
+        filter to exclude points that fall on the colored-in ellipse
+        from fitting.
+
+        Parameters
+        ----------
+        cr_parameters : numpy.ndarray
+            [x, y, r, a, b] ellipse parameters for corneal reflection.
+
+        Returns
+        -------
+        numpy.ndarray
+            Image for pupil fitting. Has corneal reflection filled in if
+            `recolor_cr` is set.
+        callable
+            Function to indicate if points fall on the recolored ellipse
+            or None if not recoloring.
+        numpy.ndarray
+            Ellipse parameters for recolor ellipse shape, which are
+            `cr_parameters` with the axes scaled by
+            `cr_recolor_scale_factor`.
+        """
+        if self.recolor_cr:
+            self.recolor_corneal_reflection(cr_parameters)
+            base_image = self.cr_filled_image
+            filter_function = not_on_ellipse
+            x, y, r, a, b = cr_parameters
+            filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
+                             self.cr_recolor_scale_factor*b)
+        else:
+            base_image = self.blurred_image
+            filter_function = None
+            filter_params = None
+        return base_image, filter_function, filter_params
+
+    def find_pupil(self, cr_parameters):
+        """Estimate position of the pupil.
+
+        Parameters
+        ----------
+        cr_parameters : numpy.ndarray
+            [x, y, r, a, b] ellipse parameters of corneal reflection,
+            used to prepare image if `recolor_cr` is set.
+
+        Returns
+        -------
+        numpy.ndarray
+            [x, y, r, a, b] ellipse parameters.
+        """
+        base_image, filter_function, filter_params = self.setup_pupil_finder(
+            cr_parameters)
+        seed_image = max_image_at_value(base_image,
+                                        self.last_pupil_color)
+        self.pupil_max_image = seed_image
+        seed_point = max_convolution_positions(seed_image, self.pupil_mask,
+                                               self.pupil_bounding_box)
+        x, y, r, a, b = cr_parameters
+        filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
+                          self.cr_recolor_scale_factor*b)
+        candidate_points = self.point_generator.get_candidate_points(
+            base_image, seed_point, True, filter_function=filter_function,
+            filter_args=(filter_params, 2))
+        return self.ellipse_fitter.fit(candidate_points)
+
+    def recolor_corneal_reflection(self, cr_parameters):
+        """Reshade the corneal reflection with the last pupil color.
+
+        Parameters
+        ----------
+        cr_parameters : numpy.ndarray
+            [x, y, r, a, b] ellipse parameters for corneal reflection.
+        """
+        x, y, r, a, b = cr_parameters
+        a = self.cr_recolor_scale_factor*a + 1
+        b = self.cr_recolor_scale_factor*b + 1
+        r, c = ellipse_points((x, y, r, a, b), self.im_shape)
+        self.cr_filled_image = self.blurred_image.copy()
+        self.cr_filled_image[r,c] = self.last_pupil_color
+
+    def update_last_pupil_color(self, pupil_parameters):
+        """Update last pupil color with mean of fit.
+
+        Parameters
+        ----------
+        pupil_parameters : numpy.ndarray
+            [x, y, r, a, b] ellipse parameters for pupil.
+        """
+        if self.recolor_cr:
+            image = self.cr_filled_image
+        else:
+            image = self.blurred_image
+        r, c = ellipse_points(pupil_parameters, self.im_shape)
+        value = int(np.mean(image[r, c]))
+        value = max(self.min_pupil_value, value)
+        value = min(self.max_pupil_value, value)
+        self.last_pupil_color = value
+
+    def process_image(self, image):
+        self.current_image = image
+        self.blurred_image = medfilt2d(image,
+                                       kernel_size=SMOOTHING_KERNEL_SIZE)
         try:
-            import keras
-        except ImportError:
-            logging.debug("keras failed to import.  Returning None for bbox_pupil and bbox_cr")
-            return None, None
-
-        from keras.applications import InceptionV3
-
-        logging.debug("Estimating bbox parameters from 'mean_frame'")
-        # compute the representation for mean_frame
-        model = InceptionV3(include_top=False, weights='imagenet')
-        mp_temp = self.mean_frame.astype(np.float32)
-        mp_temp -= 128
-        mp_temp /= 128
-        rep = model.predict(mp_temp.reshape((1,)+mp_temp.shape))  # shape (1,13,18,2048)
-        rep[rep<0]=0
-        rep = np.mean(rep, axis=(0,1,2))  # shape (2048,)
-
-        # load regression weights
-        module_folder = os.path.dirname(os.path.abspath(__file__))
-        W_pupil = np.load(os.path.join(module_folder,'resources','pupil_weights.npy'))  # shape (2048, 5)
-        W_cr = np.load(os.path.join(module_folder,'resources','cr_weights.npy'))    # shape (2048, 5)
-
-        estimated_pupil_point = np.dot(rep, W_pupil)  # shape (5,)
-        estimated_cr_point = np.dot(rep, W_cr)   # shape (5,)
-
-        x_pupil, y_pupil = estimated_pupil_point[:2]*np.array([640,480])
-        x_pupil = int(x_pupil)
-        y_pupil = int(y_pupil)
-        logging.debug("estimated pupil point is ({0},{1})".format(x_pupil,y_pupil))
-        # bbox is xmin, xmax, ymin, ymax
-        # x, y = 320, 240
-        bbox_pupil = [x_pupil-margin, x_pupil+margin, y_pupil-margin, y_pupil+margin]
-
-        x_cr, y_cr = estimated_cr_point[:2]
-        x_cr = int(x_cr)
-        y_cr = int(y_cr)
-        logging.debug("estimated cr point is ({0},{1})".format(x_cr,y_cr))
-
-        # bbox is xmin, xmax, ymin, ymax
-        bbox_cr = [x_cr-margin, x_cr+margin, y_cr-margin, y_cr+margin]
-        # bbox_cr = None
-
-        # plot bbox on mean_frame for QC check
-        mean_frame_annotated = np.dstack([mean_frame,mean_frame,mean_frame])
-        mean_frame_annotated = self.annotate_frame_with_bbox(mean_frame_annotated,pupil_bbox=bbox_pupil,cr_bbox=bbox_cr)
-        mean_frame_annotated = self.annotate_frame_with_point(mean_frame_annotated,pupil=(x_pupil, y_pupil),cr=(x_cr, y_cr))
-
-        dpi = 100.0
-        fig, ax = plt.subplots(figsize=(mean_frame.shape[1]/dpi, mean_frame.shape[0]/dpi))
-        fig.subplots_adjust(left=0,right=1,bottom=0,top=1)
-
-        ax.imshow(mean_frame_annotated, aspect='normal')
-        ax.axis('off')
-        fig.savefig(os.path.join(self.qc_folder, 'mean_frame_annotated.'+image_type), dpi=dpi)
-
-        self.bbox_pupil = bbox_pupil
-        self.bbox_cr = bbox_cr
-
-        return bbox_pupil, bbox_cr
-
-    def compute_mean_frame(self, image_file_type='png'):
-        logging.debug("computing mean frame")
-
-        mean_frame = np.zeros(self.im_shape)
-
-        frames_read = 0
-        for input_frame in self.input_stream:
-            mean_frame += input_frame
-            frames_read += 1
-
-        mean_frame /= frames_read
-        mean_frame = mean_frame.astype(np.uint8)
-
-        np.save(self.mean_frame_file, mean_frame)
-
-        dpi = 100.0
-        fig, ax = plt.subplots(figsize=(mean_frame.shape[1]/dpi, mean_frame.shape[0]/dpi))
-        fig.subplots_adjust(left=0,right=1,bottom=0,top=1)
-        ax.imshow(mean_frame, aspect='normal', cmap='gray')
-        ax.axis('off')
-        fig.savefig(os.path.join(self.qc_folder, 'mean_frame.' + image_file_type), dpi=dpi)
-        plt.close()
-
-        if self.bbox_cr and self.bbox_pupil:
-            mean_frame_annotated = np.dstack([mean_frame,mean_frame,mean_frame])
-            mean_frame_annotated = self.annotate_frame_with_bbox(mean_frame_annotated,pupil_bbox=self.bbox_pupil,cr_bbox=self.bbox_cr)        
-
-            fig, ax = plt.subplots(figsize=(mean_frame.shape[1]/dpi, mean_frame.shape[0]/dpi))
-            fig.subplots_adjust(left=0,right=1,bottom=0,top=1)
-            ax.imshow(mean_frame_annotated, aspect='normal')
-            ax.axis('off')
-            fig.savefig(os.path.join(self.qc_folder, 'mean_frame_bbox.' + image_file_type), dpi=dpi)
-            plt.close()
-
-        return mean_frame
-
-
-
-    def detect_eye_closed(self):
-
+            cr_parameters = self.find_corneal_reflection()
+        except ValueError:
+            logging.debug("Insufficient candidate points found for fitting "
+                          "corneal reflection at frame %s", self.frame_index)
+            cr_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
         try:
-            import keras
-        except ImportError:
-            logging.debug("keras failed to import.  Can't detect eye closure")
-            return None
-
-        from keras.applications import InceptionV3
-
-        logging.debug("Detecting eye closed frames")
-        # compute the representation for mean_frame
-        model = InceptionV3(include_top=False, weights='imagenet')
-
-        # get pre-trained svm
-        from sklearn.externals import joblib
-        module_folder = os.path.dirname(os.path.abspath(__file__))
-        svm = joblib.load(os.path.join(module_folder, 'resources','svm_trained.pkl'))
-
-        def compute_rep(frame):
-            mp_temp = frame.astype(np.float32)
-            mp_temp -= 128
-            mp_temp /= 128
-            rep = model.predict(mp_temp.reshape((1,)+mp_temp.shape))  # shape (1,13,18,2048)
-            rep[rep<0]=0
-            rep = np.mean(rep, axis=(0,1,2))  # shape (2048,)
-
-            return rep
-
-        is_closed = np.zeros(self.num_frames)
-
-        for input_frame in self.input_stream:
-            rep = compute_rep(input_frame)
-            is_closed[i] = svm.predict(rep.reshape(-1,len(rep)))[0]
-
-        self.is_closed = is_closed
-        save_path = os.path.join(self.results_folder, 'is_closed.npy')
-
-        logging.debug("Saving is_closed to:")
-        logging.debug("\t%s", save_path)
-        #
-        np.save(save_path, self.is_closed)
-
-        return is_closed
-
-    def process_movie(self, movie_output_stream=None,
-                      output_frames=False,
-                      output_annotation_frames=False,
-                      image_file_type = 'jpg' ):
-
-        # these aren't really used yet.
-        # self.pupil_loc = (0,0)
-        # self.cr_loc = (0,0)
-
-        self.pupil_params = np.zeros([self.num_frames, 5])
-        self.cr_params = np.zeros([self.num_frames, 5])
-
-        if movie_output_stream:
-            movie_output_stream.open(self.annotated_movie_file)
-        else:
-            movie_output_stream = None
-
-        if output_frames:
-            frame_output_stream = ImageOutputStream()
-            frame_output_stream.open(os.path.join(self.input_image_folder, 'input_frame-%06d.'+image_file_type))
-        else:
-            frame_output_stream = None
-
-        if output_annotation_frames:
-            annotation_frame_output_stream = ImageOutputStream()
-            annotation_frame_output_stream.open(os.path.join(self.frames_folder, 'output_frame-%06d.'+image_file_type))
-        else:
-            annotation_frame_output_stream = None
-
-        for i, input_frame in enumerate(self.input_stream):
-            # get pupil and corneal reflection parameters, this line is the actual eye tracking algorithm
-            pupil, cr = self.process_image(input_frame, bbox_pupil=self.bbox_pupil, bbox_cr=self.bbox_cr)
-
-            pupil_params = (pupil[0][0],pupil[0][1],pupil[1],pupil[2][0],pupil[2][1])
-            cr_params = (cr[0][0],cr[0][1],cr[1],cr[2][0],cr[2][1])
-
-            if frame_output_stream:
-                frame_output_stream.write(input_frame)
-
-            if movie_output_stream or annotation_frame_output_stream:
-                annotated_frame = self.annotate_frame(np.dstack([input_frame,input_frame,input_frame]), 
-                                                      pupil_params, 
-                                                      cr_params)
-
-                if movie_output_stream:
-                    movie_output_stream.write( annotated_frame )
-
-                if annotation_frame_output_stream:
-                    annotation_frame_output_stream.write( annotated_frame )
-
-            # save results in arrays
-            self.pupil_params[i] = (pupil[0][0],pupil[0][1],pupil[1],pupil[2][0],pupil[2][1])
-            self.cr_params[i] = (cr[0][0],cr[0][1],cr[1],cr[2][0],cr[2][1])
-
-            if i % 100 == 0:
-                logging.debug("tracked frame %d", i)
-
-        logging.debug("Saving pupil and cr parameters to:")
-        logging.debug("\t%s", self.pupil_file)
-        logging.debug("\t%s", self.cr_file)
-        #
-        np.save(self.pupil_file, self.pupil_params)
-        np.save(self.cr_file, self.cr_params)
-
-        if movie_output_stream:
-            movie_output_stream.close()
-
-        if frame_output_stream:
-            frame_output_stream.close()
-
-        if annotation_frame_output_stream:
-            annotation_frame_output_stream.close()
-
-        # return mean_frame
-
-    def clear_input_images(self):
-        logging.debug("Deleting input image folder")
-        shutil.rmtree(os.path.join(self.folder, 'input_images'))
-
-    def process_image(self, im, bbox_pupil=None, bbox_cr=None):
-        # let's try median filtering the image first
-        im = medfilt2d(im, kernel_size=3)
-
-        # find pupil and corneal reflection if auto==True
-        if self.auto:
-            self.pupil_loc = initial_pupil_point(im, bbox=bbox_pupil)
-            self.cr_loc = initial_cr_point(im, bbox=bbox_cr)
-
-
-        # find rays projecting from seed point
-        pupil_rays, pupil_ray_values = generate_rays(im,self.pupil_loc)
-
-        # save values for analysis
-        self.pupil_rays = pupil_rays
-        self.pupil_ray_values = pupil_ray_values
-
-        # code for finding pupil ellipse, start with candidate points from rays
-        pupil_candidate_points = self.get_candidate_points(self.pupil_rays,self.pupil_ray_values,self.threshold_factor,above_threshold=True)
-
-        # fit pupil ellipse with all candidate points
-        #pupil_params = fit_ellipse(pupil_candidate_points)
-
-        # fit pupil ellipse with ransac algorithm
-        fe=FitEllipse(10,10,0.0001,4)
-        result = fe.ransac_fit(pupil_candidate_points)
-
-        # if np.any(np.isnan(result)):    #should use np.any(np.isnan(result))
-        #     pupil_params = result  #fe.ransac_fit(pupil_candidate_points)
-        # else:
-        #     pupil_params = ((np.nan,np.nan),np.nan,(np.nan,np.nan))  #  np.nan*np.ones(5)
-
-
-        if result!=None:    #should use np.any(np.isnan(result))
-            pupil_params = result  #fe.ransac_fit(pupil_candidate_points)
-        else:
-            logging.debug("No good fit found")
-            pupil_params = ((np.nan,np.nan),np.nan,(np.nan,np.nan))  #  np.nan*np.ones(5)
-
-
-        # code for finding corneal reflection, start with finding rays from center of cr
-        cr_rays, cr_ray_values = generate_rays(im,self.cr_loc)
-
-        self.cr_rays = cr_rays
-        self.cr_ray_values = cr_ray_values
-
-        cr_candidate_points = self.get_candidate_points(self.cr_rays,self.cr_ray_values,0.75,above_threshold=False)
-
-        try:
-            #cr_params = fit_ellipse(cr_candidate_points)
-            fe=FitEllipse(10,10,0.0001,4)
-            result = fe.ransac_fit(cr_candidate_points)
-
-            if result!=None:
-                cr_params = result #fe.ransac_fit(cr_candidate_points)
-            else:
-                logging.debug("No good fit found")
-                cr_params = ((np.nan,np.nan),np.nan,(np.nan,np.nan))
-        except Exception as e:
-            logging.error("Error during fit: %s", e.message)
-            cr_params = ((np.nan,np.nan),np.nan,(np.nan,np.nan))
-
-        # update instance variables
-        if not np.isnan(pupil_params[0][0]):   #should use np.any(np.isnan(result))
-            self.pupil_loc = (int(pupil_params[0][1]),int(pupil_params[0][0]))
-
-        self.pupil_candidate_points = pupil_candidate_points
-        self.cr_candidate_points = cr_candidate_points
-
-        return pupil_params, cr_params
-
-    def get_candidate_points(self,rays,ray_values,threshold_f,above_threshold=True):
-
-        candidate_points = []
-        # find candidate points for ellipse from threshold crossing of the image over the rays
-        for i, ray in enumerate(rays):
-
-            sample_ray = ray_values[i][:self.cutoff_pixels]
-            threshold = threshold_f*np.mean(sample_ray)
-
-            for t,g in enumerate(ray_values[i][self.cutoff_pixels:]):
-                if above_threshold:
-                    if g > threshold:
-                        new_point = ray.T[t+self.cutoff_pixels]
-                        candidate_points += [new_point]
-                        break
-                else:
-                    if g < threshold:
-                        new_point = ray.T[t+self.cutoff_pixels]
-                        candidate_points += [new_point]
-                        break
-
-        return candidate_points
-
-    def set_seed_points(self, initial_pupil_x, initial_pupil_y, initial_cr_x, initial_cr_y):
-        self.initial_pupil_x = initial_pupil_x
-        self.initial_pupil_y = initial_pupil_y
-        self.initial_cr_x = initial_cr_x
-        self.initial_cr_y = initial_cr_y
-
-    def process_all_images(self):
-        """ deprecated """
-
-        # these aren't really used yet.
-        self.pupil_loc = (0,0)
-        self.cr_loc = (0,0)
-
-        frame_list = os.listdir(self.input_image_folder)
-        num_frames = len(frame_list)
-
-        self.pupil_params = np.zeros([num_frames, 5])
-        self.cr_params = np.zeros([num_frames, 5])
-
-        for i,frame in enumerate(frame_list):
-            logging.debug("Processing frame %d", i)
-            if frame[-4:]!='.jpg' and frame[-4:]!='.png':  continue  # just in case some OS specific files snuck in (like in OS X)
-            frame_path = os.path.join(self.input_image_folder,frame)
-
-            # open Image, convert to gray scale and then to numpy array
-            im = Image.open(frame_path)
-            im = im.convert('L')
-            im = np.array(im)
-
-
-            # get pupil and corneal reflection parameters, this line is the actual eye tracking algorithm
-            pupil, cr = self.process_image(im)
-
-            # save results in arrays
-            self.pupil_params[i] = (pupil[0][0],pupil[0][1],pupil[1],pupil[2][0],pupil[2][1])
-            self.cr_params[i] = (cr[0][0],cr[0][1],cr[1],cr[2][0],cr[2][1])
-
-        logging.debug("Saving pupil and cr parameters to:")
-        logging.debug("\t%s", self.pupil_file)
-        logging.debug("\t%s", self.cr_file)
-
-        np.save(self.pupil_file, self.pupil_params)
-        np.save(self.cr_file, self.cr_params)
-
-
-    @staticmethod
-    def rotate(X, Y, center_x, center_y, theta):
-
-        Xp = (X-center_x)*np.cos(theta) - (Y-center_y)*np.sin(theta) + center_x
-        Yp = (X-center_x)*np.sin(theta) + (Y-center_y)*np.cos(theta) + center_y
-
-        return Xp, Yp
-
-    @staticmethod
-    def get_ellipse_mask(X, Y, params):
-
-        center_x, center_y, theta, axis1, axis2 = params
-
-        dX = X - center_x
-        dY = Y - center_y
-
-        theta = theta*np.pi/180.
-
-        Xp = dX*np.cos(theta) + dY*np.sin(theta)
-        Yp = -dX*np.sin(theta) + dY*np.cos(theta)
-
-        mask1 = (Xp/axis1)**2 + (Yp/axis2)**2 < 1 + 0.1
-        mask2 = (Xp/axis1)**2 + (Yp/axis2)**2 > 1 - 0.1
-
-        mask = np.logical_and(mask1, mask2)
-
-        return mask
-
-    def annotate_frame_old(self, im, pupil=None, cr=None):
-
-        y, x, c = im.shape
-
-        X, Y = np.meshgrid(np.arange(x), np.arange(y))
-
-        # pupil in red
-        if pupil is not None:
-            pupil_mask = self.get_ellipse_mask(X, Y, pupil)
-            im.T[0].T[pupil_mask] = 255
-            im.T[1].T[pupil_mask] = 0
-            im.T[2].T[pupil_mask] = 0
-
-        # cr in blue
-        if cr is not None:
-            cr_mask = self.get_ellipse_mask(X, Y, cr)
-            im.T[0].T[cr_mask] = 0
-            im.T[1].T[cr_mask] = 0
-            im.T[2].T[cr_mask] = 255
-
-        return im
-
-    @classmethod
-    def ellipse_points_from_params(cls, params):
-        center_x, center_y, theta, axis1, axis2 = params
-        theta = theta*np.pi/180. # convert to radians
-
-        points_x = np.array([ axis1*np.cos(phi) + center_x for phi in np.linspace(0,2*np.pi, 1000)])
-        points_y = np.array([ axis2*np.sin(phi) + center_y for phi in np.linspace(0,2*np.pi, 1000)])
-
-        points_x, points_y = cls.rotate(points_x, points_y, center_x, center_y, theta)
-
-        return points_x, points_y
-
-    def annotate_frame(self, im, pupil=None, cr=None):
-        
-        y, x, c = im.shape
-
-        im_pil = Image.fromarray(im)
-
-        draw = ImageDraw.Draw(im_pil)
-
-        if pupil is not None:
-            points_x, points_y = self.ellipse_points_from_params(pupil)
-            draw.point(zip(points_x, points_y), fill=(255,0,0))
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        if cr is not None:
-            points_x, points_y = self.ellipse_points_from_params(cr)
-            draw.point(zip(points_x, points_y), fill=(0,0,255))
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        # return im
-        return np.array(im_pil)
-
-    def annotate_frame_with_bbox(self, im, pupil_bbox=None, cr_bbox=None):
-
-        # y, x, c = im.shape
-
-        im_pil = Image.fromarray(im)
-
-        draw = ImageDraw.Draw(im_pil)
-
-        if pupil_bbox is not None:
-            xmin, xmax, ymin, ymax = pupil_bbox
-            draw.rectangle([xmin,ymin,xmax,ymax],outline=(255,0,0))
-
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        if cr_bbox is not None:
-            xmin, xmax, ymin, ymax = cr_bbox
-            draw.rectangle([xmin,ymin,xmax,ymax],outline=(0,0,255))
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        # return im
-        return np.array(im_pil)
-
-    def annotate_frame_with_point(self, im, pupil=None, cr=None):
-
-        # y, x, c = im.shape
-
-        im_pil = Image.fromarray(im)
-
-        draw = ImageDraw.Draw(im_pil)
-
-        if pupil is not None:
-            # points_x, points_y = ellipse_points_from_params(pupil)
-            # draw.point(pupil, fill=(255,0,0))
-            draw.ellipse([pupil[0]-5,pupil[1]-5,pupil[0]+5,pupil[1]+5],fill=(255,0,0))
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        if cr is not None:
-            # points_x, points_y = ellipse_points_from_params(cr)
-            # draw.point(cr, fill=(0,0,255))
-            draw.ellipse([cr[0]-5,cr[1]-5,cr[0]+5,cr[1]+5],fill=(0,0,255))
-            # for i, px in enumerate(points_x):
-            #     im[int(points_y[i]), int(px), 0] = 255
-
-        # return im
-        return np.array(im_pil)
-
-    @staticmethod
-    def get_frame_index(frame_name):
-
-        return int(frame_name[12:-4])-1  # change 7 to 12
-
-    # def annotate_frame(self, frame, im, pupil, cr):
-    #     # this function is not done yet
-    #     frame_index = self.get_frame_index(frame)
-    #
-    #     new_im = im.copy()
-    #     pupil = self.pupil_params[frame_index]
-    #     cr = self.cr_params[frame_index]
-    #     new_im = self.annotate_frame(new_im, pupil, cr)
-    #
-    #     im_fig.set_data(new_im)
-    #
-    #     fig.savefig(os.path.join(self.frames_folder, input_frame), dpi=100)
-
-    def output_annotation(self, frames_to_output=None):
-        """generate a the series of images with eyetracking results superimposed"""
-
-        fig, ax = plt.subplots(figsize=(4,3))  #, frameon=False)
-        fig.subplots_adjust(left=0,right=1,bottom=0,top=1)
-
-        ax.axis('off')
-        # ax.axis('tight')
-
-        self.pupil_params = np.load(self.pupil_file)
-        self.cr_params = np.load(self.cr_file)
-
-        if frames_to_output is None:
-            frames_to_output = os.listdir(self.input_image_folder)
-
-        first_frame = frames_to_output[0]
-
-        frame_index = self.get_frame_index(first_frame)
-        im = Image.open(os.path.join(self.input_image_folder, first_frame))
-        im = np.array(im)
-
-        new_im = np.dstack([im,im,im])
-        pupil = self.pupil_params[frame_index]
-        cr = self.cr_params[frame_index]
-        new_im = self.annotate_frame(new_im, pupil, cr)
-
-        im_fig = ax.imshow(new_im, aspect='normal')  #extent=(0,1,1,0)
-
-        fig.savefig(os.path.join(self.frames_folder, first_frame), dpi=100)
-
-        for input_frame in frames_to_output[1:]:
-
-            frame_index = self.get_frame_index(input_frame)
-            im = Image.open(os.path.join(self.input_image_folder, input_frame))
-            im = np.array(im)
-
-            new_im = np.dstack([im,im,im])
-            pupil = self.pupil_params[frame_index]
-            cr = self.cr_params[frame_index]
-            new_im = self.annotate_frame(new_im, pupil, cr)
-
-            im_fig.set_data(new_im)
-
-            fig.savefig(os.path.join(self.frames_folder, input_frame), dpi=100)
-
-    def output_QC(self, image_type='png'):
-        """generate a set of summary statistics and plots for QC purposes"""
-
-        logging.debug("saving QC images")
-        self.pupil_params = np.load(self.pupil_file)
-        self.cr_params = np.load(self.cr_file)
-
-        logging.debug("saving pupil position")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.pupil_params.T[0], label='pupil x')
-        ax.plot(self.pupil_params.T[1], label='pupil y')
-        ax.set_xlabel('frame index')
-        ax.set_title('pupil position')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'pupil_position.'+image_type))
-
-        logging.debug("saving cr position")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.cr_params.T[0], label='cr x')
-        ax.plot(self.cr_params.T[1], label='cr y')
-        ax.set_xlabel('frame index')
-        ax.set_title('CR position')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'cr_position.'+image_type))
-
-        logging.debug("saving pupil axes")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.pupil_params.T[3], label='pupil axis 1')
-        ax.plot(self.pupil_params.T[4], label='pupil axis 2')
-        ax.set_xlabel('frame index')
-        ax.set_title('Pupil major and minor axis size')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'pupil_axes.'+image_type))
-
-        logging.debug("saving cr major/minor axis")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.cr_params.T[3], label='cr axis 1')
-        ax.plot(self.cr_params.T[4], label='cr axis 2')
-        ax.set_xlabel('frame index')
-        ax.set_title('CR major and minor axis size')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'cr_axes.'+image_type))
-
-        logging.debug("saving pupil angle")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.pupil_params.T[2], label='pupil angle')
-        ax.set_xlabel('frame index')
-        ax.set_title('pupil major axis angle')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'pupil_angle.'+image_type))
-
-        logging.debug("saving cr angle")
-        fig, ax = plt.subplots(1)
-        ax.plot(self.cr_params.T[2], label='cr angle')
-        ax.set_xlabel('frame index')
-        ax.set_title('corneal reflection major axis angle')
-        ax.legend()
-        fig.savefig(os.path.join(self.qc_folder, 'cr_angle.'+image_type))
-
-
-        logging.debug("computing density")
-        # the remainder of these take a *very* long time
-        T = self.pupil_params.shape[0]
-        y, x = self.im_shape
-
-        mean_frame = np.dstack([self.mean_frame,self.mean_frame,self.mean_frame])
-        pupil_density = np.zeros((y, x, 3))
-        # pupil_all = 255*np.ones(pupil_density.shape, np.uint8)
-        # pupil_all = np.stack([mean_frame, mean_frame, mean_frame], axis=2)
-        pupil_all = mean_frame.copy()
-
-        cr_density = np.zeros((y, x, 3))
-        # cr_all = 255*np.ones(cr_density.shape, np.uint8)
-        # cr_all = np.stack([mean_frame, mean_frame, mean_frame], axis=2)
-        cr_all = mean_frame.copy()
-        temp = np.zeros((y,x,3), dtype=np.uint8)
-        for t in range(T):
-            if t % 100 == 0:
-                logging.debug("finished %d frames", t)
-            ptemp = self.annotate_frame(temp.copy(), self.pupil_params[t])
-            pupil_density += ptemp #, self.cr_params[t])
-            pupil_all = self.annotate_frame(pupil_all, self.pupil_params[t])
-
-            crtemp = self.annotate_frame(temp.copy(), cr=self.cr_params[t])
-            cr_density += crtemp #, self.cr_params[t])
-            cr_all = self.annotate_frame(cr_all, cr=self.cr_params[t])
-
-        logging.debug("plotting pupil density")
-        fig, ax = plt.subplots(1)
-        ax.imshow(np.log(1+pupil_density[:,:,0]), cmap='Greys', interpolation='nearest')
-        # ax.axis('off')
-        ax.set_title('Pupil ellipse density')
-        fig.savefig(os.path.join(self.qc_folder, 'pupil_density.'+image_type))
-
-
-        logging.debug("plotting pupil all")
-        fig, ax = plt.subplots(1)
-        ax.imshow(pupil_all, cmap='Greys', interpolation='nearest')
-        # ax.axis('off')
-        ax.set_title('All pupil ellipses combined')
-        fig.savefig(os.path.join(self.qc_folder, 'pupil_all_plot.'+image_type))
-
-        logging.debug("plotting cr density")
-        fig, ax = plt.subplots(1)
-        ax.imshow(np.log(1+cr_density[:,:,2]), cmap='Greys', interpolation='nearest')
-        # ax.axis('off')
-        ax.set_title('CR ellipse density')
-        fig.savefig(os.path.join(self.qc_folder, 'cr_density.'+image_type))
-
-        logging.debug("plotting cr all")
-        fig, ax = plt.subplots(1)
-        ax.imshow(cr_all, cmap='Greys', interpolation='nearest')
-        ax.set_title('All CR ellipses combined')
-        # ax.axis('off')
-        fig.savefig(os.path.join(self.qc_folder, 'cr_all_plot.'+image_type))
+            pupil_parameters = self.find_pupil(cr_parameters)
+            self.update_last_pupil_color(pupil_parameters)
+        except ValueError:
+            logging.debug("Insufficient candidate points found for fitting "
+                          "pupil at frame %s", self.frame_index)
+            pupil_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
+        return cr_parameters, pupil_parameters
+
+    def process_stream(self, n_frames=None, update_mean_frame=True):
+        self.pupil_parameters = []
+        self.cr_parameters = []
+        if update_mean_frame:
+            mean_frame = np.zeros(self.im_shape, dtype=np.float64)
+        if n_frames is None:
+            n_frames = self.input_stream.n_frames
+        for i, frame in enumerate(self.input_stream):
+            if update_mean_frame:
+                mean_frame += frame
+            self.frame_index = i
+            cr_parameters, pupil_parameters = self.process_image(frame)
+            self.cr_parameters.append(cr_parameters)
+            self.pupil_parameters.append(pupil_parameters)
+            if self.annotator.output_stream is not None:
+                self.annotator.annotate_frame(frame, pupil_parameters,
+                                              cr_parameters)
+            if self.generate_QC_output:
+                self.annotator.compute_density(frame, pupil_parameters,
+                                               cr_parameters)
+            self.annotator.clear_rc()
+            if i == n_frames-1:
+                break
+
+        if self.annotator is not None:
+            self.annotator.close()
+
+        if update_mean_frame:
+            self._mean_frame = (mean_frame / (i+1)).astype(np.uint8)
+
+        return np.array(self.pupil_parameters), np.array(self.cr_parameters)
+
+
+def default_bounding_box(image_shape):
+    """Calculate a default bounding box as 10% in from borders of image.
+
+    Parameters
+    ----------
+    image_shape : tuple
+        (height, width) of image.
+
+    Returns
+    -------
+    numpy.ndarray
+        [xmin, xmax, ymin, ymax] bounding box.
+    """
+    h, w = image_shape
+    x_crop = int(0.1*w)
+    y_crop = int(0.1*h)
+
+    return np.array([x_crop, w-x_crop, y_crop, h-y_crop], dtype='int')

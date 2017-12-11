@@ -4,9 +4,9 @@
 AIBS Eye Tracking Installation
 ======================================
 
-.. _stash repo: http://stash.corp.alleninstitute.org/scm/~jedp/aibs.eye_tracking/aibs.eye_tracking
+.. _stash repo: https://github.com/AllenInstitute/aibs.eye_tracking.git
 .. code-block:: console
 
-    $ git clone http://stash.corp.alleninstitute.org/scm/~jedp/aibs.eye_tracking/aibs.eye_tracking
+    $ git clone https://github.com/AllenInstitute/aibs.eye_tracking.git
     $ pip install .
 

@@ -2,3 +2,5 @@ argschema>=1.15.12
 numpy
 scipy
 pillow
+scikit-image
+matplotlib

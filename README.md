@@ -1,5 +1,6 @@
-# AIBS Eye Tracking
+AIBS Eye Tracking
+=================
 
-http://stash.corp.alleninstitute.org/scm/~jedp/aibs.eye_tracking
+https://github.com/AllenInstitute/aibs.eye_tracking
 
-AIBS package for rodent eye tracking.
+AIBS package for mouse eye tracking.

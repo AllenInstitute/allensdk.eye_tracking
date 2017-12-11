@@ -1,232 +1,227 @@
+"""Module for ellipse fitting.
+
+The algorithm for the actual fitting is  detailed at
+http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html.
+"""
 import numpy as np
+from .ransac import RansacFitter
 import logging
 
-class FitEllipse (object):
 
-    def __init__(self,min_points,max_iter,threshold,num_close):
+CONSTRAINT_MATRIX = np.zeros([6,6])
+CONSTRAINT_MATRIX[0,2]= 2.0
+CONSTRAINT_MATRIX[2,0]= 2.0
+CONSTRAINT_MATRIX[1,1]= -1.0
 
-        # points = np.array(candidate_points)
-        # y,x = points.T
 
-        C = np.zeros([6,6])
-        C[0,2]= 2.0
-        C[2,0]= 2.0
-        C[1,1]= -1.0
+class EllipseFitter(object):
+    """Wrapper class for performing ransac fitting of an ellipse.
 
-        #self.x = x
-        #self.y = y
-        self.C = C
-
-        self.min_points = min_points
-        self.max_iter = max_iter
+    Parameters
+    ----------
+    minimum_points_for_fit : int
+        Number of points required to fit data.
+    number_of_close_points : int
+        Number of candidate outliers reselected as inliers required
+        to consider a good fit.
+    threshold : float
+        Error threshold below which data should be considered an
+        inlier.
+    iterations : int
+            Number of iterations to run.
+    """
+    def __init__(self, minimum_points_for_fit, number_of_close_points,
+                 threshold, iterations):
+        self.minimum_points_for_fit = minimum_points_for_fit
+        self.number_of_close_points = number_of_close_points
         self.threshold = threshold
-        self.num_close = num_close
+        self.iterations = iterations
+        self._fitter = RansacFitter()
 
-        self.best_params = None
-        self.best_params_set = False
-        self.besterror = np.inf
+    def fit(self, candidate_points):
+        """Perform a fit on (y,x) points.
 
-    def ransac_fit(self,candidate_points):
-
-        #points = np.array(candidate_points)
-
-        for i in range(self.max_iter):
-
-            inlier_points, outlier_points = self.choose_inliers(candidate_points)
-            params, error = self.fit_ellipse(inlier_points)
-
-            if len(outlier_points)>0:
-                cost = self.outlier_cost(outlier_points,params)
-                also_in = 0
-                for j,c in enumerate(cost):
-                    point = outlier_points[j]
-                    if cost[j]<self.threshold:
-                        inlier_points += [point]
-                        also_in += 1
-
-                if also_in > self.num_close:
-                    params, error = self.fit_ellipse(inlier_points)
-                    if (error < self.besterror):
-                        self.best_params = params
-                        self.best_params_set = True
-                        self.besterror = error
-
-        if self.best_params_set:
-            return ellipse_center(self.best_params), ellipse_angle_of_rotation(self.best_params)*180./np.pi, ellipse_axis_length(self.best_params)
+        Parameters
+        ----------
+        candidate_points : list
+            List of (y,x) points that may fit on the ellipse.
+        
+        Returns
+        -------
+        tuple
+            (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
+        """
+        data = np.array(candidate_points)
+        params = self._fitter.fit(fit_ellipse, fit_errors, data,
+                                  self.threshold, self.minimum_points_for_fit,
+                                  self.number_of_close_points, self.iterations)
+        if params is not None:
+            x, y = ellipse_center(params)
+            angle = ellipse_angle_of_rotation(params)*180/np.pi
+            ax1, ax2 = ellipse_axis_length(params)
+            return x, y, angle, ax1, ax2
         else:
-            return None
+            return np.nan, np.nan, np.nan, np.nan, np.nan
 
-    def choose_inliers(self, candidate_points):
 
-        #cannot take a larger sample than population
-        if(len(candidate_points) > self.min_points):
-            inlier_index = np.random.choice(np.arange(len(candidate_points)),self.min_points,replace=False)
-        else:
-            #TODO check this
-            inlier_index = np.arange(self.min_points)
+def fit_ellipse(data):
+    """Fit an ellipse to data.
 
-        inlier_points = []
-        outlier_points = []
+    Parameters
+    ----------
+    data : numpy.ndarray
+        [n,2] array of (y,x) data points.
 
-        for i in range(len(candidate_points)):
-            if i in inlier_index:
-                inlier_points += [candidate_points[i]]
-            else:
-                outlier_points += [candidate_points[i]]
-
-        return inlier_points, outlier_points
-
-    def outlier_cost(self,outlier_points,params):
-
-        y,x = np.array(outlier_points).T
+    Returns
+    -------
+    tuple
+        Tuple that includes an array of conic parameters and the mean
+        error of the fit.
+    """
+    try:
+        y, x = data.T
 
         D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
-        #S = np.dot(D, D.T)
+        S = np.dot(D, D.T)
 
-        cost = (np.dot(params,D))**2
+        M = np.dot(np.linalg.inv(S),CONSTRAINT_MATRIX)
+        U,s,V=np.linalg.svd(M)
 
-        return cost
+        params = U.T[0]
+        error = np.dot(params, np.dot(S,params))/len(y)
+    except:
+        params = None
+        error = np.inf
 
-    def fit_ellipse(self,inlier_points):
-        try:
-            inlier_points = np.array(inlier_points)
-            points = np.array(inlier_points)
-            y,x = points.T
-
-            D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
-            S = np.dot(D, D.T)
-
-            M = np.dot(np.linalg.inv(S),self.C)
-            U,s,V=np.linalg.svd(M)
-
-            params = U.T[0]
-            error = np.dot(params, np.dot(S,params))/len(inlier_points)
-        except:
-            #TODO - check if this is correct
-            params = None      #WBW error handling
-            error = 0.00000001 #WBW error handling
-
-        return params, error
+    return params, error
 
 
-def ellipse_center(a):
-    b,c,d,f,g,a = a[1]/2, a[2], a[3]/2, a[4]/2, a[5], a[0]
+def fit_errors(parameters, data):
+    """Calculate the errors on each data point.
+
+    Parameters
+    ----------
+    parameters : np.ndarray
+        Paramaters of the fit ellipse model.
+    data : np.ndarray
+        [n,2] array of (y,x) points.
+
+    Returns
+    -------
+    numpy.ndarray
+        Squared error of the fit at each point in data.
+    """
+    y, x = data.T
+    D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
+    errors = (np.dot(parameters,D))**2
+
+    return errors
+
+
+def quadratic_parameters(conic_parameters):
+    """Get quadratic ellipse coefficients from conic parameters."""
+    a = conic_parameters[0]
+    b = conic_parameters[1]/2
+    c = conic_parameters[2]
+    d = conic_parameters[3]/2
+    f = conic_parameters[4]/2
+    g = conic_parameters[5]
+    return a, b, c, d, f, g
+
+
+def ellipse_center(parameters):
+    """Calculate the center of the ellipse given the model parameters.
+
+    Calculation from http://mathworld.wolfram.com/Ellipse.html
+
+    Parameters
+    ----------
+    parameters : numpy.ndarray
+        Parameters of the ellipse fit.
+
+    Returns
+    -------
+    numpy.ndarray
+        [x,y] center of the ellipse.
+    """
+    a, b, c, d, f, g = quadratic_parameters(parameters)
     num = b*b-a*c
     x0=(c*d-b*f)/num
     y0=(a*f-b*d)/num
     return np.array([x0,y0])
 
-def ellipse_angle_of_rotation( a ):
-    b,c,d,f,g,a = a[1]/2, a[2], a[3]/2, a[4]/2, a[5], a[0]
+
+def ellipse_angle_of_rotation(parameters):
+    """Calculate the rotation of the ellipse given the model parameters.
+
+    Calculation from http://mathworld.wolfram.com/Ellipse.html
+
+    Parameters
+    ----------
+    parameters : numpy.ndarray
+        Parameters of the ellipse fit.
+
+    Returns
+    -------
+    float
+        Rotation of the ellipse.
+    """
+    a, b, c, d, f, g = quadratic_parameters(parameters)
     return 0.5*np.arctan(2*b/(a-c))
 
-def ellipse_angle_of_rotation2( a ):
-    b,c,d,f,g,a = a[1]/2, a[2], a[3]/2, a[4]/2, a[5], a[0]
-    if b == 0:
-        if a > c:
-            return 0
-        else:
-            return np.pi/2
-    else:
-        if a > c:
-            return np.arctan(2*b/(a-c))/2
-        else:
-            return np.pi/2 + np.arctan(2*b/(a-c))/2
 
+def ellipse_axis_length(parameters):
+    """Calculate the semi-axes lengths of the ellipse.
 
-def ellipse_axis_length( a ):
-    b,c,d,f,g,a = a[1]/2, a[2], a[3]/2, a[4]/2, a[5], a[0]
+    Calculation from http://mathworld.wolfram.com/Ellipse.html
+
+    Parameters
+    ----------
+    parameters : numpy.ndarray
+        Parameters of the ellipse fit.
+
+    Returns
+    -------
+    numpy.ndarray
+        Semi-axes of the ellipse.
+    """
+    a, b, c, d, f, g = quadratic_parameters(parameters)
     up = 2*(a*f*f+c*d*d+g*b*b-2*b*d*f-a*c*g)
     down1=(b*b-a*c)*( (c-a)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
     down2=(b*b-a*c)*( (a-c)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
 
-    #TODO check this - cannot divide by 0 so just use a small number instead
-    if(down1 == 0):
-        down1 = .0000000001
-
-    if(down2 == 0):
-        down2 = .0000000001
+    down1 = min(.0000000001, down1)
+    down2 = min(.0000000001, down2)
 
     res1=np.sqrt(up/down1)
     res2=np.sqrt(up/down2)
     return np.array([res1, res2])
 
-def fit_ellipse(candidate_points):
 
-    # method from http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html
-    points = np.array(candidate_points)
-    y,x = points.T
-    D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
-    S = np.dot(D, D.T)
+def not_on_ellipse(point, ellipse_params, tolerance):
+    """Function that tests if a point is not on an ellipse.
+    
+    Parameters
+    ----------
+    point : tuple
+        (y, x) point.
+    ellipse_params : numpy.ndarray
+        Ellipse parameters to check against.
+    tolerance : float
+        Tolerance for determining point is on ellipse.
 
-    C = np.zeros([6,6])
-    C[0,2]= 2.0
-    C[2,0]= 2.0
-    C[1,1]= -1.0
-
-    M = np.dot(np.linalg.inv(S),C)
-
-    U,s,V=np.linalg.svd(M)
-
-    params = U.T[0]
-
-    return ellipse_center(params), ellipse_angle_of_rotation(params)*180./np.pi, ellipse_axis_length(params)
-
-def rotate_vector(y,x,theta):
-
-    xp = x*np.cos(theta) - y*np.sin(theta)
-    yp = x*np.sin(theta) + y*np.cos(theta)
-
-    return yp,xp
-
-def test_fit():
-
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-
-    x = np.linspace(-3.0,3.0,1000)
-    yp = np.sqrt(4.0 - (4.0/9.0)*(x**2))
-    ym = -yp
-
-    yp += 0.1*np.random.normal(size=len(yp))
-    ym += 0.1*np.random.normal(size=len(yp))
-
-    yp, x1 = rotate_vector(yp,x,np.pi/8)
-    ym, x2 = rotate_vector(ym,x,np.pi/8)
-
-    y_outlier = np.random.random(size=100)*4.0 - 2.0
-    x_outlier = np.random.random(size=100)*6.0 - 3.0
-
-
-    outlier_points = np.vstack([y_outlier, x_outlier]).T
-
-    candidate_points = np.vstack([np.hstack([yp,ym]), np.hstack([x,x])]).T
-
-    candidate_points = np.vstack([outlier_points, candidate_points])
-
-    yt, xt = candidate_points.T
-
-    #center, angle, (axis1,axis2) = fit_ellipse(candidate_points)
-
-    fe=FitEllipse(40,100,0.0001,40)
-    result = fe.ransac_fit(candidate_points)
-    if result!=None:
-        center, angle, (axis1,axis2) = fe.ransac_fit(candidate_points)
-
-    fig,ax=plt.subplots(1)
-    ax.plot(x,yp,'bo')
-    ax.plot(x,ym,'bo')
-    ax.plot(x_outlier, y_outlier, 'rx')
-
-    from matplotlib.patches import Ellipse
-    el = Ellipse(center,width=2.0*axis1,height=2.0*axis2,angle=angle,fill=False,linewidth=3,color='r')
-
-    ax.add_artist(el)
-
-
-    plt.show()
-
-if __name__=='__main__':
-
-    test_fit()
+    Returns
+    ------
+    bool
+        True if `point` is not within `tolerance` of the ellipse.
+    """
+    py, px = point
+    x, y, r, a, b = ellipse_params
+    r = np.radians(r)
+    # get point in frame of unrotated ellipse at 0, 0
+    tx = (px - x)*np.cos(-r) - (py-y)*np.sin(-r)
+    ty = (px - x)*np.sin(-r) + (py-y)*np.cos(-r)
+    err =  np.abs((tx**2 / a**2) + (ty**2 / b**2) - 1)
+    if err < tolerance:
+        return False
+    return True

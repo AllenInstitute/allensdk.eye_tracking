@@ -63,3 +63,4 @@ target/
 
 # IDE Specific
 .idea
+.vscode*
