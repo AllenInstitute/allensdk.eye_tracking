@@ -1,0 +1,1360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>aibs.eye_tracking package &mdash; AIBS Eye Tracking 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.1.0 documentation" href="index.html"/>
+        <link rel="up" title="aibs package" href="aibs.html"/>
+        <link rel="prev" title="aibs package" href="aibs.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> AIBS Eye Tracking
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">AIBS Eye Tracking Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">aibs</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="aibs.html">aibs package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="aibs.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">aibs.eye_tracking package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="aibs.html#module-aibs">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AIBS Eye Tracking</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">aibs</a> &raquo;</li>
+        
+          <li><a href="aibs.html">aibs package</a> &raquo;</li>
+        
+      <li>aibs.eye_tracking package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/aibs.eye_tracking.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="aibs-eye-tracking-package">
+<h1>aibs.eye_tracking package<a class="headerlink" href="#aibs-eye-tracking-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-aibs.eye_tracking.calibration">
+<span id="aibs-eye-tracking-calibration-module"></span><h2>aibs.eye_tracking.calibration module<a class="headerlink" href="#module-aibs.eye_tracking.calibration" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="aibs.eye_tracking.calibration.base_object_to_eye_rotation_matrix">
+<code class="descclassname">aibs.eye_tracking.calibration.</code><code class="descname">base_object_to_eye_rotation_matrix</code><span class="sig-paren">(</span><em>object_position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/calibration.html#base_object_to_eye_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.calibration.base_object_to_eye_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix to rotate base object frame to eye coordinates.</p>
+<p>By convention, any other object’s coordinate frame before rotations
+is set with positive Z pointing from the object’s position back
+to the origin of the eye coordinate system, with X parallel to the
+eye X-Y plane.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object_position</strong> (<em>np.ndarray</em>) – [x, y, z] position of object in eye coordinates.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[3x3] rotation matrix.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.calibration.calculate_bounding_box_from_cr">
+<code class="descclassname">aibs.eye_tracking.calibration.</code><code class="descname">calculate_bounding_box_from_cr</code><span class="sig-paren">(</span><em>cr_position</em>, <em>cr_offset</em>, <em>eye_radius</em>, <em>cm_per_pixel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/calibration.html#calculate_bounding_box_from_cr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.calibration.calculate_bounding_box_from_cr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate bounding box for pupil from CR estimate.</p>
+<p>The bounding box is a rectangle that sits entirely within the eye
+by default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cr_position</strong> (<em>numpy.ndarray</em>) – [x, y] pixel position of corneal reflection found in image.</li>
+<li><strong>cr_offset</strong> (<em>numpy.ndarray</em>) – [x, y] pixel offset of corneal reflection from eye center as
+calculated from experimental geometry and camera parameters.</li>
+<li><strong>eye_radius</strong> (<em>float</em>) – Radius of the eye (cm).</li>
+<li><strong>cm_per_pixel</strong> (<em>float</em>) – Pixel size conversion factor.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">[xmin xmax ymin ymax] bounding box.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.calibration.cr_position_in_camera_frame">
+<code class="descclassname">aibs.eye_tracking.calibration.</code><code class="descname">cr_position_in_camera_frame</code><span class="sig-paren">(</span><em>camera_position</em>, <em>camera_rotation</em>, <em>cr_eye_position</em>, <em>cm_per_pixel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/calibration.html#cr_position_in_camera_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.calibration.cr_position_in_camera_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Location of corneal reflection relative to eye-center in pixels.</p>
+<p>The location is given in the coordinate frame of the camera, where
++x is to the right and +y is down.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>camera_position</strong> (<em>numpy.ndarray</em>) – [x, y, z] position of camera in eye coordinates (cm).</li>
+<li><strong>camera_rotation</strong> (<em>float</em>) – Rotation of the camera in degrees.</li>
+<li><strong>cr_eye_position</strong> (<em>numpy.ndarray</em>) – [x, y, z] position of corneal reflection in eye coordinates (cm).</li>
+<li><strong>cm_per_pixel</strong> (<em>float</em>) – Conversion factor for pixel size.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">[x,y] location of CR relative to center of eye in pixels on the
+camera view.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.calibration.cr_position_in_mouse_eye_coordinates">
+<code class="descclassname">aibs.eye_tracking.calibration.</code><code class="descname">cr_position_in_mouse_eye_coordinates</code><span class="sig-paren">(</span><em>led_position</em>, <em>eye_radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/calibration.html#cr_position_in_mouse_eye_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.calibration.cr_position_in_mouse_eye_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the 3D position of the corneal reflection.</p>
+<p>The eye is modeled as a spherical mirror, so the reflection
+appears to be half the radius of the eye from the origin along
+the eye-LED axis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>led_position</strong> (<em>numpy.ndarray</em>) – [x,y,z] position of the LED in eye coordinates (cm).</li>
+<li><strong>eye_radius</strong> (<em>float</em>) – Radius of the eye (cm).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">[x,y,z] location of the corneal reflection in eye coordinates.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.calibration.object_rotation_matrix">
+<code class="descclassname">aibs.eye_tracking.calibration.</code><code class="descname">object_rotation_matrix</code><span class="sig-paren">(</span><em>x_rotation</em>, <em>y_rotation</em>, <em>z_rotation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/calibration.html#object_rotation_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.calibration.object_rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix in object coordinate frame.</p>
+<p>The rotation matrix for rotating the object coordinate frame from
+the initial position. This is done by rotating around x, then
+around y’, then around z’‘.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x_rotation</strong> (<em>float</em>) – Rotation about x axis in radians.</li>
+<li><strong>y_rotation</strong> (<em>float</em>) – Rotation about y axis in radians.</li>
+<li><strong>z_rotation</strong> (<em>float</em>) – Rotation about z axis in radians.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">[3x3] rotation matrix.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.eye_tracking">
+<span id="aibs-eye-tracking-eye-tracking-module"></span><h2>aibs.eye_tracking.eye_tracking module<a class="headerlink" href="#module-aibs.eye_tracking.eye_tracking" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.eye_tracking.</code><code class="descname">EyeTracker</code><span class="sig-paren">(</span><em>im_shape</em>, <em>input_stream</em>, <em>output_stream</em>, <em>starburst_params</em>, <em>ransac_params</em>, <em>pupil_bounding_box=None</em>, <em>cr_bounding_box=None</em>, <em>generate_QC_output=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Mouse Eye-Tracker.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>im_shape</strong> (<em>tuple</em>) – (height, width) of images.</li>
+<li><strong>input_stream</strong> (<em>generator</em>) – Generator that yields numpy.ndarray frames to analyze.</li>
+<li><strong>output_stream</strong> (<em>stream</em>) – Stream that accepts numpuy.ndarrays in the write method. None if
+not outputting annotations.</li>
+<li><strong>starburst_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>PointGenerator</cite>.</li>
+<li><strong>ransac_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>EllipseFitter</cite>.</li>
+<li><strong>pupil_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for pupil seed point search.</li>
+<li><strong>cr_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for cr seed point search.</li>
+<li><strong>generate_QC_output</strong> (<em>bool</em>) – Flag to compute extra QC data on frames.</li>
+<li><strong>**kwargs</strong> – pupil_min_value : int
+pupil_max_value : int
+cr_mask_radius : int
+pupil_mask_radius : int
+cr_recolor_scale_factor : float
+recolor_cr : bool</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.find_corneal_reflection">
+<code class="descname">find_corneal_reflection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.find_corneal_reflection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.find_corneal_reflection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the position of the corneal reflection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">[x, y, r, a, b] ellipse parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.find_pupil">
+<code class="descname">find_pupil</code><span class="sig-paren">(</span><em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.find_pupil"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.find_pupil" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate position of the pupil.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [x, y, r, a, b] ellipse parameters of corneal reflection,
+used to prepare image if <cite>recolor_cr</cite> is set.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[x, y, r, a, b] ellipse parameters.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.mean_frame">
+<code class="descname">mean_frame</code><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.mean_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.process_image">
+<code class="descname">process_image</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.process_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.process_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.process_stream">
+<code class="descname">process_stream</code><span class="sig-paren">(</span><em>n_frames=None</em>, <em>update_mean_frame=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.process_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.process_stream" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.recolor_corneal_reflection">
+<code class="descname">recolor_corneal_reflection</code><span class="sig-paren">(</span><em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.recolor_corneal_reflection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.recolor_corneal_reflection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshade the corneal reflection with the last pupil color.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [x, y, r, a, b] ellipse parameters for corneal reflection.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.setup_pupil_finder">
+<code class="descname">setup_pupil_finder</code><span class="sig-paren">(</span><em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.setup_pupil_finder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.setup_pupil_finder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize image and ransac filter for pupil fitting.</p>
+<p>If recoloring the corneal_reflection, color it in and provide a
+filter to exclude points that fall on the colored-in ellipse
+from fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [x, y, r, a, b] ellipse parameters for corneal reflection.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><em>numpy.ndarray</em> – Image for pupil fitting. Has corneal reflection filled in if
+<cite>recolor_cr</cite> is set.</li>
+<li><em>callable</em> – Function to indicate if points fall on the recolored ellipse
+or None if not recoloring.</li>
+<li><em>numpy.ndarray</em> – Ellipse parameters for recolor ellipse shape, which are
+<cite>cr_parameters</cite> with the axes scaled by
+<cite>cr_recolor_scale_factor</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.EyeTracker.update_last_pupil_color">
+<code class="descname">update_last_pupil_color</code><span class="sig-paren">(</span><em>pupil_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.update_last_pupil_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.update_last_pupil_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update last pupil color with mean of fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pupil_parameters</strong> (<em>numpy.ndarray</em>) – [x, y, r, a, b] ellipse parameters for pupil.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aibs.eye_tracking.eye_tracking.PointGenerator">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.eye_tracking.</code><code class="descname">PointGenerator</code><span class="sig-paren">(</span><em>index_length</em>, <em>n_rays</em>, <em>threshold_factor</em>, <em>threshold_pixels</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#PointGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.PointGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to find candidate points for ellipse fitting.</p>
+<p>Candidates points are found by drawing rays from a seed point and
+checking for the first threshold crossing of each ray.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index_length</strong> (<em>int</em>) – Initial default length for ray indices.</li>
+<li><strong>n_rays</strong> (<em>int</em>) – The number of rays to check.</li>
+<li><strong>threshold_factor</strong> (<em>float</em>) – Multiplicative factor for threshold.</li>
+<li><strong>threshold_pixels</strong> (<em>int</em>) – Number of pixels (from beginning of ray) to use to determine
+threshold.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.PointGenerator.get_candidate_points">
+<code class="descname">get_candidate_points</code><span class="sig-paren">(</span><em>image</em>, <em>seed_point</em>, <em>above_threshold=True</em>, <em>filter_function=None</em>, <em>filter_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#PointGenerator.get_candidate_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.PointGenerator.get_candidate_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get candidate points for ellipse fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>np.ndarray</em>) – Image to check for threshold crossings.</li>
+<li><strong>seed_point</strong> (<em>tuple</em>) – (y, x) center point for ray burst.</li>
+<li><strong>above_threshold</strong> (<em>bool</em>) – Whether looking for transitions above or below a threshold.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of (y, x) candidate points.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.PointGenerator.get_threshold">
+<code class="descname">get_threshold</code><span class="sig-paren">(</span><em>ray_values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#PointGenerator.get_threshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.PointGenerator.get_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the threshold from the ray values.</p>
+<p>The threshold is determined from <cite>threshold_factor</cite> times the
+mean of the first <cite>threshold_pixels</cite> values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ray_values</strong> (<em>np.ndarray</em>) – Values of the ray.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Threshold to set for candidate point.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.eye_tracking.PointGenerator.threshold_crossing">
+<code class="descname">threshold_crossing</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>values</em>, <em>above_threshold=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#PointGenerator.threshold_crossing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.PointGenerator.threshold_crossing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check a ray for where it crosses a threshold.</p>
+<p>The threshold is calculated using <cite>get_threshold</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xs</strong> (<em>np.ndarray</em>) – X indices of ray.</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Y indices of ray.</li>
+<li><strong>values</strong> (<em>np.ndarray</em>) – Image values along ray.</li>
+<li><strong>above_threshold</strong> (<em>bool</em>) – Whether to look for transitions above or below a threshold.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><em>int</em> – Y index of threshold crossing.</li>
+<li><em>int</em> – X index of threshold crossing.</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If no threshold crossing found.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.eye_tracking.default_bounding_box">
+<code class="descclassname">aibs.eye_tracking.eye_tracking.</code><code class="descname">default_bounding_box</code><span class="sig-paren">(</span><em>image_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#default_bounding_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.default_bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a default bounding box as 10% in from borders of image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_shape</strong> (<em>tuple</em>) – (height, width) of image.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[xmin, xmax, ymin, ymax] bounding box.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.feature_extraction">
+<span id="aibs-eye-tracking-feature-extraction-module"></span><h2>aibs.eye_tracking.feature_extraction module<a class="headerlink" href="#module-aibs.eye_tracking.feature_extraction" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="aibs.eye_tracking.feature_extraction.get_circle_mask">
+<code class="descclassname">aibs.eye_tracking.feature_extraction.</code><code class="descname">get_circle_mask</code><span class="sig-paren">(</span><em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/feature_extraction.html#get_circle_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.feature_extraction.get_circle_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get circular mask for estimating center point.</p>
+<p>Returns a cached mask if it has already been computed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<em>int</em>) – Radius in pixels of the circle to draw.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Circle mask.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.feature_extraction.max_convolution_positions">
+<code class="descclassname">aibs.eye_tracking.feature_extraction.</code><code class="descname">max_convolution_positions</code><span class="sig-paren">(</span><em>image</em>, <em>kernel</em>, <em>bounding_box=None</em>, <em>mode='same'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/feature_extraction.html#max_convolution_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.feature_extraction.max_convolution_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve image with kernel and return the max location.</p>
+<p>Convolution is done using fftconvolve with mode set to <cite>mode</cite>. It
+is only performed over the image region within <cite>bounding_box</cite> if it
+is provided. The resulting coordinates are provided in the context
+of the original image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image over which to convolve the kernel.</li>
+<li><strong>kernel</strong> (<em>numpy.ndarray</em>) – Kernel to convolve with the image.</li>
+<li><strong>bounding_box</strong> (<em>tuple</em>) – (xmin, xmax, ymin, ymax) bounding box on the image.</li>
+<li><strong>mode</strong> (<em>string</em>) – Mode to run fftconvolve with.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(y, x) mean location maximum of the convolution of the kernel
+with the image.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">tuple</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If bounding box is provided but incorrectly defined.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.feature_extraction.max_image_at_value">
+<code class="descclassname">aibs.eye_tracking.feature_extraction.</code><code class="descname">max_image_at_value</code><span class="sig-paren">(</span><em>image</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/feature_extraction.html#max_image_at_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.feature_extraction.max_image_at_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an image where pixels closest to <cite>value</cite> are brightest.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image to transform.</li>
+<li><strong>value</strong> (<em>int</em>) – Value to make brightest in the transformed image.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Transformed image.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarry</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.fit_ellipse">
+<span id="aibs-eye-tracking-fit-ellipse-module"></span><h2>aibs.eye_tracking.fit_ellipse module<a class="headerlink" href="#module-aibs.eye_tracking.fit_ellipse" title="Permalink to this headline">¶</a></h2>
+<p>Module for ellipse fitting.</p>
+<p>The algorithm for the actual fitting is  detailed at
+<a class="reference external" href="http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html">http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html</a>.</p>
+<dl class="class">
+<dt id="aibs.eye_tracking.fit_ellipse.EllipseFitter">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">EllipseFitter</code><span class="sig-paren">(</span><em>minimum_points_for_fit</em>, <em>number_of_close_points</em>, <em>threshold</em>, <em>iterations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#EllipseFitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.EllipseFitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Wrapper class for performing ransac fitting of an ellipse.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
+to consider a good fit.</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
+inlier.</li>
+<li><strong>iterations</strong> (<em>int</em>) – Number of iterations to run.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="aibs.eye_tracking.fit_ellipse.EllipseFitter.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>candidate_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#EllipseFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.EllipseFitter.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a fit on (y,x) points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>candidate_points</strong> (<em>list</em>) – List of (y,x) points that may fit on the ellipse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.ellipse_angle_of_rotation">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">ellipse_angle_of_rotation</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#ellipse_angle_of_rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.ellipse_angle_of_rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the rotation of the ellipse given the model parameters.</p>
+<p>Calculation from <a class="reference external" href="http://mathworld.wolfram.com/Ellipse.html">http://mathworld.wolfram.com/Ellipse.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Rotation of the ellipse.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.ellipse_axis_length">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">ellipse_axis_length</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#ellipse_axis_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.ellipse_axis_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the semi-axes lengths of the ellipse.</p>
+<p>Calculation from <a class="reference external" href="http://mathworld.wolfram.com/Ellipse.html">http://mathworld.wolfram.com/Ellipse.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Semi-axes of the ellipse.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.ellipse_center">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">ellipse_center</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#ellipse_center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.ellipse_center" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the center of the ellipse given the model parameters.</p>
+<p>Calculation from <a class="reference external" href="http://mathworld.wolfram.com/Ellipse.html">http://mathworld.wolfram.com/Ellipse.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[x,y] center of the ellipse.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.fit_ellipse">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">fit_ellipse</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#fit_ellipse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.fit_ellipse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit an ellipse to data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>numpy.ndarray</em>) – [n,2] array of (y,x) data points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Tuple that includes an array of conic parameters and the mean
+error of the fit.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.fit_errors">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">fit_errors</code><span class="sig-paren">(</span><em>parameters</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#fit_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.fit_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the errors on each data point.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parameters</strong> (<em>np.ndarray</em>) – Paramaters of the fit ellipse model.</li>
+<li><strong>data</strong> (<em>np.ndarray</em>) – [n,2] array of (y,x) points.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Squared error of the fit at each point in data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.not_on_ellipse">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">not_on_ellipse</code><span class="sig-paren">(</span><em>point</em>, <em>ellipse_params</em>, <em>tolerance</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#not_on_ellipse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.not_on_ellipse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that tests if a point is not on an ellipse.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>point</strong> (<em>tuple</em>) – (y, x) point.</li>
+<li><strong>ellipse_params</strong> (<em>numpy.ndarray</em>) – Ellipse parameters to check against.</li>
+<li><strong>tolerance</strong> (<em>float</em>) – Tolerance for determining point is on ellipse.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if <cite>point</cite> is not within <cite>tolerance</cite> of the ellipse.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.fit_ellipse.quadratic_parameters">
+<code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">quadratic_parameters</code><span class="sig-paren">(</span><em>conic_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#quadratic_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.quadratic_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get quadratic ellipse coefficients from conic parameters.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.frame_stream">
+<span id="aibs-eye-tracking-frame-stream-module"></span><h2>aibs.eye_tracking.frame_stream module<a class="headerlink" href="#module-aibs.eye_tracking.frame_stream" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.frame_stream.</code><code class="descname">CvInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>block_size=1</em>, <em>cache_frames=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#aibs.eye_tracking.frame_stream.FrameInputStream" title="aibs.eye_tracking.frame_stream.FrameInputStream"><code class="xref py py-class docutils literal"><span class="pre">aibs.eye_tracking.frame_stream.FrameInputStream</span></code></a></p>
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvInputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream.frame_shape">
+<code class="descname">frame_shape</code><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream.frame_shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream.load_capture_properties">
+<code class="descname">load_capture_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvInputStream.load_capture_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream.load_capture_properties" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream.num_frames">
+<code class="descname">num_frames</code><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream.num_frames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.CvInputStream.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvInputStream.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvInputStream.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aibs.eye_tracking.frame_stream.CvOutputStream">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.frame_stream.</code><code class="descname">CvOutputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>frame_shape</em>, <em>frame_rate=30.0</em>, <em>fourcc='H264'</em>, <em>is_color=True</em>, <em>block_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvOutputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvOutputStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#aibs.eye_tracking.frame_stream.FrameOutputStream" title="aibs.eye_tracking.frame_stream.FrameOutputStream"><code class="xref py py-class docutils literal"><span class="pre">aibs.eye_tracking.frame_stream.FrameOutputStream</span></code></a></p>
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.CvOutputStream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvOutputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvOutputStream.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.CvOutputStream.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>movie_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#CvOutputStream.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.CvOutputStream.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.frame_stream.</code><code class="descname">FrameInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>block_size=1</em>, <em>cache_frames=False</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameInputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream.create_images">
+<code class="descname">create_images</code><span class="sig-paren">(</span><em>output_directory</em>, <em>image_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameInputStream.create_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream.create_images" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream.frame_shape">
+<code class="descname">frame_shape</code><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream.frame_shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream.num_frames">
+<code class="descname">num_frames</code><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream.num_frames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameInputStream.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameInputStream.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameInputStream.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aibs.eye_tracking.frame_stream.FrameOutputStream">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.frame_stream.</code><code class="descname">FrameOutputStream</code><span class="sig-paren">(</span><em>block_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameOutputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameOutputStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameOutputStream.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameOutputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameOutputStream.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameOutputStream.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>movie_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameOutputStream.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameOutputStream.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.frame_stream.FrameOutputStream.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#FrameOutputStream.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.FrameOutputStream.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aibs.eye_tracking.frame_stream.ImageOutputStream">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.frame_stream.</code><code class="descname">ImageOutputStream</code><span class="sig-paren">(</span><em>block_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/frame_stream.html#ImageOutputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.frame_stream.ImageOutputStream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#aibs.eye_tracking.frame_stream.FrameOutputStream" title="aibs.eye_tracking.frame_stream.FrameOutputStream"><code class="xref py py-class docutils literal"><span class="pre">aibs.eye_tracking.frame_stream.FrameOutputStream</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.plotting">
+<span id="aibs-eye-tracking-plotting-module"></span><h2>aibs.eye_tracking.plotting module<a class="headerlink" href="#module-aibs.eye_tracking.plotting" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="aibs.eye_tracking.plotting.Annotator">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">Annotator</code><span class="sig-paren">(</span><em>output_stream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="aibs.eye_tracking.plotting.Annotator.COLORS">
+<code class="descname">COLORS</code><em class="property"> = {'cr': (0, 0, 255), 'pupil': (255, 0, 0)}</em><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.COLORS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.annotate_frame">
+<code class="descname">annotate_frame</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_cr">
+<code class="descname">annotate_with_cumulative_cr</code><span class="sig-paren">(</span><em>frame</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_with_cumulative_cr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_cr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_pupil">
+<code class="descname">annotate_with_cumulative_pupil</code><span class="sig-paren">(</span><em>frame</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_with_cumulative_pupil"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_pupil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.clear_rc">
+<code class="descname">clear_rc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.clear_rc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.clear_rc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.compute_density">
+<code class="descname">compute_density</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.compute_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.compute_density" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.initiate_cumulative_data">
+<code class="descname">initiate_cumulative_data</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.initiate_cumulative_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.initiate_cumulative_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="aibs.eye_tracking.plotting.Annotator.update_rc">
+<code class="descname">update_rc</code><span class="sig-paren">(</span><em>name</em>, <em>ellipse_parameters</em>, <em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.update_rc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.update_rc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.annotate_with_cumulative">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">annotate_with_cumulative</code><span class="sig-paren">(</span><em>frame</em>, <em>density</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#annotate_with_cumulative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.annotate_with_cumulative" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.color_by_mask">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">color_by_mask</code><span class="sig-paren">(</span><em>rgb_image</em>, <em>mask</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#color_by_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.color_by_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.color_by_points">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">color_by_points</code><span class="sig-paren">(</span><em>rgb_image</em>, <em>row_points</em>, <em>column_points</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#color_by_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.color_by_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.ellipse_perimeter_points">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">ellipse_perimeter_points</code><span class="sig-paren">(</span><em>ellipse_params</em>, <em>image_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#ellipse_perimeter_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.ellipse_perimeter_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.ellipse_points">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">ellipse_points</code><span class="sig-paren">(</span><em>ellipse_params</em>, <em>image_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#ellipse_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.ellipse_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.get_filename">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">get_filename</code><span class="sig-paren">(</span><em>output_folder</em>, <em>prefix</em>, <em>image_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#get_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.get_filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.plot_cumulative">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_cumulative</code><span class="sig-paren">(</span><em>pupil_density</em>, <em>cr_density</em>, <em>image=None</em>, <em>output_dir=None</em>, <em>show=False</em>, <em>image_type='.png'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_cumulative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_cumulative" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.plot_density">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_density</code><span class="sig-paren">(</span><em>density</em>, <em>title=None</em>, <em>filename=None</em>, <em>show=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_density" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.plot_summary">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_summary</code><span class="sig-paren">(</span><em>pupil_params</em>, <em>cr_params</em>, <em>output_dir=None</em>, <em>show=False</em>, <em>image_type='.png'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.plotting.plot_timeseries">
+<code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_timeseries</code><span class="sig-paren">(</span><em>x1</em>, <em>label1</em>, <em>x2=None</em>, <em>label2=None</em>, <em>title=None</em>, <em>filename=None</em>, <em>show=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.ransac">
+<span id="aibs-eye-tracking-ransac-module"></span><h2>aibs.eye_tracking.ransac module<a class="headerlink" href="#module-aibs.eye_tracking.ransac" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="aibs.eye_tracking.ransac.RansacFitter">
+<em class="property">class </em><code class="descclassname">aibs.eye_tracking.ransac.</code><code class="descname">RansacFitter</code><a class="reference internal" href="_modules/aibs/eye_tracking/ransac.html#RansacFitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.ransac.RansacFitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="aibs.eye_tracking.ransac.RansacFitter.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em>, <em>iterations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/ransac.html#RansacFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.ransac.RansacFitter.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a best fit to a model using ransac.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit_function</strong> (<em>callable</em>) – Method that fits a model to <cite>data</cite>.</li>
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
+subset of <cite>data</cite>. Returns array of errors, one for each
+sample.</li>
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
+inlier.</li>
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
+to consider a good fit.</li>
+<li><strong>iterations</strong> (<em>int</em>) – Number of iterations to run.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Best model parameters, or None if no good fit found.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: – If there is less data than <cite>minimum_points_for_fit</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.ransac.check_outliers">
+<code class="descclassname">aibs.eye_tracking.ransac.</code><code class="descname">check_outliers</code><span class="sig-paren">(</span><em>error_function</em>, <em>parameters</em>, <em>data</em>, <em>outlier_indices</em>, <em>threshold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/ransac.html#check_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.ransac.check_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if any outliers should be inliers based on initial fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
+subset of <cite>data</cite>. Returns array of errors, one for each
+sample.</li>
+<li><strong>parameters</strong> (<em>numpy.ndarray</em>) – Model parameters after some fit.</li>
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>outlier_indices</strong> (<em>numpy.ndarray</em>) – Index array for initial outlier guess.</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
+inlier.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Index array of new inliers.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.ransac.fit_iteration">
+<code class="descclassname">aibs.eye_tracking.ransac.</code><code class="descname">fit_iteration</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/ransac.html#fit_iteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.ransac.fit_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform one iteration of ransac model fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit_function</strong> (<em>callable</em>) – Method that fits a model to <cite>data</cite>.</li>
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
+subset of <cite>data</cite>. Returns array of errors, one for each
+sample.</li>
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
+inlier.</li>
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
+to consider a good fit.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(model parameters, model error)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.ransac.partition_candidate_indices">
+<code class="descclassname">aibs.eye_tracking.ransac.</code><code class="descname">partition_candidate_indices</code><span class="sig-paren">(</span><em>data</em>, <em>minimum_points_for_fit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/ransac.html#partition_candidate_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.ransac.partition_candidate_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generation indices to partition data into inliers/outliers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>np.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Minimum number of points required to attempt fit.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(inliers, outliers) tuple of index arrays for potential</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking.utils">
+<span id="aibs-eye-tracking-utils-module"></span><h2>aibs.eye_tracking.utils module<a class="headerlink" href="#module-aibs.eye_tracking.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="aibs.eye_tracking.utils.generate_ray_indices">
+<code class="descclassname">aibs.eye_tracking.utils.</code><code class="descname">generate_ray_indices</code><span class="sig-paren">(</span><em>index_length</em>, <em>n_rays</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/utils.html#generate_ray_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.utils.generate_ray_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate index arrays for rays emanating in a circle from a point.</p>
+<p>Rays have start point at 0,0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>index_length</strong> (<em>int</em>) – Length of each index array.</li>
+<li><strong>n_rays</strong> (<em>int</em>) – Number of rays to generate. Rays are evenly distributed about
+360 degrees.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(xs, ys) tuple of [n_rays,index_length] index matrices.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.utils.get_ray_values">
+<code class="descclassname">aibs.eye_tracking.utils.</code><code class="descname">get_ray_values</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/utils.html#get_ray_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.utils.get_ray_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get values of image along a set of rays.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xs</strong> (<em>np.ndarray</em>) – X indices of rays.</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Y indices of rays.</li>
+<li><strong>image</strong> (<em>np.ndarray</em>) – Image to get values from.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of arrays of image values along each ray.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.utils.good_coordinate_mask">
+<code class="descclassname">aibs.eye_tracking.utils.</code><code class="descname">good_coordinate_mask</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/utils.html#good_coordinate_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.utils.good_coordinate_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a coordinate mask inside <cite>shape</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xs</strong> (<em>np.ndarray</em>) – X indices.</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Y indices.</li>
+<li><strong>shape</strong> (<em>tuple</em>) – (height, width) shape of image.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Logical mask for <cite>xs</cite> and <cite>xs</cite> to ensure they are inside image.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">np.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aibs.eye_tracking.utils.rotate_rays">
+<code class="descclassname">aibs.eye_tracking.utils.</code><code class="descname">rotate_rays</code><span class="sig-paren">(</span><em>xs</em>, <em>ys</em>, <em>angles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/utils.html#rotate_rays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.utils.rotate_rays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate index arrays about angles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>xs</strong> (<em>np.ndarray</em>) – Unrotated x-index array of shape [1,n].</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Unrotated y-index array of shape [1,n].</li>
+<li><strong>angles</strong> (<em>np.adarray</em>) – Angles over which to rotate of shape [m,1].</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(xs, ys) tuple of [m,n] index matrices.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aibs.eye_tracking">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-aibs.eye_tracking" title="Permalink to this headline">¶</a></h2>
+<p>Top-level package for AIBS Eye Tracking.</p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="aibs.html" class="btn btn-neutral" title="aibs package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017. Allen Institute..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

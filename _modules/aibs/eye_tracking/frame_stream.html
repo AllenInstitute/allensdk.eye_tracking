@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>aibs.eye_tracking.frame_stream &mdash; AIBS Eye Tracking 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> AIBS Eye Tracking
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">AIBS Eye Tracking Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">aibs</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AIBS Eye Tracking</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>aibs.eye_tracking.frame_stream</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for aibs.eye_tracking.frame_stream</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">subprocess</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">scipy.misc</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+
+
+<div class="viewcode-block" id="FrameInputStream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameInputStream">[docs]</a><span class="k">class</span> <span class="nc">FrameInputStream</span><span class="p">(</span> <span class="nb">object</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie_path</span><span class="p">,</span> <span class="n">num_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">cache_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">process_frame_cb</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span> <span class="o">=</span> <span class="n">movie_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_frames</span> <span class="o">=</span> <span class="n">num_frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="n">block_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_frames</span> <span class="o">=</span> <span class="n">cache_frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_frame_cb</span> <span class="o">=</span> <span class="n">process_frame_cb</span> <span class="k">if</span> <span class="n">process_frame_cb</span> <span class="k">else</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">f</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_frames</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">frame_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span><span class="s2">&quot;frame_shape must be implemented in a &quot;</span>
+                                   <span class="s2">&quot;subclass&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FrameInputStream.open"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameInputStream.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="FrameInputStream.close"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameInputStream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read total frames </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;read incorrect number of frames: </span><span class="si">%d</span><span class="s2"> vs </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_process_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_frame_cb</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_read_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># if we&#39;re caching frames and the cache exists, return it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_frames</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_iter</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_process_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read frames </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span>
+                        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_frames</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">frame</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_frames</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frame_cache</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exc_value</span><span class="p">:</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_tb</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_error</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">exc_value</span>
+
+<div class="viewcode-block" id="FrameInputStream.create_images"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameInputStream.create_images">[docs]</a>    <span class="k">def</span> <span class="nf">create_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_directory</span><span class="p">,</span> <span class="n">image_type</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span>
+                                     <span class="s2">&quot;input_frame-</span><span class="si">%06d</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">i</span>  <span class="o">+</span> <span class="n">image_type</span><span class="p">)</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="CvInputStream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvInputStream">[docs]</a><span class="k">class</span> <span class="nc">CvInputStream</span><span class="p">(</span><span class="n">FrameInputStream</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie_path</span><span class="p">,</span> <span class="n">num_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">cache_frames</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvInputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">movie_path</span><span class="o">=</span><span class="n">movie_path</span><span class="p">,</span>
+                                            <span class="n">num_frames</span><span class="o">=</span><span class="n">num_frames</span><span class="p">,</span>
+                                            <span class="n">block_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span>
+                                            <span class="n">cache_frames</span><span class="o">=</span><span class="n">cache_frames</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_shape</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_frames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_capture_properties</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_frames</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">frame_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_capture_properties</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frame_shape</span>
+
+<div class="viewcode-block" id="CvInputStream.load_capture_properties"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvInputStream.load_capture_properties">[docs]</a>    <span class="k">def</span> <span class="nf">load_capture_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">close_after</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">close_after</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_num_frames</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_COUNT</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frame_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_HEIGHT</span><span class="p">)),</span>
+                             <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_WIDTH</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">close_after</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="CvInputStream.open"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvInputStream.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;capture is open already&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvInputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;opened capture&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CvInputStream.close"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvInputStream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvInputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_read_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;capture is not open&quot;</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">isOpened</span><span class="p">():</span>
+            <span class="n">ret</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">frame</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_read</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_frames</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FrameOutputStream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameOutputStream">[docs]</a><span class="k">class</span> <span class="nc">FrameOutputStream</span><span class="p">(</span> <span class="nb">object</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_processed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="n">block_size</span>
+
+<div class="viewcode-block" id="FrameOutputStream.open"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameOutputStream.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames_processed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span> <span class="o">=</span> <span class="n">movie_path</span></div>
+
+    <span class="k">def</span> <span class="nf">_write_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frames</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FrameOutputStream.write"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameOutputStream.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_frames</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frames_processed</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="FrameOutputStream.close"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.FrameOutputStream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_frames</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frames_processed</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block_frames</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;wrote </span><span class="si">%d</span><span class="s2"> frames&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames_processed</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exc_value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exc_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CvOutputStream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvOutputStream">[docs]</a><span class="k">class</span> <span class="nc">CvOutputStream</span><span class="p">(</span> <span class="n">FrameOutputStream</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie_path</span><span class="p">,</span> <span class="n">frame_shape</span><span class="p">,</span> <span class="n">frame_rate</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
+                 <span class="n">fourcc</span><span class="o">=</span><span class="s2">&quot;H264&quot;</span><span class="p">,</span> <span class="n">is_color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvOutputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">block_size</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_shape</span> <span class="o">=</span> <span class="n">frame_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span> <span class="o">=</span> <span class="n">movie_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fourcc</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter_fourcc</span><span class="p">(</span><span class="o">*</span><span class="n">fourcc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame_rate</span> <span class="o">=</span> <span class="n">frame_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span> <span class="o">=</span> <span class="n">is_color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CvOutputStream.open"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvOutputStream.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">movie_path</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvOutputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">movie_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;video writer is open already&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoWriter</span><span class="p">(</span><span class="n">movie_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fourcc</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">frame_rate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_shape</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">is_color</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;opened video writer&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_write_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frames</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="CvOutputStream.close"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.CvOutputStream.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CvOutputStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;video writer is closed&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;closed video writer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exc_value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">exc_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ImageOutputStream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.frame_stream.ImageOutputStream">[docs]</a><span class="k">class</span> <span class="nc">ImageOutputStream</span><span class="p">(</span> <span class="n">FrameOutputStream</span> <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">movie_path</span> <span class="o">%</span> <span class="n">i</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017. Allen Institute..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

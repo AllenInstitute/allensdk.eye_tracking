@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>aibs.eye_tracking.fit_ellipse &mdash; AIBS Eye Tracking 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> AIBS Eye Tracking
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">AIBS Eye Tracking Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">aibs</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AIBS Eye Tracking</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>aibs.eye_tracking.fit_ellipse</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for aibs.eye_tracking.fit_ellipse</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module for ellipse fitting.</span>
+
+<span class="sd">The algorithm for the actual fitting is  detailed at</span>
+<span class="sd">http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">.ransac</span> <span class="k">import</span> <span class="n">RansacFitter</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<span class="n">CONSTRAINT_MATRIX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+<span class="n">CONSTRAINT_MATRIX</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">CONSTRAINT_MATRIX</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">CONSTRAINT_MATRIX</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+
+
+<div class="viewcode-block" id="EllipseFitter"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.EllipseFitter">[docs]</a><span class="k">class</span> <span class="nc">EllipseFitter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper class for performing ransac fitting of an ellipse.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    minimum_points_for_fit : int</span>
+<span class="sd">        Number of points required to fit data.</span>
+<span class="sd">    number_of_close_points : int</span>
+<span class="sd">        Number of candidate outliers reselected as inliers required</span>
+<span class="sd">        to consider a good fit.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Error threshold below which data should be considered an</span>
+<span class="sd">        inlier.</span>
+<span class="sd">    iterations : int</span>
+<span class="sd">            Number of iterations to run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="n">number_of_close_points</span><span class="p">,</span>
+                 <span class="n">threshold</span><span class="p">,</span> <span class="n">iterations</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span> <span class="o">=</span> <span class="n">minimum_points_for_fit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span> <span class="o">=</span> <span class="n">number_of_close_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="n">iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span> <span class="o">=</span> <span class="n">RansacFitter</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EllipseFitter.fit"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.EllipseFitter.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_points</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a fit on (y,x) points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        candidate_points : list</span>
+<span class="sd">            List of (y,x) points that may fit on the ellipse.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">candidate_points</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fit_ellipse</span><span class="p">,</span> <span class="n">fit_errors</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">ellipse_center</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="n">ellipse_angle_of_rotation</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">ellipse_axis_length</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div></div>
+
+
+<div class="viewcode-block" id="fit_ellipse"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.fit_ellipse">[docs]</a><span class="k">def</span> <span class="nf">fit_ellipse</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fit an ellipse to data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        [n,2] array of (y,x) data points.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        Tuple that includes an array of conic parameters and the mean</span>
+<span class="sd">        error of the fit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))])</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">D</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">S</span><span class="p">),</span><span class="n">CONSTRAINT_MATRIX</span><span class="p">)</span>
+        <span class="n">U</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">V</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">U</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S</span><span class="p">,</span><span class="n">params</span><span class="p">))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">error</span></div>
+
+
+<div class="viewcode-block" id="fit_errors"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.fit_errors">[docs]</a><span class="k">def</span> <span class="nf">fit_errors</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the errors on each data point.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : np.ndarray</span>
+<span class="sd">        Paramaters of the fit ellipse model.</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        [n,2] array of (y,x) points.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Squared error of the fit at each point in data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))])</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span><span class="n">D</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">errors</span></div>
+
+
+<div class="viewcode-block" id="quadratic_parameters"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.quadratic_parameters">[docs]</a><span class="k">def</span> <span class="nf">quadratic_parameters</span><span class="p">(</span><span class="n">conic_parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get quadratic ellipse coefficients from conic parameters.&quot;&quot;&quot;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span></div>
+
+
+<div class="viewcode-block" id="ellipse_center"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.ellipse_center">[docs]</a><span class="k">def</span> <span class="nf">ellipse_center</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the center of the ellipse given the model parameters.</span>
+
+<span class="sd">    Calculation from http://mathworld.wolfram.com/Ellipse.html</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : numpy.ndarray</span>
+<span class="sd">        Parameters of the ellipse fit.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        [x,y] center of the ellipse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">c</span>
+    <span class="n">x0</span><span class="o">=</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">d</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">f</span><span class="p">)</span><span class="o">/</span><span class="n">num</span>
+    <span class="n">y0</span><span class="o">=</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">f</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">/</span><span class="n">num</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ellipse_angle_of_rotation"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.ellipse_angle_of_rotation">[docs]</a><span class="k">def</span> <span class="nf">ellipse_angle_of_rotation</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the rotation of the ellipse given the model parameters.</span>
+
+<span class="sd">    Calculation from http://mathworld.wolfram.com/Ellipse.html</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : numpy.ndarray</span>
+<span class="sd">        Parameters of the ellipse fit.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Rotation of the ellipse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="o">/</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ellipse_axis_length"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.ellipse_axis_length">[docs]</a><span class="k">def</span> <span class="nf">ellipse_axis_length</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the semi-axes lengths of the ellipse.</span>
+
+<span class="sd">    Calculation from http://mathworld.wolfram.com/Ellipse.html</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : numpy.ndarray</span>
+<span class="sd">        Parameters of the ellipse fit.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Semi-axes of the ellipse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">up</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">f</span><span class="o">*</span><span class="n">f</span><span class="o">+</span><span class="n">c</span><span class="o">*</span><span class="n">d</span><span class="o">*</span><span class="n">d</span><span class="o">+</span><span class="n">g</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">d</span><span class="o">*</span><span class="n">f</span><span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">c</span><span class="o">*</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">down1</span><span class="o">=</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">/</span><span class="p">((</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">)))</span><span class="o">-</span><span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="n">a</span><span class="p">))</span>
+    <span class="n">down2</span><span class="o">=</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">/</span><span class="p">((</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">)))</span><span class="o">-</span><span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="n">a</span><span class="p">))</span>
+
+    <span class="n">down1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="o">.</span><span class="mi">0000000001</span><span class="p">,</span> <span class="n">down1</span><span class="p">)</span>
+    <span class="n">down2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="o">.</span><span class="mi">0000000001</span><span class="p">,</span> <span class="n">down2</span><span class="p">)</span>
+
+    <span class="n">res1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">up</span><span class="o">/</span><span class="n">down1</span><span class="p">)</span>
+    <span class="n">res2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">up</span><span class="o">/</span><span class="n">down2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="not_on_ellipse"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.fit_ellipse.not_on_ellipse">[docs]</a><span class="k">def</span> <span class="nf">not_on_ellipse</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">ellipse_params</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function that tests if a point is not on an ellipse.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    point : tuple</span>
+<span class="sd">        (y, x) point.</span>
+<span class="sd">    ellipse_params : numpy.ndarray</span>
+<span class="sd">        Ellipse parameters to check against.</span>
+<span class="sd">    tolerance : float</span>
+<span class="sd">        Tolerance for determining point is on ellipse.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if `point` is not within `tolerance` of the ellipse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">py</span><span class="p">,</span> <span class="n">px</span> <span class="o">=</span> <span class="n">point</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">ellipse_params</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="c1"># get point in frame of unrotated ellipse at 0, 0</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="p">(</span><span class="n">px</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">py</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">ty</span> <span class="o">=</span> <span class="p">(</span><span class="n">px</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">py</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">err</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">tx</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">ty</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">err</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017. Allen Institute..
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
