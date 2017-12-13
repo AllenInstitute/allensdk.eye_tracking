@@ -14,6 +14,31 @@ def image(shape=(200,200), cr_radius=10, cr_center=(100,100),
     return im
 
 
+class InputStream(object):
+    def __init__(self, n_frames=5):
+        self.n_frames = n_frames
+
+    def __iter__(self):
+        for i in range(self.n_frames):
+            yield image()
+
+    @property
+    def num_frames(self):
+        return self.n_frames
+
+
+class OutputStream(object):
+    def __init__(self, shape):
+        self.shape = (shape[0], shape[1], 3)
+        self.closed = False
+
+    def write(self, array):
+        assert(array.shape == self.shape)
+
+    def close(self):
+        self.closed = True
+
+
 @pytest.mark.parametrize("threshold_factor,threshold_pixels,above,ray,raises",[
     (1.5, 10, True, 0, False),
     (5, 20, False, 5, False),
@@ -55,7 +80,7 @@ def test_get_candidate_points(image, seed, above):
     None,
     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
      "index_length": 100},
-    {"iterations": 200, "threshold": 1, "minimum_points_for_fit": 10,
+    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
      "number_of_close_points": 3},
     None,
     None,
@@ -93,7 +118,7 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
     None,
     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
      "index_length": 100},
-    {"iterations": 200, "threshold": 1, "minimum_points_for_fit": 10,
+    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
      "number_of_close_points": 3},
     None,
     None,
@@ -101,13 +126,23 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
     (image(),
     None,
     None,
-    {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 10,
+    {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
      "index_length": 100},
-    {"iterations": 200, "threshold": 1, "minimum_points_for_fit": 10,
+    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
      "number_of_close_points": 3},
     None,
     None,
     {"recolor_cr": False}),
+    (image(cr_center=(85,25), pupil_center=(70,100)),
+    None,
+    None,
+    {"n_rays": 20, "threshold_factor": 0, "threshold_pixels": 5,
+     "index_length": 100},
+    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+     "number_of_close_points": 3},
+    None,
+    None,
+    {"recolor_cr": False})
 ])
 def test_process_image(image, input_stream, output_stream,
                        starburst_params, ransac_params, pupil_bounding_box,
@@ -116,4 +151,68 @@ def test_process_image(image, input_stream, output_stream,
     tracker = et.EyeTracker(im_shape, input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box, **kwargs)
-    tracker.process_image(image)
+    cr, pupil = tracker.process_image(image)
+
+
+@pytest.mark.parametrize(("shape,input_stream,output_stream,"
+                          "starburst_params,ransac_params,pupil_bounding_box,"
+                          "cr_bounding_box,generate_QC_output,kwargs"), [
+    ((200,200),
+     InputStream(),
+     None,
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     False,
+     {}),
+     ((200,200),
+     InputStream(),
+     OutputStream((200,200)),
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     True,
+     {}),
+])
+def test_process_stream(shape, input_stream, output_stream, starburst_params,
+                        ransac_params, pupil_bounding_box,
+                        cr_bounding_box, generate_QC_output, kwargs):
+    tracker = et.EyeTracker(shape, input_stream, output_stream,
+                            starburst_params, ransac_params,
+                            pupil_bounding_box, cr_bounding_box,
+                            generate_QC_output, **kwargs)
+    pupil, cr = tracker.process_stream(3)
+    assert(pupil.shape == (3,5))
+    pupil, cr = tracker.process_stream()
+    assert(pupil.shape == (input_stream.num_frames,5))
+
+
+@pytest.mark.parametrize(("shape,input_stream,output_stream,"
+                          "starburst_params,ransac_params,pupil_bounding_box,"
+                          "cr_bounding_box,generate_QC_output,kwargs"), [
+    ((200,200),
+     InputStream(),
+     None,
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     False,
+     {}),
+])
+def test_mean_frame(shape, input_stream, output_stream, starburst_params,
+                    ransac_params, pupil_bounding_box,
+                    cr_bounding_box, generate_QC_output, kwargs):
+    tracker = et.EyeTracker(shape, input_stream, output_stream,
+                            starburst_params, ransac_params,
+                            pupil_bounding_box, cr_bounding_box,
+                            generate_QC_output, **kwargs)
+    assert(tracker.mean_frame.shape == shape)

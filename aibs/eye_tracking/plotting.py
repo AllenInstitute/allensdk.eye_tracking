@@ -68,7 +68,8 @@ class Annotator(object):
                                         filename)
 
     def close(self):
-        self.output_stream.close()
+        if self.output_stream is not None:
+            self.output_stream.close()
 
 
 def annotate_with_cumulative(frame, density, rgb_vals=(255,0,0),
@@ -111,8 +112,8 @@ def get_filename(output_folder, prefix, image_type):
     return None
 
 
-def plot_cumulative(pupil_density, cr_density, image=None, output_dir=None,
-                    show=False, image_type=".png"):
+def plot_cumulative(pupil_density, cr_density, output_dir=None, show=False,
+                    image_type=".png"):
     dens = np.log(1+pupil_density)
     plot_density(np.max(dens) - dens,
                  filename=get_filename(output_dir, "pupil_density",

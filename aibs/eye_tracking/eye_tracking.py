@@ -330,6 +330,8 @@ class EyeTracker(object):
         pupil_parameters : numpy.ndarray
             [x, y, r, a, b] ellipse parameters for pupil.
         """
+        if np.any(np.isnan(pupil_parameters)):
+            return
         if self.recolor_cr:
             image = self.cr_filled_image
         else:
@@ -365,7 +367,7 @@ class EyeTracker(object):
         if update_mean_frame:
             mean_frame = np.zeros(self.im_shape, dtype=np.float64)
         if n_frames is None:
-            n_frames = self.input_stream.n_frames
+            n_frames = self.input_stream.num_frames
         for i, frame in enumerate(self.input_stream):
             if update_mean_frame:
                 mean_frame += frame
