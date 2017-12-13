@@ -255,10 +255,3 @@ class CvOutputStream( FrameOutputStream ):
             self.writer.release()
             raise exc_value
         self.close()
-
-
-class ImageOutputStream( FrameOutputStream ):
-    def _write_frames(frames):
-        for i, frame in enumerate(frames):
-            file_name = self.movie_path % i
-            scipy.misc.imsave(file_name, frame)

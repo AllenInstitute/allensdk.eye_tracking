@@ -16,7 +16,7 @@ def input_stream(source):
 
 @pytest.fixture()
 def input_source(tmpdir_factory):
-    filename = tmpdir_factory.mktemp("test").join('input.avi')
+    filename = str(tmpdir_factory.mktemp("test").join('input.avi'))
     with open(filename, "w") as f:
         f.write("")
     return str(filename)
@@ -24,8 +24,8 @@ def input_source(tmpdir_factory):
 
 @pytest.fixture()
 def input_json(tmpdir_factory):
-    filename = tmpdir_factory.mktemp("test").join('input.json')
-    output_dir = tmpdir_factory.mktemp("test")
+    filename = str(tmpdir_factory.mktemp("test").join('input.json'))
+    output_dir = str(tmpdir_factory.mktemp("test"))
     in_json = ('{"starburst": { }, "ransac": { }, "eye_params": { },'
                '"qc": {"generate_plots": true, "output_dir": "%s"}, '
                '"annotation": { }, "cr_bounding_box": [], '
