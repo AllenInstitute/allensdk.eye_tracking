@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>aibs.eye_tracking.eye_tracking &mdash; AIBS Eye Tracking 0.1.0 documentation</title>
+  <title>aibs.eye_tracking.eye_tracking &mdash; AIBS Eye Tracking 0.2.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AIBS Eye Tracking 0.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.2.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.1.0
+                0.2.1
               </div>
             
           
@@ -90,7 +90,6 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">AIBS Eye Tracking Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Credits</a></li>
@@ -492,6 +491,8 @@
 <span class="sd">        pupil_parameters : numpy.ndarray</span>
 <span class="sd">            [x, y, r, a, b] ellipse parameters for pupil.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pupil_parameters</span><span class="p">)):</span>
+            <span class="k">return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recolor_cr</span><span class="p">:</span>
             <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_filled_image</span>
         <span class="k">else</span><span class="p">:</span>
@@ -527,7 +528,7 @@
         <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
             <span class="n">mean_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_frames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="o">.</span><span class="n">n_frames</span>
+            <span class="n">n_frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="o">.</span><span class="n">num_frames</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
                 <span class="n">mean_frame</span> <span class="o">+=</span> <span class="n">frame</span>
@@ -608,7 +609,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.1.0',
+            VERSION:'0.2.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
