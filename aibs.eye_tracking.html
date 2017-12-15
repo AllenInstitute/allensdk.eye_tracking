@@ -190,16 +190,16 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>im_shape</strong> (<em>tuple</em>) &#8211; (height, width) of images.</li>
-<li><strong>input_stream</strong> (<em>generator</em>) &#8211; Generator that yields numpy.ndarray frames to analyze.</li>
-<li><strong>output_stream</strong> (<em>stream</em>) &#8211; Stream that accepts numpuy.ndarrays in the write method. None if
+<li><strong>im_shape</strong> (<em>tuple</em>) – (height, width) of images.</li>
+<li><strong>input_stream</strong> (<em>generator</em>) – Generator that yields numpy.ndarray frames to analyze.</li>
+<li><strong>output_stream</strong> (<em>stream</em>) – Stream that accepts numpuy.ndarrays in the write method. None if
 not outputting annotations.</li>
-<li><strong>starburst_params</strong> (<em>dict</em>) &#8211; Dictionary of keyword arguments for <cite>PointGenerator</cite>.</li>
-<li><strong>ransac_params</strong> (<em>dict</em>) &#8211; Dictionary of keyword arguments for <cite>EllipseFitter</cite>.</li>
-<li><strong>pupil_bounding_box</strong> (<em>numpy.ndarray</em>) &#8211; [xmin xmax ymin ymax] bounding box for pupil seed point search.</li>
-<li><strong>cr_bounding_box</strong> (<em>numpy.ndarray</em>) &#8211; [xmin xmax ymin ymax] bounding box for cr seed point search.</li>
-<li><strong>generate_QC_output</strong> (<em>bool</em>) &#8211; Flag to compute extra QC data on frames.</li>
-<li><strong>**kwargs</strong> &#8211; pupil_min_value : int
+<li><strong>starburst_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>PointGenerator</cite>.</li>
+<li><strong>ransac_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>EllipseFitter</cite>.</li>
+<li><strong>pupil_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for pupil seed point search.</li>
+<li><strong>cr_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for cr seed point search.</li>
+<li><strong>generate_QC_output</strong> (<em>bool</em>) – Flag to compute extra QC data on frames.</li>
+<li><strong>**kwargs</strong> – pupil_min_value : int
 pupil_max_value : int
 cr_mask_radius : int
 pupil_mask_radius : int
@@ -218,9 +218,9 @@ recolor_cr : bool</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">[x, y, r, a, b] ellipse parameters.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>ellipse_parameters</strong> – (x, y, r, a, b) ellipse parameters.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
 </tr>
 </tbody>
 </table>
@@ -234,12 +234,12 @@ recolor_cr : bool</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) &#8211; [x, y, r, a, b] ellipse parameters of corneal reflection,
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters of corneal reflection,
 used to prepare image if <cite>recolor_cr</cite> is set.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[x, y, r, a, b] ellipse parameters.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ellipse_parameters</strong> – (x, y, r, a, b) ellipse parameters.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
 </tr>
 </tbody>
 </table>
@@ -248,17 +248,55 @@ used to prepare image if <cite>recolor_cr</cite> is set.</td>
 <dl class="attribute">
 <dt id="aibs.eye_tracking.eye_tracking.EyeTracker.mean_frame">
 <code class="descname">mean_frame</code><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.mean_frame" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Average frame calculated from the input source.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.eye_tracking.EyeTracker.process_image">
 <code class="descname">process_image</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.process_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.process_image" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process an image to find pupil and corneal reflection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>numpy.ndarray</em>) – Image to process.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) corneal reflection parameters.</li>
+<li><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) pupil parameters.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.eye_tracking.EyeTracker.process_stream">
 <code class="descname">process_stream</code><span class="sig-paren">(</span><em>n_frames=None</em>, <em>update_mean_frame=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/eye_tracking.html#EyeTracker.process_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.eye_tracking.EyeTracker.process_stream" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get cr and pupil parameters at every frame of <cite>input_stream</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_frames</strong> (<em>int</em>) – Number of frames to process. If not specified, all frames in
+the stream are processed.</li>
+<li><strong>update_mean_frame</strong> (<em>bool</em>) – Whether or not to update the mean frame while processing
+the frames.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>pupil_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of corneal reflection parameters.</li>
+<li><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of pupil parameters.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.eye_tracking.EyeTracker.recolor_corneal_reflection">
@@ -268,7 +306,7 @@ used to prepare image if <cite>recolor_cr</cite> is set.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) &#8211; [x, y, r, a, b] ellipse parameters for corneal reflection.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for corneal reflection.</td>
 </tr>
 </tbody>
 </table>
@@ -285,14 +323,14 @@ from fitting.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) &#8211; [x, y, r, a, b] ellipse parameters for corneal reflection.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for corneal reflection.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
-<li><em>numpy.ndarray</em> &#8211; Image for pupil fitting. Has corneal reflection filled in if
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image for pupil fitting. Has corneal reflection filled in if
 <cite>recolor_cr</cite> is set.</li>
-<li><em>callable</em> &#8211; Function to indicate if points fall on the recolored ellipse
+<li><strong>filter_function</strong> (<em>callable</em>) – Function to indicate if points fall on the recolored ellipse
 or None if not recoloring.</li>
-<li><em>numpy.ndarray</em> &#8211; Ellipse parameters for recolor ellipse shape, which are
+<li><strong>filter_parameters</strong> (<em>tuple</em>) – Ellipse parameters for recolor ellipse shape, which are
 <cite>cr_parameters</cite> with the axes scaled by
 <cite>cr_recolor_scale_factor</cite>.</li>
 </ul>
@@ -310,7 +348,7 @@ or None if not recoloring.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pupil_parameters</strong> (<em>numpy.ndarray</em>) &#8211; [x, y, r, a, b] ellipse parameters for pupil.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for pupil.</td>
 </tr>
 </tbody>
 </table>
@@ -330,10 +368,10 @@ checking for the first threshold crossing of each ray.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>index_length</strong> (<em>int</em>) &#8211; Initial default length for ray indices.</li>
-<li><strong>n_rays</strong> (<em>int</em>) &#8211; The number of rays to check.</li>
-<li><strong>threshold_factor</strong> (<em>float</em>) &#8211; Multiplicative factor for threshold.</li>
-<li><strong>threshold_pixels</strong> (<em>int</em>) &#8211; Number of pixels (from beginning of ray) to use to determine
+<li><strong>index_length</strong> (<em>int</em>) – Initial default length for ray indices.</li>
+<li><strong>n_rays</strong> (<em>int</em>) – The number of rays to check.</li>
+<li><strong>threshold_factor</strong> (<em>float</em>) – Multiplicative factor for threshold.</li>
+<li><strong>threshold_pixels</strong> (<em>int</em>) – Number of pixels (from beginning of ray) to use to determine
 threshold.</li>
 </ul>
 </td>
@@ -349,13 +387,13 @@ threshold.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>image</strong> (<em>np.ndarray</em>) &#8211; Image to check for threshold crossings.</li>
-<li><strong>seed_point</strong> (<em>tuple</em>) &#8211; (y, x) center point for ray burst.</li>
-<li><strong>above_threshold</strong> (<em>bool</em>) &#8211; Whether looking for transitions above or below a threshold.</li>
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image to check for threshold crossings.</li>
+<li><strong>seed_point</strong> (<em>tuple</em>) – (y, x) center point for ray burst.</li>
+<li><strong>above_threshold</strong> (<em>bool</em>) – Whether looking for transitions above or below a threshold.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of (y, x) candidate points.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>candidate_points</strong> – List of (y, x) candidate points.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
@@ -375,9 +413,9 @@ mean of the first <cite>threshold_pixels</cite> values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ray_values</strong> (<em>np.ndarray</em>) &#8211; Values of the ray.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ray_values</strong> (<em>numpy.ndarray</em>) – Values of the ray.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Threshold to set for candidate point.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>threshold</strong> – Threshold to set for candidate point.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
@@ -395,21 +433,21 @@ mean of the first <cite>threshold_pixels</cite> values.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xs</strong> (<em>np.ndarray</em>) &#8211; X indices of ray.</li>
-<li><strong>ys</strong> (<em>np.ndarray</em>) &#8211; Y indices of ray.</li>
-<li><strong>values</strong> (<em>np.ndarray</em>) &#8211; Image values along ray.</li>
-<li><strong>above_threshold</strong> (<em>bool</em>) &#8211; Whether to look for transitions above or below a threshold.</li>
+<li><strong>xs</strong> (<em>numpy.ndarray</em>) – X indices of ray.</li>
+<li><strong>ys</strong> (<em>numpy.ndarray</em>) – Y indices of ray.</li>
+<li><strong>values</strong> (<em>numpy.ndarray</em>) – Image values along ray.</li>
+<li><strong>above_threshold</strong> (<em>bool</em>) – Whether to look for transitions above or below a threshold.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
-<li><em>int</em> &#8211; Y index of threshold crossing.</li>
-<li><em>int</em> &#8211; X index of threshold crossing.</li>
+<li><strong>x_index</strong> (<em>int</em>) – Y index of threshold crossing.</li>
+<li><strong>y_index</strong> (<em>int</em>) – X index of threshold crossing.</li>
 </ul>
 </p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If no threshold crossing found.</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If no threshold crossing found.</p>
 </td>
 </tr>
 </tbody>
@@ -426,9 +464,9 @@ mean of the first <cite>threshold_pixels</cite> values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_shape</strong> (<em>tuple</em>) &#8211; (height, width) of image.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image_shape</strong> (<em>tuple</em>) – (height, width) of image.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[xmin, xmax, ymin, ymax] bounding box.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>bounding_box</strong> – [xmin, xmax, ymin, ymax] bounding box.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
@@ -448,9 +486,9 @@ mean of the first <cite>threshold_pixels</cite> values.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<em>int</em>) &#8211; Radius in pixels of the circle to draw.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<em>int</em>) – Radius in pixels of the circle to draw.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Circle mask.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>mask</strong> – Circle mask.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
@@ -471,21 +509,21 @@ of the original image.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>image</strong> (<em>numpy.ndarray</em>) &#8211; Image over which to convolve the kernel.</li>
-<li><strong>kernel</strong> (<em>numpy.ndarray</em>) &#8211; Kernel to convolve with the image.</li>
-<li><strong>bounding_box</strong> (<em>tuple</em>) &#8211; (xmin, xmax, ymin, ymax) bounding box on the image.</li>
-<li><strong>mode</strong> (<em>string</em>) &#8211; Mode to run fftconvolve with.</li>
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image over which to convolve the kernel.</li>
+<li><strong>kernel</strong> (<em>numpy.ndarray</em>) – Kernel to convolve with the image.</li>
+<li><strong>bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin, xmax, ymin, ymax] bounding box on the image.</li>
+<li><strong>mode</strong> (<em>string</em>) – Mode to run fftconvolve with.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(y, x) mean location maximum of the convolution of the kernel
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>max_position</strong> – (y, x) mean location maximum of the convolution of the kernel
 with the image.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">tuple</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If bounding box is provided but incorrectly defined.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If bounding box is provided but incorrectly defined.</p>
 </td>
 </tr>
 </tbody>
@@ -501,12 +539,12 @@ with the image.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>image</strong> (<em>numpy.ndarray</em>) &#8211; Image to transform.</li>
-<li><strong>value</strong> (<em>int</em>) &#8211; Value to make brightest in the transformed image.</li>
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image to transform.</li>
+<li><strong>value</strong> (<em>int</em>) – Value to make brightest in the transformed image.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Transformed image.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>image</strong> – Transformed image.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarry</p>
@@ -532,12 +570,12 @@ with the image.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>minimum_points_for_fit</strong> (<em>int</em>) &#8211; Number of points required to fit data.</li>
-<li><strong>number_of_close_points</strong> (<em>int</em>) &#8211; Number of candidate outliers reselected as inliers required
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
 to consider a good fit.</li>
-<li><strong>threshold</strong> (<em>float</em>) &#8211; Error threshold below which data should be considered an
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
 inlier.</li>
-<li><strong>iterations</strong> (<em>int</em>) &#8211; Number of iterations to run.</li>
+<li><strong>iterations</strong> (<em>int</em>) – Number of iterations to run.</li>
 </ul>
 </td>
 </tr>
@@ -551,9 +589,9 @@ inlier.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>candidate_points</strong> (<em>list</em>) &#8211; List of (y,x) points that may fit on the ellipse.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>candidate_points</strong> (<em>list</em>) – List of (y,x) points that may fit on the ellipse.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ellipse_parameters</strong> – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
 </tr>
@@ -572,9 +610,9 @@ inlier.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) &#8211; Parameters of the ellipse fit.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Rotation of the ellipse.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>rotation</strong> – Rotation of the ellipse.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
@@ -591,9 +629,9 @@ inlier.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) &#8211; Parameters of the ellipse fit.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Semi-axes of the ellipse.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>semi_axes</strong> – Semi-axes of the ellipse.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
@@ -610,9 +648,9 @@ inlier.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) &#8211; Parameters of the ellipse fit.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Parameters of the ellipse fit.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">[x,y] center of the ellipse.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>center</strong> – [x,y] center of the ellipse.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
@@ -628,12 +666,13 @@ inlier.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>numpy.ndarray</em>) &#8211; [n,2] array of (y,x) data points.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>numpy.ndarray</em>) – [n,2] array of (y,x) data points.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Tuple that includes an array of conic parameters and the mean
-error of the fit.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>ellipse_parameters</strong> (<em>tuple</em>) – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</li>
+<li><strong>error</strong> (<em>float</em>) – Mean error of the fit.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -648,8 +687,8 @@ error of the fit.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>parameters</strong> (<em>np.ndarray</em>) &#8211; Paramaters of the fit ellipse model.</li>
-<li><strong>data</strong> (<em>np.ndarray</em>) &#8211; [n,2] array of (y,x) points.</li>
+<li><strong>parameters</strong> (<em>numpy.ndarray</em>) – Paramaters of the fit ellipse model.</li>
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – [n,2] array of (y,x) points.</li>
 </ul>
 </td>
 </tr>
@@ -672,13 +711,13 @@ error of the fit.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>point</strong> (<em>tuple</em>) &#8211; (y, x) point.</li>
-<li><strong>ellipse_params</strong> (<em>numpy.ndarray</em>) &#8211; Ellipse parameters to check against.</li>
-<li><strong>tolerance</strong> (<em>float</em>) &#8211; Tolerance for determining point is on ellipse.</li>
+<li><strong>point</strong> (<em>tuple</em>) – (y, x) point.</li>
+<li><strong>ellipse_params</strong> (<em>numpy.ndarray</em>) – Ellipse parameters to check against.</li>
+<li><strong>tolerance</strong> (<em>float</em>) – Tolerance for determining point is on ellipse.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if <cite>point</cite> is not within <cite>tolerance</cite> of the ellipse.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>not_on</strong> – True if <cite>point</cite> is not within <cite>tolerance</cite> of the ellipse.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
@@ -692,6 +731,19 @@ error of the fit.</td>
 <dt id="aibs.eye_tracking.fit_ellipse.quadratic_parameters">
 <code class="descclassname">aibs.eye_tracking.fit_ellipse.</code><code class="descname">quadratic_parameters</code><span class="sig-paren">(</span><em>conic_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/fit_ellipse.html#quadratic_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.fit_ellipse.quadratic_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get quadratic ellipse coefficients from conic parameters.</p>
+<p>Calculation from <a class="reference external" href="http://mathworld.wolfram.com/Ellipse.html">http://mathworld.wolfram.com/Ellipse.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conic_parameters</strong> (<em>tuple</em>) – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>quadratic_parameters</strong> – Polynomial parameters for the ellipse.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -803,6 +855,16 @@ error of the fit.</td>
 <dt id="aibs.eye_tracking.plotting.Annotator">
 <em class="property">class </em><code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">Annotator</code><span class="sig-paren">(</span><em>output_stream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class for annotating frames with ellipses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>output_stream</strong> (<em>object</em>) – Object that implements a <cite>write</cite> method that accepts ndarray
+frames as well as <cite>open</cite> and <cite>close</cite> methods.</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="aibs.eye_tracking.plotting.Annotator.COLORS">
 <code class="descname">COLORS</code><em class="property"> = {'cr': (0, 0, 255), 'pupil': (255, 0, 0)}</em><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.COLORS" title="Permalink to this definition">¶</a></dt>
@@ -811,94 +873,385 @@ error of the fit.</td>
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.annotate_frame">
 <code class="descname">annotate_frame</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_frame" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Annotate an image with ellipses for cr and pupil.</p>
+<p>If the annotator was initialized with an output stream, the
+frame will be written to the stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (<em>numpy.ndarray</em>) – Grayscale image to annotate.</li>
+<li><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for pupil.</li>
+<li><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for corneal reflection.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rgb_frame</strong> – Color annotated frame.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_cr">
 <code class="descname">annotate_with_cumulative_cr</code><span class="sig-paren">(</span><em>frame</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_with_cumulative_cr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_cr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Annotate frame with all cr ellipses from the density map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (<em>numpy.ndarray</em>) – Grayscale frame to annotate.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save annotated image to, if provided.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rgb_frame</strong> – Annotated color frame.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_pupil">
 <code class="descname">annotate_with_cumulative_pupil</code><span class="sig-paren">(</span><em>frame</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.annotate_with_cumulative_pupil"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.annotate_with_cumulative_pupil" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Annotate frame with all pupil ellipses from the density map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (<em>numpy.ndarray</em>) – Grayscale frame to annotate.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save annotated image to, if provided.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rgb_frame</strong> – Annotated color frame.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.clear_rc">
 <code class="descname">clear_rc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.clear_rc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.clear_rc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Clear the cached row and column ellipse border points.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.close" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Close the output stream if it exists.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.compute_density">
 <code class="descname">compute_density</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.compute_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.compute_density" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update the density maps with from the current frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>frame</strong> (<em>numpy.ndarray</em>) – Input frame.</li>
+<li><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for pupil.</li>
+<li><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for corneal reflection.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.initiate_cumulative_data">
 <code class="descname">initiate_cumulative_data</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.initiate_cumulative_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.initiate_cumulative_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize density arrays to zeros of the correct shape.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>shape</strong> (<em>tuple</em>) – (height, width) to make the density arrays.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="aibs.eye_tracking.plotting.Annotator.update_rc">
 <code class="descname">update_rc</code><span class="sig-paren">(</span><em>name</em>, <em>ellipse_parameters</em>, <em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#Annotator.update_rc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.Annotator.update_rc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Cache new row and column ellipse border points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>string</em>) – “pupil” or “cr” to reference the correct object in the
+lookup table.</li>
+<li><strong>ellipse_parameters</strong> (<em>tuple</em>) – Conic parameters of the ellipse.</li>
+<li><strong>shape</strong> (<em>tuple</em>) – (height, width) shape of image used to generate ellipse
+border points at the right rows and columns.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cache_updated</strong> – Whether or not new values were cached.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.annotate_with_cumulative">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">annotate_with_cumulative</code><span class="sig-paren">(</span><em>frame</em>, <em>density</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#annotate_with_cumulative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.annotate_with_cumulative" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Annotate frame with all pupil ellipses from the density map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame</strong> (<em>numpy.ndarray</em>) – Grayscale frame to annotate.</li>
+<li><strong>density</strong> (<em>numpy.ndarray</em>) – Array of the same shape as frame with non-zero values
+where the image should be annotated.</li>
+<li><strong>rgb_vals</strong> (<em>tuple</em>) – (r, g, b) 0-255 color values for annotation.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save annotated image to, if provided.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rgb_frame</strong> – Annotated color frame.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.color_by_mask">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">color_by_mask</code><span class="sig-paren">(</span><em>rgb_image</em>, <em>mask</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#color_by_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.color_by_mask" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Color image at points indexed by mask.</p>
+<p>The image is recolored in-place.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rgb_image</strong> (<em>numpy.ndarray</em>) – Color image to draw into.</li>
+<li><strong>mask</strong> (<em>numpy.ndarray</em>) – Boolean mask of points to color in.</li>
+<li><strong>rgb_vals</strong> (<em>tuple</em>) – (r, g, b) 0-255 color values for annotation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.color_by_points">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">color_by_points</code><span class="sig-paren">(</span><em>rgb_image</em>, <em>row_points</em>, <em>column_points</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#color_by_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.color_by_points" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Color image at points indexed by row and column vectors.</p>
+<p>The image is recolored in-place.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rgb_image</strong> (<em>numpy.ndarray</em>) – Color image to draw into.</li>
+<li><strong>row_points</strong> (<em>numpy.ndarray</em>) – Vector of row indices to color in.</li>
+<li><strong>column_points</strong> (<em>numpy.ndarray</em>) – Vector of column indices to color in.</li>
+<li><strong>rgb_vals</strong> (<em>tuple</em>) – (r, g, b) 0-255 color values for annotation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.ellipse_perimeter_points">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">ellipse_perimeter_points</code><span class="sig-paren">(</span><em>ellipse_params</em>, <em>image_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#ellipse_perimeter_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.ellipse_perimeter_points" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generate row, column indices for ellipse perimeter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ellipse_params</strong> (<em>tuple</em>) – (x, y, r, a b) ellipse parameters.</li>
+<li><strong>image_shape</strong> (<em>tuple</em>) – (height, width) shape of image.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>row_points</strong> (<em>numpy.ndarray</em>) – Row indices for ellipse perimeter.</li>
+<li><strong>column_points</strong> (<em>numpy.ndarray</em>) – Column indices for ellipse perimeter.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.ellipse_points">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">ellipse_points</code><span class="sig-paren">(</span><em>ellipse_params</em>, <em>image_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#ellipse_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.ellipse_points" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generate row, column indices for filled ellipse.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ellipse_params</strong> (<em>tuple</em>) – (x, y, r, a b) ellipse parameters.</li>
+<li><strong>image_shape</strong> (<em>tuple</em>) – (height, width) shape of image.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>row_points</strong> (<em>numpy.ndarray</em>) – Row indices for filled ellipse.</li>
+<li><strong>column_points</strong> (<em>numpy.ndarray</em>) – Column indices for filled ellipse.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.get_filename">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">get_filename</code><span class="sig-paren">(</span><em>output_folder</em>, <em>prefix</em>, <em>image_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#get_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.get_filename" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Helper function to build image filename.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>output_folder</strong> (<em>string</em>) – Folder for images.</li>
+<li><strong>prefix</strong> (<em>string</em>) – Image filename without extension.</li>
+<li><strong>image_type</strong> (<em>string</em>) – File extension for image (e.g. ‘.png’).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>filename</strong> – Fill filename of image, or None if no output folder.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">string</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.plot_cumulative">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_cumulative</code><span class="sig-paren">(</span><em>pupil_density</em>, <em>cr_density</em>, <em>output_dir=None</em>, <em>show=False</em>, <em>image_type='.png'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_cumulative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_cumulative" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot cumulative density of ellipse fits for cr and pupil.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pupil_density</strong> (<em>numpy.ndarray</em>) – Accumulated density of pupil perimeters.</li>
+<li><strong>pupil_density</strong> – Accumulated density of cr perimeters.</li>
+<li><strong>output_dir</strong> (<em>string</em>) – Output directory to store images. Images aren’t saved if None
+is provided.</li>
+<li><strong>show</strong> (<em>bool</em>) – Whether or not to call pyplot.show() after generating both
+plots.</li>
+<li><strong>image_type</strong> (<em>string</em>) – Image extension for saving plots.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.plot_density">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_density</code><span class="sig-paren">(</span><em>density</em>, <em>title=None</em>, <em>filename=None</em>, <em>show=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_density" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot cumulative density.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>density</strong> (<em>numpy.ndarray</em>) – Accumulated 2-D density map to plot.</li>
+<li><strong>title</strong> (<em>string</em>) – Title for the plot.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save the plot to.</li>
+<li><strong>show</strong> (<em>bool</em>) – Whether or not to call pyplot.show() after generating the plot.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.plot_summary">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_summary</code><span class="sig-paren">(</span><em>pupil_params</em>, <em>cr_params</em>, <em>output_dir=None</em>, <em>show=False</em>, <em>image_type='.png'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_summary" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Plot timeseries of various pupil and cr parameters.</p>
+<p>Generates plots of pupil and cr parameters against frame number.
+The plots include (x, y) position, angle, and (semi-minor,
+semi-major) axes seperately for pupil and cr, for a total of 6
+plots.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pupil_params</strong> (<em>numpy.ndarray</em>) – Array of pupil parameters at every frame.</li>
+<li><strong>cr_params</strong> (<em>numpy.ndarray</em>) – Array of cr parameters at every frame.</li>
+<li><strong>output_dir</strong> (<em>string</em>) – Output directory for storing saved images of plots.</li>
+<li><strong>show</strong> (<em>bool</em>) – Whether or not to call pyplot.show() after generating the plots.</li>
+<li><strong>image_type</strong> (<em>string</em>) – File extension to use if saving images to <cite>output_dir</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="aibs.eye_tracking.plotting.plot_timeseries">
 <code class="descclassname">aibs.eye_tracking.plotting.</code><code class="descname">plot_timeseries</code><span class="sig-paren">(</span><em>x1</em>, <em>label1</em>, <em>x2=None</em>, <em>label2=None</em>, <em>title=None</em>, <em>filename=None</em>, <em>show=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aibs/eye_tracking/plotting.html#plot_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aibs.eye_tracking.plotting.plot_timeseries" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Helper function to plot up to 2 timeseries against index.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x1</strong> (<em>numpy.ndarray</em>) – Array of values to plot.</li>
+<li><strong>label1</strong> (<em>string</em>) – Label for <cite>x1</cite> timeseries.</li>
+<li><strong>x2</strong> (<em>numpy.ndarray</em>) – Optional second array of values to plot.</li>
+<li><strong>label2</strong> (<em>string</em>) – Label for <cite>x2</cite> timeseries.</li>
+<li><strong>title</strong> (<em>string</em>) – Title for the plot.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save the plot to.</li>
+<li><strong>show</strong> (<em>bool</em>) – Whether or not to call pyplot.show() after generating the plot.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 <div class="section" id="module-aibs.eye_tracking.ransac">
@@ -916,17 +1269,17 @@ error of the fit.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fit_function</strong> (<em>callable</em>) &#8211; Method that fits a model to <cite>data</cite>.</li>
-<li><strong>error_function</strong> (<em>callable</em>) &#8211; Function that calculates error given <cite>parameters</cite> and a
+<li><strong>fit_function</strong> (<em>callable</em>) – Method that fits a model to <cite>data</cite>.</li>
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
 subset of <cite>data</cite>. Returns array of errors, one for each
 sample.</li>
-<li><strong>data</strong> (<em>numpy.ndarray</em>) &#8211; Matrix of data points of shape (#samples, #items/sample).</li>
-<li><strong>threshold</strong> (<em>float</em>) &#8211; Error threshold below which data should be considered an
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
 inlier.</li>
-<li><strong>minimum_points_for_fit</strong> (<em>int</em>) &#8211; Number of points required to fit data.</li>
-<li><strong>number_of_close_points</strong> (<em>int</em>) &#8211; Number of candidate outliers reselected as inliers required
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
 to consider a good fit.</li>
-<li><strong>iterations</strong> (<em>int</em>) &#8211; Number of iterations to run.</li>
+<li><strong>iterations</strong> (<em>int</em>) – Number of iterations to run.</li>
 </ul>
 </td>
 </tr>
@@ -936,7 +1289,7 @@ to consider a good fit.</li>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Best model parameters, or None if no good fit found.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: &#8211; If there is less data than <cite>minimum_points_for_fit</cite>.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: – If there is less data than <cite>minimum_points_for_fit</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -954,13 +1307,13 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>error_function</strong> (<em>callable</em>) &#8211; Function that calculates error given <cite>parameters</cite> and a
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
 subset of <cite>data</cite>. Returns array of errors, one for each
 sample.</li>
-<li><strong>parameters</strong> (<em>numpy.ndarray</em>) &#8211; Model parameters after some fit.</li>
-<li><strong>data</strong> (<em>numpy.ndarray</em>) &#8211; Matrix of data points of shape (#samples, #items/sample).</li>
-<li><strong>outlier_indices</strong> (<em>numpy.ndarray</em>) &#8211; Index array for initial outlier guess.</li>
-<li><strong>threshold</strong> (<em>float</em>) &#8211; Error threshold below which data should be considered an
+<li><strong>parameters</strong> (<em>numpy.ndarray</em>) – Model parameters after some fit.</li>
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>outlier_indices</strong> (<em>numpy.ndarray</em>) – Index array for initial outlier guess.</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
 inlier.</li>
 </ul>
 </td>
@@ -984,15 +1337,15 @@ inlier.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fit_function</strong> (<em>callable</em>) &#8211; Method that fits a model to <cite>data</cite>.</li>
-<li><strong>error_function</strong> (<em>callable</em>) &#8211; Function that calculates error given <cite>parameters</cite> and a
+<li><strong>fit_function</strong> (<em>callable</em>) – Method that fits a model to <cite>data</cite>.</li>
+<li><strong>error_function</strong> (<em>callable</em>) – Function that calculates error given <cite>parameters</cite> and a
 subset of <cite>data</cite>. Returns array of errors, one for each
 sample.</li>
-<li><strong>data</strong> (<em>numpy.ndarray</em>) &#8211; Matrix of data points of shape (#samples, #items/sample).</li>
-<li><strong>threshold</strong> (<em>float</em>) &#8211; Error threshold below which data should be considered an
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>threshold</strong> (<em>float</em>) – Error threshold below which data should be considered an
 inlier.</li>
-<li><strong>minimum_points_for_fit</strong> (<em>int</em>) &#8211; Number of points required to fit data.</li>
-<li><strong>number_of_close_points</strong> (<em>int</em>) &#8211; Number of candidate outliers reselected as inliers required
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
+<li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
 to consider a good fit.</li>
 </ul>
 </td>
@@ -1016,8 +1369,8 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<em>np.ndarray</em>) &#8211; Matrix of data points of shape (#samples, #items/sample).</li>
-<li><strong>minimum_points_for_fit</strong> (<em>int</em>) &#8211; Minimum number of points required to attempt fit.</li>
+<li><strong>data</strong> (<em>np.ndarray</em>) – Matrix of data points of shape (#samples, #items/sample).</li>
+<li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Minimum number of points required to attempt fit.</li>
 </ul>
 </td>
 </tr>
@@ -1044,8 +1397,8 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>index_length</strong> (<em>int</em>) &#8211; Length of each index array.</li>
-<li><strong>n_rays</strong> (<em>int</em>) &#8211; Number of rays to generate. Rays are evenly distributed about
+<li><strong>index_length</strong> (<em>int</em>) – Length of each index array.</li>
+<li><strong>n_rays</strong> (<em>int</em>) – Number of rays to generate. Rays are evenly distributed about
 360 degrees.</li>
 </ul>
 </td>
@@ -1069,9 +1422,9 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xs</strong> (<em>np.ndarray</em>) &#8211; X indices of rays.</li>
-<li><strong>ys</strong> (<em>np.ndarray</em>) &#8211; Y indices of rays.</li>
-<li><strong>image</strong> (<em>np.ndarray</em>) &#8211; Image to get values from.</li>
+<li><strong>xs</strong> (<em>np.ndarray</em>) – X indices of rays.</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Y indices of rays.</li>
+<li><strong>image</strong> (<em>np.ndarray</em>) – Image to get values from.</li>
 </ul>
 </td>
 </tr>
@@ -1094,9 +1447,9 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xs</strong> (<em>np.ndarray</em>) &#8211; X indices.</li>
-<li><strong>ys</strong> (<em>np.ndarray</em>) &#8211; Y indices.</li>
-<li><strong>shape</strong> (<em>tuple</em>) &#8211; (height, width) shape of image.</li>
+<li><strong>xs</strong> (<em>np.ndarray</em>) – X indices.</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Y indices.</li>
+<li><strong>shape</strong> (<em>tuple</em>) – (height, width) shape of image.</li>
 </ul>
 </td>
 </tr>
@@ -1119,9 +1472,9 @@ to consider a good fit.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>xs</strong> (<em>np.ndarray</em>) &#8211; Unrotated x-index array of shape [1,n].</li>
-<li><strong>ys</strong> (<em>np.ndarray</em>) &#8211; Unrotated y-index array of shape [1,n].</li>
-<li><strong>angles</strong> (<em>np.adarray</em>) &#8211; Angles over which to rotate of shape [m,1].</li>
+<li><strong>xs</strong> (<em>np.ndarray</em>) – Unrotated x-index array of shape [1,n].</li>
+<li><strong>ys</strong> (<em>np.ndarray</em>) – Unrotated y-index array of shape [1,n].</li>
+<li><strong>angles</strong> (<em>np.adarray</em>) – Angles over which to rotate of shape [m,1].</li>
 </ul>
 </td>
 </tr>

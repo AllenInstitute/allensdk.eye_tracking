@@ -207,7 +207,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        image : np.ndarray</span>
+<span class="sd">        image : numpy.ndarray</span>
 <span class="sd">            Image to check for threshold crossings.</span>
 <span class="sd">        seed_point : tuple</span>
 <span class="sd">            (y, x) center point for ray burst.</span>
@@ -216,7 +216,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        list</span>
+<span class="sd">        candidate_points : list</span>
 <span class="sd">            List of (y, x) candidate points.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">xs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xs</span> <span class="o">+</span> <span class="n">seed_point</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -252,20 +252,20 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        xs : np.ndarray</span>
+<span class="sd">        xs : numpy.ndarray</span>
 <span class="sd">            X indices of ray.</span>
-<span class="sd">        ys : np.ndarray</span>
+<span class="sd">        ys : numpy.ndarray</span>
 <span class="sd">            Y indices of ray.</span>
-<span class="sd">        values : np.ndarray</span>
+<span class="sd">        values : numpy.ndarray</span>
 <span class="sd">            Image values along ray.</span>
 <span class="sd">        above_threshold : bool</span>
 <span class="sd">            Whether to look for transitions above or below a threshold.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        int</span>
+<span class="sd">        x_index : int</span>
 <span class="sd">            Y index of threshold crossing.</span>
-<span class="sd">        int</span>
+<span class="sd">        y_index : int</span>
 <span class="sd">            X index of threshold crossing.</span>
 
 <span class="sd">        Raises</span>
@@ -293,12 +293,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        ray_values : np.ndarray</span>
+<span class="sd">        ray_values : numpy.ndarray</span>
 <span class="sd">            Values of the ray.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        float</span>
+<span class="sd">        threshold : float</span>
 <span class="sd">            Threshold to set for candidate point.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sub_ray</span> <span class="o">=</span> <span class="n">ray_values</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span><span class="p">]</span>
@@ -377,6 +377,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mean_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Average frame calculated from the input source.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean_frame</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mean_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="n">frame_count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -391,8 +392,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters.</span>
+<span class="sd">        ellipse_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">seed_point</span> <span class="o">=</span> <span class="n">max_convolution_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span><span class="p">,</span>
                                                <span class="bp">self</span><span class="o">.</span><span class="n">cr_mask</span><span class="p">,</span>
@@ -410,18 +411,18 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        cr_parameters : numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters for corneal reflection.</span>
+<span class="sd">        cr_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters for corneal reflection.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
+<span class="sd">        image : numpy.ndarray</span>
 <span class="sd">            Image for pupil fitting. Has corneal reflection filled in if</span>
 <span class="sd">            `recolor_cr` is set.</span>
-<span class="sd">        callable</span>
+<span class="sd">        filter_function : callable</span>
 <span class="sd">            Function to indicate if points fall on the recolored ellipse</span>
 <span class="sd">            or None if not recoloring.</span>
-<span class="sd">        numpy.ndarray</span>
+<span class="sd">        filter_parameters : tuple</span>
 <span class="sd">            Ellipse parameters for recolor ellipse shape, which are</span>
 <span class="sd">            `cr_parameters` with the axes scaled by</span>
 <span class="sd">            `cr_recolor_scale_factor`.</span>
@@ -444,14 +445,14 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        cr_parameters : numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters of corneal reflection,</span>
+<span class="sd">        cr_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters of corneal reflection,</span>
 <span class="sd">            used to prepare image if `recolor_cr` is set.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters.</span>
+<span class="sd">        ellipse_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">base_image</span><span class="p">,</span> <span class="n">filter_function</span><span class="p">,</span> <span class="n">filter_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_pupil_finder</span><span class="p">(</span>
             <span class="n">cr_parameters</span><span class="p">)</span>
@@ -473,8 +474,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        cr_parameters : numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters for corneal reflection.</span>
+<span class="sd">        cr_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters for corneal reflection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cr_parameters</span>
         <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">a</span> <span class="o">+</span> <span class="mi">1</span>
@@ -488,8 +489,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        pupil_parameters : numpy.ndarray</span>
-<span class="sd">            [x, y, r, a, b] ellipse parameters for pupil.</span>
+<span class="sd">        pupil_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) ellipse parameters for pupil.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pupil_parameters</span><span class="p">)):</span>
             <span class="k">return</span>
@@ -504,6 +505,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last_pupil_color</span> <span class="o">=</span> <span class="n">value</span></div>
 
 <div class="viewcode-block" id="EyeTracker.process_image"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker.process_image">[docs]</a>    <span class="k">def</span> <span class="nf">process_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Process an image to find pupil and corneal reflection.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image : numpy.ndarray</span>
+<span class="sd">            Image to process.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cr_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) corneal reflection parameters.</span>
+<span class="sd">        pupil_parameters : tuple</span>
+<span class="sd">            (x, y, r, a, b) pupil parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_image</span> <span class="o">=</span> <span class="n">image</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span> <span class="o">=</span> <span class="n">medfilt2d</span><span class="p">(</span><span class="n">image</span><span class="p">,</span>
                                        <span class="n">kernel_size</span><span class="o">=</span><span class="n">SMOOTHING_KERNEL_SIZE</span><span class="p">)</span>
@@ -523,6 +538,24 @@
         <span class="k">return</span> <span class="n">cr_parameters</span><span class="p">,</span> <span class="n">pupil_parameters</span></div>
 
 <div class="viewcode-block" id="EyeTracker.process_stream"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker.process_stream">[docs]</a>    <span class="k">def</span> <span class="nf">process_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_mean_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get cr and pupil parameters at every frame of `input_stream`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_frames : int</span>
+<span class="sd">            Number of frames to process. If not specified, all frames in</span>
+<span class="sd">            the stream are processed.</span>
+<span class="sd">        update_mean_frame : bool</span>
+<span class="sd">            Whether or not to update the mean frame while processing</span>
+<span class="sd">            the frames.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pupil_parameters : numpy.ndarray</span>
+<span class="sd">            [n_frames,5] array of corneal reflection parameters.</span>
+<span class="sd">        cr_parameters : numpy.ndarray</span>
+<span class="sd">            [n_frames,5] array of pupil parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pupil_parameters</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cr_parameters</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
@@ -565,7 +598,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    numpy.ndarray</span>
+<span class="sd">    bounding_box : numpy.ndarray</span>
 <span class="sd">        [xmin, xmax, ymin, ymax] bounding box.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">image_shape</span>

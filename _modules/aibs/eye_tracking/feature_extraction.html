@@ -179,7 +179,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    numpy.ndarray</span>
+<span class="sd">    mask : numpy.ndarray</span>
 <span class="sd">        Circle mask.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_CIRCLE_MASKS</span>
@@ -206,7 +206,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    numpy.ndarry</span>
+<span class="sd">    image : numpy.ndarry</span>
 <span class="sd">        Transformed image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">min_at_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">-</span> <span class="n">value</span><span class="p">)</span>
@@ -228,14 +228,14 @@
 <span class="sd">        Image over which to convolve the kernel.</span>
 <span class="sd">    kernel : numpy.ndarray</span>
 <span class="sd">        Kernel to convolve with the image.</span>
-<span class="sd">    bounding_box : tuple</span>
-<span class="sd">        (xmin, xmax, ymin, ymax) bounding box on the image.</span>
+<span class="sd">    bounding_box : numpy.ndarray</span>
+<span class="sd">        [xmin, xmax, ymin, ymax] bounding box on the image.</span>
 <span class="sd">    mode : string</span>
 <span class="sd">        Mode to run fftconvolve with.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tuple</span>
+<span class="sd">    max_position : tuple</span>
 <span class="sd">        (y, x) mean location maximum of the convolution of the kernel</span>
 <span class="sd">        with the image.</span>
 
@@ -255,7 +255,7 @@
     <span class="n">conv</span> <span class="o">=</span> <span class="n">fftconvolve</span><span class="p">(</span><span class="n">cropped_image</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
     <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">conv</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">conv</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="n">ymin</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">xmin</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="n">ymin</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">xmin</span><span class="p">))</span></div>
 </pre></div>
 
            </div>
