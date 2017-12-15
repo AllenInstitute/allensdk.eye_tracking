@@ -46,7 +46,7 @@ class PointGenerator(object):
 
         Parameters
         ----------
-        image : np.ndarray
+        image : numpy.ndarray
             Image to check for threshold crossings.
         seed_point : tuple
             (y, x) center point for ray burst.
@@ -55,7 +55,7 @@ class PointGenerator(object):
 
         Returns
         -------
-        list
+        candidate_points : list
             List of (y, x) candidate points.
         """
         xs = self.xs + seed_point[1]
@@ -91,20 +91,20 @@ class PointGenerator(object):
 
         Parameters
         ----------
-        xs : np.ndarray
+        xs : numpy.ndarray
             X indices of ray.
-        ys : np.ndarray
+        ys : numpy.ndarray
             Y indices of ray.
-        values : np.ndarray
+        values : numpy.ndarray
             Image values along ray.
         above_threshold : bool
             Whether to look for transitions above or below a threshold.
 
         Returns
         -------
-        int
+        x_index : int
             Y index of threshold crossing.
-        int
+        y_index : int
             X index of threshold crossing.
 
         Raises
@@ -132,12 +132,12 @@ class PointGenerator(object):
 
         Parameters
         ----------
-        ray_values : np.ndarray
+        ray_values : numpy.ndarray
             Values of the ray.
         
         Returns
         -------
-        float
+        threshold : float
             Threshold to set for candidate point.
         """
         sub_ray = ray_values[:self.threshold_pixels]
@@ -216,6 +216,7 @@ class EyeTracker(object):
 
     @property
     def mean_frame(self):
+        """Average frame calculated from the input source."""
         if self._mean_frame is None:
             mean_frame = np.zeros(self.im_shape, dtype=np.float64)
             frame_count = 0
@@ -230,8 +231,8 @@ class EyeTracker(object):
 
         Returns
         -------
-        numpy.ndarray
-            [x, y, r, a, b] ellipse parameters.
+        ellipse_parameters : tuple
+            (x, y, r, a, b) ellipse parameters.
         """
         seed_point = max_convolution_positions(self.blurred_image,
                                                self.cr_mask,
@@ -249,18 +250,18 @@ class EyeTracker(object):
 
         Parameters
         ----------
-        cr_parameters : numpy.ndarray
-            [x, y, r, a, b] ellipse parameters for corneal reflection.
+        cr_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for corneal reflection.
 
         Returns
         -------
-        numpy.ndarray
+        image : numpy.ndarray
             Image for pupil fitting. Has corneal reflection filled in if
             `recolor_cr` is set.
-        callable
+        filter_function : callable
             Function to indicate if points fall on the recolored ellipse
             or None if not recoloring.
-        numpy.ndarray
+        filter_parameters : tuple
             Ellipse parameters for recolor ellipse shape, which are
             `cr_parameters` with the axes scaled by
             `cr_recolor_scale_factor`.
@@ -283,14 +284,14 @@ class EyeTracker(object):
 
         Parameters
         ----------
-        cr_parameters : numpy.ndarray
-            [x, y, r, a, b] ellipse parameters of corneal reflection,
+        cr_parameters : tuple
+            (x, y, r, a, b) ellipse parameters of corneal reflection,
             used to prepare image if `recolor_cr` is set.
 
         Returns
         -------
-        numpy.ndarray
-            [x, y, r, a, b] ellipse parameters.
+        ellipse_parameters : tuple
+            (x, y, r, a, b) ellipse parameters.
         """
         base_image, filter_function, filter_params = self.setup_pupil_finder(
             cr_parameters)
@@ -312,8 +313,8 @@ class EyeTracker(object):
 
         Parameters
         ----------
-        cr_parameters : numpy.ndarray
-            [x, y, r, a, b] ellipse parameters for corneal reflection.
+        cr_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for corneal reflection.
         """
         x, y, r, a, b = cr_parameters
         a = self.cr_recolor_scale_factor*a + 1
@@ -327,8 +328,8 @@ class EyeTracker(object):
 
         Parameters
         ----------
-        pupil_parameters : numpy.ndarray
-            [x, y, r, a, b] ellipse parameters for pupil.
+        pupil_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for pupil.
         """
         if np.any(np.isnan(pupil_parameters)):
             return
@@ -343,6 +344,20 @@ class EyeTracker(object):
         self.last_pupil_color = value
 
     def process_image(self, image):
+        """Process an image to find pupil and corneal reflection.
+
+        Parameters
+        ----------
+        image : numpy.ndarray
+            Image to process.
+
+        Returns
+        -------
+        cr_parameters : tuple
+            (x, y, r, a, b) corneal reflection parameters.
+        pupil_parameters : tuple
+            (x, y, r, a, b) pupil parameters.
+        """
         self.current_image = image
         self.blurred_image = medfilt2d(image,
                                        kernel_size=SMOOTHING_KERNEL_SIZE)
@@ -362,6 +377,24 @@ class EyeTracker(object):
         return cr_parameters, pupil_parameters
 
     def process_stream(self, n_frames=None, update_mean_frame=True):
+        """Get cr and pupil parameters at every frame of `input_stream`.
+
+        Parameters
+        ----------
+        n_frames : int
+            Number of frames to process. If not specified, all frames in
+            the stream are processed.
+        update_mean_frame : bool
+            Whether or not to update the mean frame while processing
+            the frames.
+
+        Returns
+        -------
+        pupil_parameters : numpy.ndarray
+            [n_frames,5] array of corneal reflection parameters.
+        cr_parameters : numpy.ndarray
+            [n_frames,5] array of pupil parameters.
+        """
         self.pupil_parameters = []
         self.cr_parameters = []
         if update_mean_frame:
@@ -404,7 +437,7 @@ def default_bounding_box(image_shape):
 
     Returns
     -------
-    numpy.ndarray
+    bounding_box : numpy.ndarray
         [xmin, xmax, ymin, ymax] bounding box.
     """
     h, w = image_shape

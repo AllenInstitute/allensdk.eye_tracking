@@ -6,6 +6,14 @@ from matplotlib import pyplot as plt
 
 
 class Annotator(object):
+    """Class for annotating frames with ellipses.
+
+    Parameters
+    ----------
+    output_stream : object
+        Object that implements a `write` method that accepts ndarray
+        frames as well as `open` and `close` methods.
+    """
     COLORS = {"cr": (0,0,255),
               "pupil": (255,0,0)}
     def __init__(self, output_stream=None):
@@ -15,17 +23,42 @@ class Annotator(object):
         self.clear_rc()
 
     def initiate_cumulative_data(self, shape):
+        """Initialize density arrays to zeros of the correct shape.
+
+        Parameters
+        ----------
+        shape : tuple
+            (height, width) to make the density arrays.
+        """
         self.densities["cr"] = np.zeros(shape, dtype=float)
         self.densities["pupil"] = np.zeros(shape, dtype=float)
 
     def clear_rc(self):
-        # reset cache for last set of calculated border points
+        """Clear the cached row and column ellipse border points."""
         self._r = {"pupil": None,
                    "cr": None}
         self._c = {"pupil": None,
                    "cr": None}
 
     def update_rc(self, name, ellipse_parameters, shape):
+        """Cache new row and column ellipse border points.
+
+        Parameters
+        ----------
+        name : string
+            "pupil" or "cr" to reference the correct object in the
+            lookup table.
+        ellipse_parameters : tuple
+            Conic parameters of the ellipse.
+        shape : tuple
+            (height, width) shape of image used to generate ellipse
+            border points at the right rows and columns.
+
+        Returns
+        -------
+        cache_updated : bool
+            Whether or not new values were cached.
+        """
         if np.any(np.isnan(ellipse_parameters)):
             return False
         if self._r[name] is None:
@@ -39,6 +72,25 @@ class Annotator(object):
                             self.COLORS[name])
 
     def annotate_frame(self, frame, pupil_parameters, cr_parameters):
+        """Annotate an image with ellipses for cr and pupil.
+
+        If the annotator was initialized with an output stream, the
+        frame will be written to the stream.
+
+        Parameters
+        ----------
+        frame : numpy.ndarray
+            Grayscale image to annotate.
+        pupil_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for pupil.
+        cr_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for corneal reflection.
+
+        Returns
+        -------
+        rgb_frame : numpy.ndarray
+            Color annotated frame.
+        """
         rgb_frame = np.dstack([frame, frame, frame])
         if not np.any(np.isnan(pupil_parameters)):
             self._annotate("pupil", rgb_frame, pupil_parameters)
@@ -54,26 +106,86 @@ class Annotator(object):
             self.densities[name][self._r[name], self._c[name]] += 1
 
     def compute_density(self, frame, pupil_parameters, cr_parameters):
+        """Update the density maps with from the current frame.
+
+        Parameters
+        ----------
+        frame : numpy.ndarray
+            Input frame.
+        pupil_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for pupil.
+        cr_parameters : tuple
+            (x, y, r, a, b) ellipse parameters for corneal reflection.
+        """
+        # TODO: rename this to update_density
         if self.densities["pupil"] is None:
             self.initiate_cumulative_data(frame.shape)
         self._density("pupil", frame, pupil_parameters)
         self._density("cr", frame, cr_parameters)
 
     def annotate_with_cumulative_pupil(self, frame, filename=None):
+        """Annotate frame with all pupil ellipses from the density map.
+
+        Parameters
+        ----------
+        frame : numpy.ndarray
+            Grayscale frame to annotate.
+        filename : string
+            Filename to save annotated image to, if provided.
+
+        Returns
+        -------
+        rgb_frame : numpy.ndarray
+            Annotated color frame.
+        """
         return annotate_with_cumulative(frame, self.densities["pupil"],
                                         (0,0,255), filename)
 
     def annotate_with_cumulative_cr(self, frame, filename=None):
+        """Annotate frame with all cr ellipses from the density map.
+
+        Parameters
+        ----------
+        frame : numpy.ndarray
+            Grayscale frame to annotate.
+        filename : string
+            Filename to save annotated image to, if provided.
+
+        Returns
+        -------
+        rgb_frame : numpy.ndarray
+            Annotated color frame.
+        """
         return annotate_with_cumulative(frame, self.densities["cr"], (255,0,0),
                                         filename)
 
     def close(self):
+        """Close the output stream if it exists."""
         if self.output_stream is not None:
             self.output_stream.close()
 
 
 def annotate_with_cumulative(frame, density, rgb_vals=(255,0,0),
                              filename=None):
+    """Annotate frame with all pupil ellipses from the density map.
+
+    Parameters
+    ----------
+    frame : numpy.ndarray
+        Grayscale frame to annotate.
+    density : numpy.ndarray
+        Array of the same shape as frame with non-zero values
+        where the image should be annotated.
+    rgb_vals : tuple
+        (r, g, b) 0-255 color values for annotation.
+    filename : string
+        Filename to save annotated image to, if provided.
+
+    Returns
+    -------
+    rgb_frame : numpy.ndarray
+        Annotated color frame.
+    """
     rgb_frame = np.dstack([frame, frame, frame])
     if density is not None:
         mask = density > 0
@@ -84,28 +196,104 @@ def annotate_with_cumulative(frame, density, rgb_vals=(255,0,0),
 
 
 def color_by_points(rgb_image, row_points, column_points, rgb_vals=(255,0,0)):
+    """Color image at points indexed by row and column vectors.
+
+    The image is recolored in-place.
+
+    Parameters
+    ----------
+    rgb_image : numpy.ndarray
+        Color image to draw into.
+    row_points : numpy.ndarray
+        Vector of row indices to color in.
+    column_points : numpy.ndarray
+        Vector of column indices to color in.
+    rgb_vals : tuple
+        (r, g, b) 0-255 color values for annotation.
+    """
     for i, value in enumerate(rgb_vals):
         rgb_image[row_points, column_points, i] = value
 
 
 def color_by_mask(rgb_image, mask, rgb_vals=(255,0,0)):
+    """Color image at points indexed by mask.
+
+    The image is recolored in-place.
+
+    Parameters
+    ----------
+    rgb_image : numpy.ndarray
+        Color image to draw into.
+    mask : numpy.ndarray
+        Boolean mask of points to color in.
+    rgb_vals : tuple
+        (r, g, b) 0-255 color values for annotation.
+    """
     for i, value in enumerate(rgb_vals):
         rgb_image[mask, i] = value
 
 
 def ellipse_points(ellipse_params, image_shape):
+    """Generate row, column indices for filled ellipse.
+
+    Parameters
+    ----------
+    ellipse_params : tuple
+        (x, y, r, a b) ellipse parameters.
+    image_shape : tuple
+        (height, width) shape of image.
+
+    Returns
+    -------
+    row_points : numpy.ndarray
+        Row indices for filled ellipse.
+    column_points : numpy.ndarray
+        Column indices for filled ellipse.
+    """
     x, y, r, a, b = ellipse_params
     r = np.radians(-r)
     return ellipse(y, x, b, a, image_shape, r)
 
 
 def ellipse_perimeter_points(ellipse_params, image_shape):
+    """Generate row, column indices for ellipse perimeter.
+
+    Parameters
+    ----------
+    ellipse_params : tuple
+        (x, y, r, a b) ellipse parameters.
+    image_shape : tuple
+        (height, width) shape of image.
+
+    Returns
+    -------
+    row_points : numpy.ndarray
+        Row indices for ellipse perimeter.
+    column_points : numpy.ndarray
+        Column indices for ellipse perimeter.
+    """
     x, y, r, a, b = ellipse_params
     r = np.radians(r)
     return ellipse_perimeter(int(y), int(x), int(b), int(a), r, image_shape)
 
 
 def get_filename(output_folder, prefix, image_type):
+    """Helper function to build image filename.
+
+    Parameters
+    ----------
+    output_folder : string
+        Folder for images.
+    prefix : string
+        Image filename without extension.
+    image_type : string
+        File extension for image (e.g. '.png').
+
+    Returns
+    -------
+    filename : string
+        Fill filename of image, or None if no output folder.
+    """
     if output_folder:
         filename = prefix + image_type
         return os.path.join(output_folder, filename)
@@ -114,6 +302,23 @@ def get_filename(output_folder, prefix, image_type):
 
 def plot_cumulative(pupil_density, cr_density, output_dir=None, show=False,
                     image_type=".png"):
+    """Plot cumulative density of ellipse fits for cr and pupil.
+
+    Parameters
+    ----------
+    pupil_density : numpy.ndarray
+        Accumulated density of pupil perimeters.
+    pupil_density : numpy.ndarray
+        Accumulated density of cr perimeters.
+    output_dir : string
+        Output directory to store images. Images aren't saved if None
+        is provided.
+    show : bool
+        Whether or not to call pyplot.show() after generating both
+        plots.
+    image_type : string
+        Image extension for saving plots.
+    """
     dens = np.log(1+pupil_density)
     plot_density(np.max(dens) - dens,
                  filename=get_filename(output_dir, "pupil_density",
@@ -130,6 +335,26 @@ def plot_cumulative(pupil_density, cr_density, output_dir=None, show=False,
 
 def plot_summary(pupil_params, cr_params, output_dir=None, show=False,
                  image_type=".png"):
+    """Plot timeseries of various pupil and cr parameters.
+
+    Generates plots of pupil and cr parameters against frame number.
+    The plots include (x, y) position, angle, and (semi-minor, 
+    semi-major) axes seperately for pupil and cr, for a total of 6
+    plots.
+
+    Parameters
+    ----------
+    pupil_params : numpy.ndarray
+        Array of pupil parameters at every frame.
+    cr_params : numpy.ndarray
+        Array of cr parameters at every frame.
+    output_dir : string
+        Output directory for storing saved images of plots.
+    show : bool
+        Whether or not to call pyplot.show() after generating the plots.
+    image_type : string
+        File extension to use if saving images to `output_dir`.
+    """
     plot_timeseries(pupil_params.T[0], "pupil x", x2=pupil_params.T[1],
                     label2="pupil y", title="pupil position",
                     filename=get_filename(output_dir, "pupil_position",
@@ -162,6 +387,25 @@ def plot_summary(pupil_params, cr_params, output_dir=None, show=False,
 
 def plot_timeseries(x1, label1, x2=None, label2=None, title=None,
                     filename=None, show=False):
+    """Helper function to plot up to 2 timeseries against index.
+
+    Parameters
+    ----------
+    x1 : numpy.ndarray
+        Array of values to plot.
+    label1 : string
+        Label for `x1` timeseries.
+    x2 : numpy.ndarray
+        Optional second array of values to plot.
+    label2 : string
+        Label for `x2` timeseries.
+    title : string
+        Title for the plot.
+    filename : string
+        Filename to save the plot to.
+    show : bool
+        Whether or not to call pyplot.show() after generating the plot.
+    """
     fig, ax = plt.subplots(1)
     ax.plot(x1, label=label1)
     if x2 is not None:
@@ -177,6 +421,19 @@ def plot_timeseries(x1, label1, x2=None, label2=None, title=None,
 
 
 def plot_density(density, title=None, filename=None, show=False):
+    """Plot cumulative density.
+
+    Parameters
+    ----------
+    density : numpy.ndarray
+        Accumulated 2-D density map to plot.
+    title : string
+        Title for the plot.
+    filename : string
+        Filename to save the plot to.
+    show : bool
+        Whether or not to call pyplot.show() after generating the plot.
+    """
     fig, ax = plt.subplots(1)
     ax.imshow(density, cmap="gray", interpolation="nearest")
     if title:

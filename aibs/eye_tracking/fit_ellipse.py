@@ -45,10 +45,10 @@ class EllipseFitter(object):
         ----------
         candidate_points : list
             List of (y,x) points that may fit on the ellipse.
-        
+
         Returns
         -------
-        tuple
+        ellipse_parameters : tuple
             (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
         """
         data = np.array(candidate_points)
@@ -59,9 +59,9 @@ class EllipseFitter(object):
             x, y = ellipse_center(params)
             angle = ellipse_angle_of_rotation(params)*180/np.pi
             ax1, ax2 = ellipse_axis_length(params)
-            return x, y, angle, ax1, ax2
+            return (x, y, angle, ax1, ax2)
         else:
-            return np.nan, np.nan, np.nan, np.nan, np.nan
+            return (np.nan, np.nan, np.nan, np.nan, np.nan)
 
 
 def fit_ellipse(data):
@@ -74,9 +74,10 @@ def fit_ellipse(data):
 
     Returns
     -------
-    tuple
-        Tuple that includes an array of conic parameters and the mean
-        error of the fit.
+    ellipse_parameters : tuple
+        (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
+    error : float
+        Mean error of the fit.
     """
     try:
         y, x = data.T
@@ -101,9 +102,9 @@ def fit_errors(parameters, data):
 
     Parameters
     ----------
-    parameters : np.ndarray
+    parameters : numpy.ndarray
         Paramaters of the fit ellipse model.
-    data : np.ndarray
+    data : numpy.ndarray
         [n,2] array of (y,x) points.
 
     Returns
@@ -119,14 +120,27 @@ def fit_errors(parameters, data):
 
 
 def quadratic_parameters(conic_parameters):
-    """Get quadratic ellipse coefficients from conic parameters."""
+    """Get quadratic ellipse coefficients from conic parameters.
+
+    Calculation from http://mathworld.wolfram.com/Ellipse.html
+
+    Parameters
+    ----------
+    conic_parameters : tuple
+        (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
+    
+    Returns
+    -------
+    quadratic_parameters : tuple
+        Polynomial parameters for the ellipse.
+    """
     a = conic_parameters[0]
     b = conic_parameters[1]/2
     c = conic_parameters[2]
     d = conic_parameters[3]/2
     f = conic_parameters[4]/2
     g = conic_parameters[5]
-    return a, b, c, d, f, g
+    return (a, b, c, d, f, g)
 
 
 def ellipse_center(parameters):
@@ -141,7 +155,7 @@ def ellipse_center(parameters):
 
     Returns
     -------
-    numpy.ndarray
+    center : numpy.ndarray
         [x,y] center of the ellipse.
     """
     a, b, c, d, f, g = quadratic_parameters(parameters)
@@ -163,7 +177,7 @@ def ellipse_angle_of_rotation(parameters):
 
     Returns
     -------
-    float
+    rotation : float
         Rotation of the ellipse.
     """
     a, b, c, d, f, g = quadratic_parameters(parameters)
@@ -182,7 +196,7 @@ def ellipse_axis_length(parameters):
 
     Returns
     -------
-    numpy.ndarray
+    semi_axes : numpy.ndarray
         Semi-axes of the ellipse.
     """
     a, b, c, d, f, g = quadratic_parameters(parameters)
@@ -212,7 +226,7 @@ def not_on_ellipse(point, ellipse_params, tolerance):
 
     Returns
     ------
-    bool
+    not_on : bool
         True if `point` is not within `tolerance` of the ellipse.
     """
     py, px = point

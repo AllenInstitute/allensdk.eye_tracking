@@ -18,7 +18,7 @@ def get_circle_mask(radius):
 
     Returns
     -------
-    numpy.ndarray
+    mask : numpy.ndarray
         Circle mask.
     """
     global _CIRCLE_MASKS
@@ -45,7 +45,7 @@ def max_image_at_value(image, value):
 
     Returns
     -------
-    numpy.ndarry
+    image : numpy.ndarry
         Transformed image.
     """
     min_at_value = np.abs(image.astype(float) - value)
@@ -67,14 +67,14 @@ def max_convolution_positions(image, kernel, bounding_box=None,
         Image over which to convolve the kernel.
     kernel : numpy.ndarray
         Kernel to convolve with the image.
-    bounding_box : tuple
-        (xmin, xmax, ymin, ymax) bounding box on the image.
+    bounding_box : numpy.ndarray
+        [xmin, xmax, ymin, ymax] bounding box on the image.
     mode : string
         Mode to run fftconvolve with.
 
     Returns
     -------
-    tuple
+    max_position : tuple
         (y, x) mean location maximum of the convolution of the kernel
         with the image.
 
@@ -94,4 +94,4 @@ def max_convolution_positions(image, kernel, bounding_box=None,
     conv = fftconvolve(cropped_image, kernel, mode=mode)
     y, x = np.where(conv==np.max(conv))
 
-    return int(np.mean(y)+ymin), int(np.mean(x)+xmin)
+    return (int(np.mean(y)+ymin), int(np.mean(x)+xmin))

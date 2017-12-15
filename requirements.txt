@@ -1,4 +1,4 @@
-argschema>=1.15.13
+argschema>=1.15.15
 numpy
 scipy
 scikit-image
