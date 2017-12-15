@@ -2,20 +2,22 @@ from argschema import ArgSchema
 from argschema.schemas import DefaultSchema
 from argschema.fields import (Nested, OutputDir, InputFile, Bool, Float, Int,
                               OutputFile, NumpyArray)
+from .eye_tracking import PointGenerator, EyeTracker
+from .fit_ellipse import EllipseFitter
 
 
 class RansacParameters(DefaultSchema):
-    minimum_points_for_fit = Int(default=10,
+    minimum_points_for_fit = Int(default=EllipseFitter.DEFAULT_MINIMUM_POINTS_FOR_FIT,
                                  description=("Number of points required to "
                                               "fit data"))
-    number_of_close_points = Int(default=4,
+    number_of_close_points = Int(default=EllipseFitter.DEFAULT_NUMBER_OF_CLOSE_POINTS,
                                  description=("Number of candidate outliers "
                                               "reselected as inliers required "
                                               "to consider a good fit"))
-    threshold = Float(default=0.0001,
+    threshold = Float(default=EllipseFitter.DEFAULT_THRESHOLD,
                       description=("Error threshold below which data should "
                                    "be considered an inlier"))
-    iterations = Int(default=10,
+    iterations = Int(default=EllipseFitter.DEFAULT_ITERATIONS,
                      description="Number of iterations to run")
 
 
@@ -26,13 +28,13 @@ class AnnotationParameters(DefaultSchema):
 
 
 class StarburstParameters(DefaultSchema):
-    index_length = Int(default=200,
+    index_length = Int(default=PointGenerator.DEFAULT_INDEX_LENGTH,
                        description="Initial default length for rays")
-    n_rays = Int(default=18,
+    n_rays = Int(default=PointGenerator.DEFAULT_N_RAYS,
                  description="Number of rays to draw")
-    threshold_factor = Float(default=1.6,
+    threshold_factor = Float(default=PointGenerator.DEFAULT_THRESHOLD_FACTOR,
                              description="Threshold factor for ellipse edges")
-    threshold_pixels = Int(default=10,
+    threshold_pixels = Int(default=PointGenerator.DEFAULT_THRESHOLD_PIXELS,
                            description=("Number of pixels from start of ray "
                                         "to use for adaptive threshold, "
                                         "also serves as a minimum cutoff for "
@@ -40,27 +42,27 @@ class StarburstParameters(DefaultSchema):
 
 
 class EyeParameters(DefaultSchema):
-    cr_recolor_scale_factor = Float(default=2.0,
+    cr_recolor_scale_factor = Float(default=EyeTracker.DEFAULT_CR_RECOLOR_SCALE_FACTOR,
                                     description=("Size multiplier for corneal "
                                                  "reflection recolor mask"))
-    min_pupil_value = Int(default=0,
+    min_pupil_value = Int(default=EyeTracker.DEFAULT_MIN_PUPIL_VALUE,
                           description=("Minimum value the average pupil shade "
                                        "can be"))
-    max_pupil_value = Int(default=30,
+    max_pupil_value = Int(default=EyeTracker.DEFAULT_MAX_PUPIL_VALUE,
                           description=("Maximum value the average pupil shade "
                                        "can be"))
-    recolor_cr = Bool(default=True,
+    recolor_cr = Bool(default=EyeTracker.DEFAULT_RECOLOR_CR,
                       description="Flag for recoloring corneal reflection")
-    pupil_mask_radius = Int(default=40,
+    pupil_mask_radius = Int(default=EyeTracker.DEFAULT_PUPIL_MASK_RADIUS,
                             description=("Radius of pupil mask used to find "
                                          "seed point"))
-    cr_mask_radius = Int(default=10,
+    cr_mask_radius = Int(default=EyeTracker.DEFAULT_CR_MASK_RADIUS,
                          description=("Radius of cr mask used to find seed "
                                      "point"))
 
 
 class QCParameters(DefaultSchema):
-    generate_plots = Bool(default=False,
+    generate_plots = Bool(default=EyeTracker.DEFAULT_GENERATE_QC_OUTPUT,
                           description=("Flag for whether or not to output QC "
                                        "plots"))
     output_dir = OutputDir(default="./qc",
@@ -75,9 +77,9 @@ class InputParameters(ArgSchema):
     input_source = InputFile(description="Path to input movie",
                              required=True)
     pupil_bounding_box = NumpyArray(dtype="int",
-                                    default=None)
+                                    default=[])
     cr_bounding_box = NumpyArray(dtype="int",
-                                 default=None)
+                                 default=[])
     ransac = Nested(RansacParameters)
     annotation = Nested(AnnotationParameters)
     starburst = Nested(StarburstParameters)
