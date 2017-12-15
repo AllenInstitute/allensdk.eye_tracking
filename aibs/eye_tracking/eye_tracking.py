@@ -9,11 +9,6 @@ from .feature_extraction import (get_circle_mask, max_image_at_value,
 from .plotting import Annotator, ellipse_points
 
 SMOOTHING_KERNEL_SIZE = 3
-DEFAULT_MIN_PUPIL_VALUE = 0
-DEFAULT_MAX_PUPIL_VALUE = 30
-DEFAULT_CR_RECOLOR_SCALE_FACTOR = 2.0
-DEFAULT_CR_MASK_RADIUS = 10
-DEFAULT_PUPIL_MASK_RADIUS = 40
 
 
 class PointGenerator(object):
@@ -34,8 +29,14 @@ class PointGenerator(object):
         Number of pixels (from beginning of ray) to use to determine
         threshold.
     """
-    def __init__(self, index_length, n_rays, threshold_factor,
-                 threshold_pixels):
+    DEFAULT_INDEX_LENGTH = 100
+    DEFAULT_N_RAYS = 20
+    DEFAULT_THRESHOLD_FACTOR = 1.6
+    DEFAULT_THRESHOLD_PIXELS = 10
+    def __init__(self, index_length=DEFAULT_INDEX_LENGTH,
+                 n_rays=DEFAULT_N_RAYS,
+                 threshold_factor=DEFAULT_THRESHOLD_FACTOR,
+                 threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
         self.xs, self.ys = generate_ray_indices(index_length, n_rays)
         self.threshold_pixels = threshold_pixels
         self.threshold_factor = threshold_factor
@@ -175,9 +176,21 @@ class EyeTracker(object):
         cr_recolor_scale_factor : float
         recolor_cr : bool
     """
-    def __init__(self, im_shape, input_stream, output_stream, starburst_params,
-                 ransac_params, pupil_bounding_box=None, cr_bounding_box=None,
-                 generate_QC_output=False, **kwargs):
+    DEFAULT_MIN_PUPIL_VALUE = 0
+    DEFAULT_MAX_PUPIL_VALUE = 30
+    DEFAULT_CR_RECOLOR_SCALE_FACTOR = 2.0
+    DEFAULT_RECOLOR_CR = True
+    DEFAULT_CR_MASK_RADIUS = 10
+    DEFAULT_PUPIL_MASK_RADIUS = 40
+    DEFAULT_GENERATE_QC_OUTPUT = False
+    def __init__(self, im_shape, input_stream, output_stream=None,
+                 starburst_params=None, ransac_params=None,
+                 pupil_bounding_box=None, cr_bounding_box=None,
+                 generate_QC_output=DEFAULT_GENERATE_QC_OUTPUT, **kwargs):
+        if starburst_params is None:
+            starburst_params = {}
+        if ransac_params is None:
+            ransac_params = {}
         self.point_generator = PointGenerator(**starburst_params)
         self.ellipse_fitter = EllipseFitter(**ransac_params)
         self.annotator = Annotator(output_stream)
@@ -202,17 +215,17 @@ class EyeTracker(object):
 
     def _init_kwargs(self, **kwargs):
         self.min_pupil_value = kwargs.get("min_pupil_value",
-                                          DEFAULT_MIN_PUPIL_VALUE)
+                                          self.DEFAULT_MIN_PUPIL_VALUE)
         self.max_pupil_value = kwargs.get("max_pupil_value",
-                                          DEFAULT_MAX_PUPIL_VALUE)
+                                          self.DEFAULT_MAX_PUPIL_VALUE)
         self.last_pupil_color = self.min_pupil_value
         self.cr_recolor_scale_factor = kwargs.get(
-            "cr_recolor_scale_factor", DEFAULT_CR_RECOLOR_SCALE_FACTOR)
-        self.recolor_cr = kwargs.get("recolor_cr", True)
+            "cr_recolor_scale_factor", self.DEFAULT_CR_RECOLOR_SCALE_FACTOR)
+        self.recolor_cr = kwargs.get("recolor_cr", self.DEFAULT_RECOLOR_CR)
         self.cr_mask = get_circle_mask(
-            kwargs.get("cr_mask_radius", DEFAULT_CR_MASK_RADIUS))
+            kwargs.get("cr_mask_radius", self.DEFAULT_CR_MASK_RADIUS))
         self.pupil_mask = get_circle_mask(
-            kwargs.get("pupil_mask_radius", DEFAULT_PUPIL_MASK_RADIUS))
+            kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
 
     @property
     def mean_frame(self):
