@@ -1,8 +1,5 @@
-import time
 import numpy as np
-from multiprocessing import Pool
 from scipy.signal import medfilt2d, fftconvolve
-from matplotlib import pyplot as plt
 
 _CIRCLE_MASKS = {}
 

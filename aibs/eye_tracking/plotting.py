@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 import logging
 import os
 import numpy as np
