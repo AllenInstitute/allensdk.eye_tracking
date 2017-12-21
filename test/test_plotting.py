@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use("Agg")
 from aibs.eye_tracking import plotting
 import mock
 import numpy as np
