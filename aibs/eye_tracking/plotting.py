@@ -1,7 +1,11 @@
-import matplotlib
-matplotlib.use("Agg")
+
 import logging
 import os
+import warnings
+import matplotlib
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    matplotlib.use("Agg")
 import numpy as np
 from skimage.draw import ellipse, ellipse_perimeter
 from matplotlib import pyplot as plt

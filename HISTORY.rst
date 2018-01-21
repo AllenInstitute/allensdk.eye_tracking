@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.2 (2018-01-20)
+------------------
+Fix matplotlib backend warning.
+Show help if required argument is missing or input command is incorrect.
+
 0.2.1 (2017-12-13)
 ------------------
 Fix bug preventing module running when number of frames was not specified.

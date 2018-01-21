@@ -4,4 +4,4 @@
 
 __author__ = """Jed Perkins"""
 __email__ = 'jedp@alleninstitute.org'
-__version__ = '0.2.1'
+__version__ = '0.2.2'

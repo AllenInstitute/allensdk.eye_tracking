@@ -1,10 +1,11 @@
 from aibs.eye_tracking import frame_stream as fs
 import numpy as np
+from skimage.draw import circle
 import mock
 import pytest
 
 DEFAULT_FRAMES = 101
-DEFAULT_CV_FRAMES = 20
+DEFAULT_CV_FRAMES = 10
 
 def frame_gen(num_frames):
     for i in range(num_frames):
@@ -19,32 +20,36 @@ def frame_iter(num_frames=None):
     return mock_iter
 
 
-@pytest.fixture
-def mock_cv():
-    mock_cv2 = mock.MagicMock()
-    mock_cv2.CAP_PROP_FRAME_COUNT = DEFAULT_CV_FRAMES
-    mock_cv2.CAP_PROP_FRAME_HEIGHT = 200
-    mock_cv2.CAP_PROP_FRAME_WIDTH = 200
-    mock_cv2.VideoWriter_fourcc = mock.MagicMock(side_effect=lambda *v: v)
-    
-    mock_capture = mock.MagicMock()
-    mock_capture.get = mock.MagicMock(side_effect=lambda v: v)
-    mock_capture.isOpened = mock.MagicMock(return_value=True)
-    mock_capture.release = mock.MagicMock()
-    mock_capture.read = mock.MagicMock(
-        return_value=(True, np.ones((200,200,3))))
+def image(shape=(200,200), cr_radius=10, cr_center=(100,100),
+          pupil_radius=30, pupil_center=(100,100)):
+    im = np.ones(shape, dtype=np.uint8)*128
+    r, c = circle(pupil_center[0], pupil_center[1], pupil_radius, shape)
+    im[r,c] = 0
+    r, c = circle(cr_center[0], cr_center[1], cr_radius, shape)
+    im[r,c] = 255
+    return im
 
-    mock_writer = mock.MagicMock()
-    mock_writer.release = mock.MagicMock()
-    mock_writer.write = mock.MagicMock()
 
-    mock_cv2.VideoCapture = mock.MagicMock(return_value=mock_capture)
-    mock_cv2.VideoWriter = mock.MagicMock(return_value=mock_writer)
-    return mock_cv2
+@pytest.fixture()
+def movie(tmpdir_factory):
+    filename = str(tmpdir_factory.mktemp("test").join('movie.avi'))
+    frame = image()
+    ostream = fs.CvOutputStream(filename, frame.shape[::-1], is_color=False)
+    ostream.open(filename)
+    for i in range(DEFAULT_CV_FRAMES):
+        ostream.write(frame)
+    ostream.close()
+    return filename
+
+
+@pytest.fixture()
+def outfile(tmpdir_factory):
+    return str(tmpdir_factory.mktemp("test").join("output.avi"))
 
 
 def test_frame_input_init():
     istream = fs.FrameInputStream("test_path")
+    istream._read_iter()
     assert(istream.movie_path == "test_path")
     assert(istream.block_size == 1)
     assert(istream.cache_frames == False)
@@ -60,6 +65,9 @@ def test_frame_input_context_manager():
                 assert(istream.movie_path == "test_path")
                 raise OSError()
             mock_tb.assert_called_once()
+    with fs.FrameInputStream("test_path") as istream:
+        istream._num_frames = 10
+        istream.frames_read = 10
 
 
 def test_frame_input_close():
@@ -82,70 +90,68 @@ def test_frame_input_iter(num_frames, block_size, cache_frames):
         n = DEFAULT_FRAMES
     else:
         n = num_frames
-    mock_iter = frame_iter(num_frames)
-    fs.FrameInputStream._read_iter = mock_iter
-    istream = fs.FrameInputStream("test_path", num_frames=num_frames,
-                                  block_size=block_size,
-                                  cache_frames=cache_frames)
-    for frame in istream:
-        assert(frame.shape == (200,200))
-    mock_iter.assert_called_once()
-    assert(istream.frames_read == n)
-    if cache_frames:
-        assert(len(istream.frame_cache) == n)
+    patch_path = "aibs.eye_tracking.frame_stream.FrameInputStream._read_iter"
+    with mock.patch(patch_path, frame_iter(num_frames)) as mock_iter:
+        istream = fs.FrameInputStream("test_path", num_frames=num_frames,
+                                    block_size=block_size,
+                                    cache_frames=cache_frames)
         for frame in istream:
             assert(frame.shape == (200,200))
+        mock_iter.assert_called_once()
+        assert(istream.frames_read == n)
+        if cache_frames:
+            assert(len(istream.frame_cache) == n)
+            for frame in istream:
+                assert(frame.shape == (200,200))
 
 
 def test_frame_input_create_images():
-    mock_iter = frame_iter()
-    fs.FrameInputStream._read_iter = mock_iter
-    istream = fs.FrameInputStream("test_path")
-    with mock.patch.object(fs.scipy.misc, "imsave") as mock_imsave:
-        istream.create_images("test", "png")
-        assert(mock_imsave.call_count == DEFAULT_FRAMES)
+    patch_path = "aibs.eye_tracking.frame_stream.FrameInputStream._read_iter"
+    with mock.patch(patch_path, frame_iter()):
+        istream = fs.FrameInputStream("test_path")
+        with mock.patch.object(fs.scipy.misc, "imsave") as mock_imsave:
+            istream.create_images("test", "png")
+            assert(mock_imsave.call_count == DEFAULT_FRAMES)
 
 
-def test_cv_input_num_frames(mock_cv):
-    fs.cv2 = mock_cv
-    istream = fs.CvInputStream("test")
+def test_cv_input_num_frames(movie):
+    istream = fs.CvInputStream(movie)
     assert(istream.num_frames == DEFAULT_CV_FRAMES)
 
 
-def test_cv_input_frame_shape(mock_cv):
-    fs.cv2 = mock_cv
-    istream = fs.CvInputStream("test")
+def test_cv_input_frame_shape(movie):
+    istream = fs.CvInputStream(movie)
     assert(istream.frame_shape == (200,200))
+    assert(istream.frame_shape == (200,200)) # using cached value
 
 
-def test_cv_input_open(mock_cv):
-    fs.cv2 = mock_cv
-    istream = fs.CvInputStream("test")
+def test_cv_input_open(movie):
+    istream = fs.CvInputStream(movie)
     istream.open()
     with pytest.raises(IOError):
         istream.open()
-        mock_cv.VideoCapture.assert_called_once_with("test")
+    istream._error()
+    assert(istream.cap is None)
 
 
-def test_cv_input_close(mock_cv):
-    fs.cv2 = mock_cv
-    istream = fs.CvInputStream("test")
+def test_cv_input_close(movie):
+    istream = fs.CvInputStream(movie)
     istream.close()
     istream.open()
     with pytest.raises(IOError):
         istream.close()
-    mock_cv.VideoCapture.assert_called_with("test")
 
 
-def test_cv_input_iter(mock_cv):
-    fs.cv2 = mock_cv
-    istream = fs.CvInputStream("test")
+def test_cv_input_iter(movie):
+    istream = fs.CvInputStream(movie)
     with pytest.raises(IOError):
         r = istream._read_iter()
         next(r)
+    count = 0
     for frame in istream:
         assert(frame.shape == (200,200))
-    assert(mock_cv.VideoCapture().read.call_count == DEFAULT_CV_FRAMES)
+        count += 1
+    assert(count == DEFAULT_CV_FRAMES)
 
 
 def test_frame_output_init():
@@ -189,34 +195,28 @@ def test_frame_output_write():
         ostream.write(1)
 
 
-def test_cv_output_open(mock_cv):
-    fs.cv2 = mock_cv
-    ostream = fs.CvOutputStream("test", (200,200))
-    ostream.open("test2")
-    assert(ostream.movie_path  == "test2")
+def test_cv_output_open(outfile):
+    ostream = fs.CvOutputStream(outfile, (200,200))
+    ostream.open(outfile)
+    assert(ostream.movie_path  == outfile)
     with pytest.raises(IOError):
-        ostream.open("test3")
+        ostream.open(outfile)
 
 
-def test_cv_output_context_manager(mock_cv):
-    fs.cv2 = mock_cv
+def test_cv_output_context_manager(outfile):
     with pytest.raises(IOError):
-        with fs.CvOutputStream("test", (200,200)) as ostream:
+        with fs.CvOutputStream(outfile, (200,200)) as ostream:
             pass
-    with pytest.raises(IOError):
-        with fs.CvOutputStream("test", (200,200)) as ostream:
-            ostream.open("test")
-            raise(IOError)
-        mock_cv.VideoWriter().release.assert_called_once()
-    with fs.CvOutputStream("test", (200,200)) as ostream:
-        ostream.open("test")
-    assert(mock_cv.VideoWriter().release.call_count == 2)
-    assert(mock_cv.VideoWriter_fourcc.call_count == 3)
+    with pytest.raises(OSError):
+        with fs.CvOutputStream(outfile, (200,200)) as ostream:
+            ostream.open(outfile)
+            ostream.open(outfile)
 
 
-def test_cv_output_write(mock_cv):
-    fs.cv2 = mock_cv
-    ostream = fs.CvOutputStream("test", (200,200))
-    ostream.write(1)
-    ostream.write(2)
-    assert(mock_cv.VideoWriter().write.call_count == 2)
+def test_cv_output_write(outfile):
+    ostream = fs.CvOutputStream(outfile, (200,200), is_color=False)
+    ostream.write(image())
+    ostream.write(image())
+    ostream.close()
+    check = fs.CvInputStream(outfile)
+    assert(check.num_frames == 2)
