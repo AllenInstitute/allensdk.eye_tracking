@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; AIBS Eye Tracking 0.2.1 documentation</title>
+  <title>Usage &mdash; AIBS Eye Tracking 0.2.2 documentation</title>
   
 
   
@@ -35,9 +35,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AIBS Eye Tracking 0.2.1 documentation" href="index.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.2.2 documentation" href="index.html"/>
         <link rel="next" title="Credits" href="authors.html"/>
-        <link rel="prev" title="AIBS Eye Tracking Installation" href="installation.html"/> 
+        <link rel="prev" title="Installation" href="installation.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                0.2.1
+                0.2.2
               </div>
             
           
@@ -91,7 +91,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">AIBS Eye Tracking Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
@@ -161,10 +161,22 @@
             
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<p>To use AIBS Eye Tracking in a project:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">aibs.eye_tracking</span>
+<p>After installing the package, and entry point is created so it can be run
+from the command line. To minimally run with the default settings:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aibs</span><span class="o">.</span><span class="n">eye_tracking</span> <span class="o">--</span><span class="n">input_source</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">an</span> <span class="n">video</span><span class="o">&gt;</span>
 </pre></div>
 </div>
+<p>To see all options that can be set at the command line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aibs</span><span class="o">.</span><span class="n">eye_tracking</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<p>There are a lot of options that can be set, so often it can be more
+convenient to store them in a JSON-formatted file which can be used like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aibs</span><span class="o">.</span><span class="n">eye_tracking</span> <span class="o">--</span><span class="n">input_json</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">json</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The input json can be combined with other command line argument, which will
+take precedence over anything in the json.</p>
 </div>
 
 
@@ -180,7 +192,7 @@
         <a href="authors.html" class="btn btn-neutral float-right" title="Credits" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installation.html" class="btn btn-neutral" title="AIBS Eye Tracking Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -189,7 +201,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017. Allen Institute..
+        &copy; Copyright 2018. Allen Institute..
 
     </p>
   </div>
@@ -211,7 +223,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.2.1',
+            VERSION:'0.2.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AIBS Eye Tracking Installation &mdash; AIBS Eye Tracking 0.2.1 documentation</title>
+  <title>Installation &mdash; AIBS Eye Tracking 0.2.2 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AIBS Eye Tracking 0.2.1 documentation" href="index.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.2.2 documentation" href="index.html"/>
         <link rel="next" title="Usage" href="usage.html"/>
         <link rel="prev" title="AIBS Eye Tracking documentation" href="index.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                0.2.1
+                0.2.2
               </div>
             
           
@@ -91,7 +91,7 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">AIBS Eye Tracking Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
@@ -140,7 +140,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>AIBS Eye Tracking Installation</li>
+      <li>Installation</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -159,10 +159,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="aibs-eye-tracking-installation">
-<h1>AIBS Eye Tracking Installation<a class="headerlink" href="#aibs-eye-tracking-installation" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-console"><div class="highlight"><pre><span></span><span class="gp">$</span> git clone https://github.com/AllenInstitute/aibs.eye_tracking.git
-<span class="gp">$</span> pip install .
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The video IO is done using OpenCV’s video functionality. Unfortunately,
+OpenCV on pip seems to not be built with the necessary backend, as the
+methods fail silently. As a result, we have not included OpenCV in the
+requirements and it is necessary to get it seperately, built with the
+video capture and writing functional. The simplest way to accomplish
+that is to use conda:</p>
+<blockquote>
+<div>conda install -c conda-forge opencv</div></blockquote>
+<p>The rest of the dependencies are all in the requirements, so to install
+just clone or download the repository and then from inside the top
+level directory either run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 </div>
@@ -189,7 +203,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017. Allen Institute..
+        &copy; Copyright 2018. Allen Institute..
 
     </p>
   </div>
@@ -211,7 +225,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.2.1',
+            VERSION:'0.2.2',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
