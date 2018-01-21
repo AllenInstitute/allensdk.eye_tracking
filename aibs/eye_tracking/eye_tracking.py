@@ -33,6 +33,7 @@ class PointGenerator(object):
     DEFAULT_N_RAYS = 20
     DEFAULT_THRESHOLD_FACTOR = 1.6
     DEFAULT_THRESHOLD_PIXELS = 10
+
     def __init__(self, index_length=DEFAULT_INDEX_LENGTH,
                  n_rays=DEFAULT_N_RAYS,
                  threshold_factor=DEFAULT_THRESHOLD_FACTOR,
@@ -135,7 +136,7 @@ class PointGenerator(object):
         ----------
         ray_values : numpy.ndarray
             Values of the ray.
-        
+
         Returns
         -------
         threshold : float
@@ -148,7 +149,7 @@ class PointGenerator(object):
 
 class EyeTracker(object):
     """Mouse Eye-Tracker.
-    
+
     Parameters
     ----------
     im_shape : tuple
@@ -183,6 +184,7 @@ class EyeTracker(object):
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
+
     def __init__(self, im_shape, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
                  pupil_bounding_box=None, cr_bounding_box=None,
@@ -315,7 +317,7 @@ class EyeTracker(object):
                                                self.pupil_bounding_box)
         x, y, r, a, b = cr_parameters
         filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
-                          self.cr_recolor_scale_factor*b)
+                         self.cr_recolor_scale_factor*b)
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, True, filter_function=filter_function,
             filter_args=(filter_params, 2))
@@ -334,7 +336,7 @@ class EyeTracker(object):
         b = self.cr_recolor_scale_factor*b + 1
         r, c = ellipse_points((x, y, r, a, b), self.im_shape)
         self.cr_filled_image = self.blurred_image.copy()
-        self.cr_filled_image[r,c] = self.last_pupil_color
+        self.cr_filled_image[r, c] = self.last_pupil_color
 
     def update_last_pupil_color(self, pupil_parameters):
         """Update last pupil color with mean of fit.

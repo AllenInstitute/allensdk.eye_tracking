@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 
 
-def image(shape=(200,200), cr_radius=10, cr_center=(100,100),
-          pupil_radius=30, pupil_center=(100,100)):
+def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
+          pupil_radius=30, pupil_center=(100, 100)):
     im = np.ones(shape, dtype=np.uint8)*128
     r, c = circle(pupil_center[0], pupil_center[1], pupil_radius, shape)
-    im[r,c] = 0
+    im[r, c] = 0
     r, c = circle(cr_center[0], cr_center[1], cr_radius, shape)
-    im[r,c] = 255
+    im[r, c] = 255
     return im
 
 
@@ -39,7 +39,8 @@ class OutputStream(object):
         self.closed = True
 
 
-@pytest.mark.parametrize("threshold_factor,threshold_pixels,above,ray,raises",[
+@pytest.mark.parametrize(("threshold_factor,threshold_pixels,above,ray,"
+                         "raises"), [
     (1.5, 10, True, 0, False),
     (5, 20, False, 5, False),
     (3, 40, True, 0, True)
@@ -64,27 +65,27 @@ def test_threshold_crossing(threshold_factor, threshold_pixels, above,
 
 
 @pytest.mark.parametrize("image,seed,above", [
-    (image(), (100,100), True),
-    (image(), (100,100), False)
+    (image(), (100, 100), True),
+    (image(), (100, 100), False)
 ])
 def test_get_candidate_points(image, seed, above):
     pg = et.PointGenerator(100, 10, 1, 10)
-    points = pg.get_candidate_points(image, seed, above)
+    pg.get_candidate_points(image, seed, above)
 
 
 @pytest.mark.parametrize(("im_shape,input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,kwargs"), [
-    ((200,200),
-    None,
-    None,
-    {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
-     "index_length": 100},
-    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
-     "number_of_close_points": 3},
-    None,
-    None,
-    {})
+    ((200, 200),
+     None,
+     None,
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {})
 ])
 def test_eye_tracker_init(im_shape, input_stream, output_stream,
                           starburst_params, ransac_params, pupil_bounding_box,
@@ -114,35 +115,35 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,kwargs"), [
     (image(),
-    None,
-    None,
-    {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
-     "index_length": 100},
-    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
-     "number_of_close_points": 3},
-    None,
-    None,
-    {}),
+     None,
+     None,
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {}),
     (image(),
-    None,
-    None,
-    {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
-     "index_length": 100},
-    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
-     "number_of_close_points": 3},
-    None,
-    None,
-    {"recolor_cr": False}),
-    (image(cr_center=(85,25), pupil_center=(70,100)),
-    None,
-    None,
-    {"n_rays": 20, "threshold_factor": 0, "threshold_pixels": 5,
-     "index_length": 100},
-    {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
-     "number_of_close_points": 3},
-    None,
-    None,
-    {"recolor_cr": False})
+     None,
+     None,
+     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {"recolor_cr": False}),
+    (image(cr_center=(85, 25), pupil_center=(70, 100)),
+     None,
+     None,
+     {"n_rays": 20, "threshold_factor": 0, "threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {"recolor_cr": False})
 ])
 def test_process_image(image, input_stream, output_stream,
                        starburst_params, ransac_params, pupil_bounding_box,
@@ -157,7 +158,7 @@ def test_process_image(image, input_stream, output_stream,
 @pytest.mark.parametrize(("shape,input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,generate_QC_output,kwargs"), [
-    ((200,200),
+    ((200, 200),
      InputStream(),
      None,
      {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
@@ -168,9 +169,9 @@ def test_process_image(image, input_stream, output_stream,
      None,
      False,
      {}),
-     ((200,200),
+    ((200, 200),
      InputStream(),
-     OutputStream((200,200)),
+     OutputStream((200, 200)),
      {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
@@ -188,15 +189,15 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
                             pupil_bounding_box, cr_bounding_box,
                             generate_QC_output, **kwargs)
     pupil, cr = tracker.process_stream(3)
-    assert(pupil.shape == (3,5))
+    assert(pupil.shape == (3, 5))
     pupil, cr = tracker.process_stream()
-    assert(pupil.shape == (input_stream.num_frames,5))
+    assert(pupil.shape == (input_stream.num_frames, 5))
 
 
 @pytest.mark.parametrize(("shape,input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,generate_QC_output,kwargs"), [
-    ((200,200),
+    ((200, 200),
      InputStream(),
      None,
      {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,

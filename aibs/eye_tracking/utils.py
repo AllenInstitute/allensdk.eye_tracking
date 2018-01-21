@@ -1,8 +1,4 @@
 import numpy as np
-from scipy.signal import correlate2d
-from scipy.signal import fftconvolve
-from scipy.ndimage.filters import sobel
-import logging
 
 
 def good_coordinate_mask(xs, ys, shape):
@@ -48,7 +44,7 @@ def get_ray_values(xs, ys, image):
         mask = good_coordinate_mask(xs[i], ys[i], image.shape)
         xm = xs[i][mask]
         ym = ys[i][mask]
-        ray_values.append(image[ym,xm])
+        ray_values.append(image[ym, xm])
 
     return ray_values
 

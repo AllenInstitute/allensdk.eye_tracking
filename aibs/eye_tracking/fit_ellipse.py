@@ -8,10 +8,10 @@ from .ransac import RansacFitter
 import logging
 
 
-CONSTRAINT_MATRIX = np.zeros([6,6])
-CONSTRAINT_MATRIX[0,2]= 2.0
-CONSTRAINT_MATRIX[2,0]= 2.0
-CONSTRAINT_MATRIX[1,1]= -1.0
+CONSTRAINT_MATRIX = np.zeros([6, 6])
+CONSTRAINT_MATRIX[0, 2] = 2.0
+CONSTRAINT_MATRIX[2, 0] = 2.0
+CONSTRAINT_MATRIX[1, 1] = -1.0
 
 
 class EllipseFitter(object):
@@ -34,6 +34,7 @@ class EllipseFitter(object):
     DEFAULT_NUMBER_OF_CLOSE_POINTS = 4
     DEFAULT_THRESHOLD = 0.0001
     DEFAULT_ITERATIONS = 10
+
     def __init__(self, minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
                  number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
                  threshold=DEFAULT_THRESHOLD, iterations=DEFAULT_ITERATIONS):
@@ -90,12 +91,13 @@ def fit_ellipse(data):
         D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
         S = np.dot(D, D.T)
 
-        M = np.dot(np.linalg.inv(S),CONSTRAINT_MATRIX)
-        U,s,V=np.linalg.svd(M)
+        M = np.dot(np.linalg.inv(S), CONSTRAINT_MATRIX)
+        U, s, V = np.linalg.svd(M)
 
         params = U.T[0]
-        error = np.dot(params, np.dot(S,params))/len(y)
-    except:
+        error = np.dot(params, np.dot(S, params))/len(y)
+    except Exception as e:
+        logging.debug(e)  # figure out which exception this is catching
         params = None
         error = np.inf
 
@@ -119,7 +121,7 @@ def fit_errors(parameters, data):
     """
     y, x = data.T
     D = np.vstack([x*x, x*y, y*y, x, y, np.ones(len(y))])
-    errors = (np.dot(parameters,D))**2
+    errors = (np.dot(parameters, D))**2
 
     return errors
 
@@ -133,7 +135,7 @@ def quadratic_parameters(conic_parameters):
     ----------
     conic_parameters : tuple
         (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
-    
+
     Returns
     -------
     quadratic_parameters : tuple
@@ -165,9 +167,9 @@ def ellipse_center(parameters):
     """
     a, b, c, d, f, g = quadratic_parameters(parameters)
     num = b*b-a*c
-    x0=(c*d-b*f)/num
-    y0=(a*f-b*d)/num
-    return np.array([x0,y0])
+    x0 = (c*d-b*f)/num
+    y0 = (a*f-b*d)/num
+    return np.array([x0, y0])
 
 
 def ellipse_angle_of_rotation(parameters):
@@ -206,20 +208,20 @@ def ellipse_axis_length(parameters):
     """
     a, b, c, d, f, g = quadratic_parameters(parameters)
     up = 2*(a*f*f+c*d*d+g*b*b-2*b*d*f-a*c*g)
-    down1=(b*b-a*c)*( (c-a)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
-    down2=(b*b-a*c)*( (a-c)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
+    down1 = (b*b-a*c)*((c-a)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
+    down2 = (b*b-a*c)*((a-c)*np.sqrt(1+4*b*b/((a-c)*(a-c)))-(c+a))
 
     down1 = min(.0000000001, down1)
     down2 = min(.0000000001, down2)
 
-    res1=np.sqrt(up/down1)
-    res2=np.sqrt(up/down2)
+    res1 = np.sqrt(up/down1)
+    res2 = np.sqrt(up/down2)
     return np.array([res1, res2])
 
 
 def not_on_ellipse(point, ellipse_params, tolerance):
     """Function that tests if a point is not on an ellipse.
-    
+
     Parameters
     ----------
     point : tuple
@@ -240,7 +242,7 @@ def not_on_ellipse(point, ellipse_params, tolerance):
     # get point in frame of unrotated ellipse at 0, 0
     tx = (px - x)*np.cos(-r) - (py-y)*np.sin(-r)
     ty = (px - x)*np.sin(-r) + (py-y)*np.cos(-r)
-    err =  np.abs((tx**2 / a**2) + (ty**2 / b**2) - 1)
+    err = np.abs((tx**2 / a**2) + (ty**2 / b**2) - 1)
     if err < tolerance:
         return False
     return True

@@ -1,14 +1,12 @@
-
-import logging
 import os
 import warnings
+import numpy as np
+from skimage.draw import ellipse, ellipse_perimeter
 import matplotlib
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     matplotlib.use("Agg")
-import numpy as np
-from skimage.draw import ellipse, ellipse_perimeter
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # noqa: E402
 
 
 class Annotator(object):
@@ -20,8 +18,9 @@ class Annotator(object):
         Object that implements a `write` method that accepts ndarray
         frames as well as `open` and `close` methods.
     """
-    COLORS = {"cr": (0,0,255),
-              "pupil": (255,0,0)}
+    COLORS = {"cr": (0, 0, 255),
+              "pupil": (255, 0, 0)}
+
     def __init__(self, output_stream=None):
         self.output_stream = output_stream
         self.densities = {"pupil": None,
@@ -145,7 +144,7 @@ class Annotator(object):
             Annotated color frame.
         """
         return annotate_with_cumulative(frame, self.densities["pupil"],
-                                        (0,0,255), filename)
+                                        (0, 0, 255), filename)
 
     def annotate_with_cumulative_cr(self, frame, filename=None):
         """Annotate frame with all cr ellipses from the density map.
@@ -162,8 +161,8 @@ class Annotator(object):
         rgb_frame : numpy.ndarray
             Annotated color frame.
         """
-        return annotate_with_cumulative(frame, self.densities["cr"], (255,0,0),
-                                        filename)
+        return annotate_with_cumulative(frame, self.densities["cr"],
+                                        (255, 0, 0), filename)
 
     def close(self):
         """Close the output stream if it exists."""
@@ -171,7 +170,7 @@ class Annotator(object):
             self.output_stream.close()
 
 
-def annotate_with_cumulative(frame, density, rgb_vals=(255,0,0),
+def annotate_with_cumulative(frame, density, rgb_vals=(255, 0, 0),
                              filename=None):
     """Annotate frame with all pupil ellipses from the density map.
 
@@ -201,7 +200,8 @@ def annotate_with_cumulative(frame, density, rgb_vals=(255,0,0),
     return rgb_frame
 
 
-def color_by_points(rgb_image, row_points, column_points, rgb_vals=(255,0,0)):
+def color_by_points(rgb_image, row_points, column_points,
+                    rgb_vals=(255, 0, 0)):
     """Color image at points indexed by row and column vectors.
 
     The image is recolored in-place.
@@ -221,7 +221,7 @@ def color_by_points(rgb_image, row_points, column_points, rgb_vals=(255,0,0)):
         rgb_image[row_points, column_points, i] = value
 
 
-def color_by_mask(rgb_image, mask, rgb_vals=(255,0,0)):
+def color_by_mask(rgb_image, mask, rgb_vals=(255, 0, 0)):
     """Color image at points indexed by mask.
 
     The image is recolored in-place.
@@ -344,7 +344,7 @@ def plot_summary(pupil_params, cr_params, output_dir=None, show=False,
     """Plot timeseries of various pupil and cr parameters.
 
     Generates plots of pupil and cr parameters against frame number.
-    The plots include (x, y) position, angle, and (semi-minor, 
+    The plots include (x, y) position, angle, and (semi-minor,
     semi-major) axes seperately for pupil and cr, for a total of 6
     plots.
 

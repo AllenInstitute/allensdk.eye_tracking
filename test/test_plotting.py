@@ -21,10 +21,10 @@ def frame(height, width):
 
 
 @pytest.mark.parametrize("frame,pupil_params,cr_params", [
-    (frame(100,100),
+    (frame(100, 100),
      np.array((40, 50, 45, 10, 8)),
      np.array((30, 60, 0, 5, 4))),
-    (frame(100,100),
+    (frame(100, 100),
      np.array((np.nan, np.nan, np.nan, np.nan, np.nan)),
      np.array((30, 60, 0, 5, 4))),
 ])
@@ -36,12 +36,11 @@ def test_annotate_frame(frame, pupil_params, cr_params):
     assert(ostream.closed)
 
 
-
 @pytest.mark.parametrize("frame,pupil_params,cr_params", [
-    (frame(100,100),
+    (frame(100, 100),
      np.array((40, 50, 45, 10, 8)),
      np.array((30, 60, 0, 5, 4))),
-    (frame(100,100),
+    (frame(100, 100),
      np.array((np.nan, np.nan, np.nan, np.nan, np.nan)),
      np.array((30, 60, 0, 5, 4))),
 ])
@@ -62,10 +61,10 @@ def test_compute_density(frame, pupil_params, cr_params):
 
 
 @pytest.mark.parametrize("frame,pupil_params,cr_params", [
-    (frame(100,100),
+    (frame(100, 100),
      np.array((40, 50, 45, 10, 8)),
      np.array((30, 60, 0, 5, 4))),
-    (frame(100,100),
+    (frame(100, 100),
      np.array((np.nan, np.nan, np.nan, np.nan, np.nan)),
      np.array((30, 60, 0, 5, 4))),
 ])
@@ -83,11 +82,11 @@ def test_annotate_with_cumulative(frame, pupil_params, cr_params):
 
 
 @pytest.mark.parametrize("frame,pupil_params,cr_params,output_dir", [
-    (frame(100,100),
+    (frame(100, 100),
      np.array((40, 50, 45, 10, 8)),
      np.array((30, 60, 0, 5, 4)),
      None),
-    (frame(100,100),
+    (frame(100, 100),
      np.array((np.nan, np.nan, np.nan, np.nan, np.nan)),
      np.array((30, 60, 0, 5, 4)),
      "test"),
@@ -122,7 +121,7 @@ def test_plot_cumulative(frame, pupil_params, cr_params, output_dir):
      np.array((30, 60, 0, 5, 4)),
      "test"),
 ])
-def test_plot_summary(pupil_params,cr_params,output_folder):
+def test_plot_summary(pupil_params, cr_params, output_folder):
     with mock.patch.object(plotting.plt, "show") as mock_show:
         with mock.patch.object(plotting.plt.Figure, "savefig") as mock_savefig:
             plotting.plot_summary(pupil_params, cr_params,

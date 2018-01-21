@@ -8,22 +8,22 @@ from skimage.draw import circle
 import pytest
 
 
-def image(shape=(200,200), cr_radius=10, cr_center=(100,100),
-          pupil_radius=30, pupil_center=(100,100)):
+def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
+          pupil_radius=30, pupil_center=(100, 100)):
     im = np.ones(shape, dtype=np.uint8)*128
     r, c = circle(pupil_center[0], pupil_center[1], pupil_radius, shape)
-    im[r,c] = 0
+    im[r, c] = 0
     r, c = circle(cr_center[0], cr_center[1], cr_radius, shape)
-    im[r,c] = 255
+    im[r, c] = 255
     return im
 
 
 def input_stream(source):
     mock_istream = mock.MagicMock()
     mock_istream.num_frames = 2
-    mock_istream.frame_shape = (200,200)
+    mock_istream.frame_shape = (200, 200)
     mock_istream.__iter__ = mock.MagicMock(
-        return_value=iter([np.zeros((200,200)), np.zeros((200,200))]))
+        return_value=iter([np.zeros((200, 200)), np.zeros((200, 200))]))
     return mock_istream
 
 
@@ -60,8 +60,8 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
     cr = np.load(os.path.join(output_dir, "cr_params.npy"))
     pupil = np.load(os.path.join(output_dir, "pupil_params.npy"))
     assert(os.path.exists(os.path.join(output_dir, "mean_frame.png")))
-    assert(cr.shape == (10,5))
-    assert(pupil.shape == (10,5))
+    assert(cr.shape == (10, 5))
+    assert(pupil.shape == (10, 5))
     if annotation_file:
         check = CvInputStream(annotation_file)
         assert(check.num_frames == 10)

@@ -1,22 +1,21 @@
-import subprocess as sp
-import numpy as np
 import logging
-import sys, os
-from collections import deque
+import os
 import scipy.misc
 import traceback
-import signal
 import cv2
 
 
-class FrameInputStream( object ):
+class FrameInputStream(object):
     def __init__(self, movie_path, num_frames=None, block_size=1,
                  cache_frames=False, process_frame_cb=None):
         self.movie_path = movie_path
         self._num_frames = num_frames
         self.block_size = block_size
         self.cache_frames = cache_frames
-        self.process_frame_cb = process_frame_cb if process_frame_cb else lambda f: f[:,:,0].copy()
+        if process_frame_cb:
+            self.process_frame_cb = process_frame_cb
+        else:
+            self.process_frame_cb = lambda f: f[:, :, 0].copy()
         self.frames_read = 0
         self.frame_cache = []
 
@@ -36,14 +35,15 @@ class FrameInputStream( object ):
         logging.debug("Read total frames %d", self.frames_read)
 
         if self.num_frames is not None and self.frames_read != self.num_frames:
-            raise IOError("read incorrect number of frames: %d vs %d", self.frames_read, self.num_frames)
+            raise IOError("read incorrect number of frames: %d vs %d",
+                          self.frames_read, self.num_frames)
 
     def _error(self):
         pass
 
     def _process_frame(self, frame):
         return self.process_frame_cb(frame)
-    
+
     def _read_iter(self):
         pass
 
@@ -53,7 +53,8 @@ class FrameInputStream( object ):
     def __iter__(self):
         # if we're caching frames and the cache exists, return it
         if self.cache_frames and self.frame_cache:
-            n = self.num_frames if self.num_frames is not None else len(self.frame_cache)
+            cache_len = len(self.frame_cache)
+            n = self.num_frames if self.num_frames is not None else cache_len
             for i in range(n):
                 yield self.frame_cache[i]
         else:
@@ -64,7 +65,7 @@ class FrameInputStream( object ):
             for frame in self._read_iter():
                 self.frame_cache.append(self._process_frame(frame))
                 self.frames_read += 1
-                
+
                 if (self.frames_read % 100) == 0:
                     logging.debug("Read frames %d", self.frames_read)
 
@@ -73,7 +74,7 @@ class FrameInputStream( object ):
                 if self.block_size == 1:
                     yield self.frame_cache[-1]
                 elif (self.frames_read % self.block_size) == 0:
-                    for i in range(-self.block_size,0):
+                    for i in range(-self.block_size, 0):
                         yield self.frame_cache[i]
 
                 if not self.cache_frames:
@@ -87,7 +88,6 @@ class FrameInputStream( object ):
             if not self.cache_frames:
                 self.frame_cache = []
 
-
     def __exit__(self, exc_type, exc_value, tb):
         if exc_value:
             traceback.print_tb(tb)
@@ -97,7 +97,7 @@ class FrameInputStream( object ):
     def create_images(self, output_directory, image_type):
         for i, frame in enumerate(self):
             file_name = os.path.join(output_directory,
-                                     "input_frame-%06d." % i  + image_type)
+                                     "input_frame-%06d." % i + image_type)
             scipy.misc.imsave(file_name, frame)
 
 
@@ -171,7 +171,7 @@ class CvInputStream(FrameInputStream):
         self.cap = None
 
 
-class FrameOutputStream( object ):
+class FrameOutputStream(object):
     def __init__(self, block_size=1):
         self.frames_processed = 0
         self.block_frames = []
@@ -210,7 +210,7 @@ class FrameOutputStream( object ):
         self.close()
 
 
-class CvOutputStream( FrameOutputStream ):
+class CvOutputStream(FrameOutputStream):
     def __init__(self, movie_path, frame_shape, frame_rate=30.0,
                  fourcc="H264", is_color=True, block_size=1):
         super(CvOutputStream, self).__init__(block_size)
@@ -239,7 +239,7 @@ class CvOutputStream( FrameOutputStream ):
 
         for frame in frames:
             self.writer.write(frame)
-        
+
     def close(self):
         super(CvOutputStream, self).close()
         if self.writer is None:
