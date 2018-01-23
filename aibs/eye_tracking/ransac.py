@@ -85,13 +85,13 @@ def fit_iteration(fit_function, error_function, data, threshold,
     """
     inlier_idx, outlier_idx = partition_candidate_indices(
         data, minimum_points_for_fit)
-    parameters, error = fit_function(data[inlier_idx,:])
+    parameters, error = fit_function(data[inlier_idx, :])
     if parameters is not None:
         also_inlier_idx = check_outliers(error_function, parameters, data,
-                                        outlier_idx, threshold)
+                                         outlier_idx, threshold)
         if len(also_inlier_idx) > number_of_close_points:
             idx = np.concatenate((inlier_idx, also_inlier_idx))
-            parameters, error = fit_function(data[idx,:])
+            parameters, error = fit_function(data[idx, :])
             return parameters, error
     return None, np.inf
 
@@ -122,7 +122,7 @@ def check_outliers(error_function, parameters, data, outlier_indices,
         Index array of new inliers.
     """
     also_in_index = error_function(parameters,
-                                   data[outlier_indices,:]) < threshold
+                                   data[outlier_indices, :]) < threshold
 
     return outlier_indices[also_in_index]
 
@@ -143,7 +143,7 @@ def partition_candidate_indices(data, minimum_points_for_fit):
         (inliers, outliers) tuple of index arrays for potential
     """
     shuffled = np.random.permutation(np.arange(data.shape[0]))
-    
+
     inliers = shuffled[:minimum_points_for_fit]
     outliers = shuffled[minimum_points_for_fit:]
 

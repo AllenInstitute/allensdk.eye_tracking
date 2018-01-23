@@ -1,10 +1,8 @@
-import time
 import numpy as np
-from multiprocessing import Pool
-from scipy.signal import medfilt2d, fftconvolve
-from matplotlib import pyplot as plt
+from scipy.signal import fftconvolve
 
 _CIRCLE_MASKS = {}
+
 
 def get_circle_mask(radius):
     """Get circular mask for estimating center point.
@@ -18,15 +16,15 @@ def get_circle_mask(radius):
 
     Returns
     -------
-    numpy.ndarray
+    mask : numpy.ndarray
         Circle mask.
     """
     global _CIRCLE_MASKS
     mask = _CIRCLE_MASKS.get(radius, None)
     if mask is None:
-        Y, X = np.meshgrid(np.arange(-radius,radius+1),
-                           np.arange(-radius,radius+1))
-        mask = np.zeros([2*radius +1, 2*radius + 1])
+        Y, X = np.meshgrid(np.arange(-radius, radius+1),
+                           np.arange(-radius, radius+1))
+        mask = np.zeros([2*radius + 1, 2*radius + 1])
         ones = X**2 + Y**2 < radius**2
         mask[ones] = 1
         _CIRCLE_MASKS[radius] = mask
@@ -45,7 +43,7 @@ def max_image_at_value(image, value):
 
     Returns
     -------
-    numpy.ndarry
+    image : numpy.ndarry
         Transformed image.
     """
     min_at_value = np.abs(image.astype(float) - value)
@@ -67,14 +65,14 @@ def max_convolution_positions(image, kernel, bounding_box=None,
         Image over which to convolve the kernel.
     kernel : numpy.ndarray
         Kernel to convolve with the image.
-    bounding_box : tuple
-        (xmin, xmax, ymin, ymax) bounding box on the image.
+    bounding_box : numpy.ndarray
+        [xmin, xmax, ymin, ymax] bounding box on the image.
     mode : string
         Mode to run fftconvolve with.
 
     Returns
     -------
-    tuple
+    max_position : tuple
         (y, x) mean location maximum of the convolution of the kernel
         with the image.
 
@@ -89,9 +87,9 @@ def max_convolution_positions(image, kernel, bounding_box=None,
         ymin = 0
     else:
         xmin, xmax, ymin, ymax = bounding_box
-        cropped_image = image[ymin:ymax,xmin:xmax]
+        cropped_image = image[ymin:ymax, xmin:xmax]
 
     conv = fftconvolve(cropped_image, kernel, mode=mode)
-    y, x = np.where(conv==np.max(conv))
+    y, x = np.where(conv == np.max(conv))
 
-    return int(np.mean(y)+ymin), int(np.mean(x)+xmin)
+    return (int(np.mean(y)+ymin), int(np.mean(x)+xmin))

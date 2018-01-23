@@ -3,23 +3,23 @@ import numpy as np
 import pytest
 
 
-def rotate_vector(y,x,theta):
+def rotate_vector(y, x, theta):
 
     xp = x*np.cos(theta) - y*np.sin(theta)
     yp = x*np.sin(theta) + y*np.cos(theta)
 
-    return yp,xp
+    return yp, xp
 
 
 def ellipse_points(a, b, x0, y0, rotation):
     x = np.linspace(-a, a, 200)
     yp = np.sqrt(b**2 - (b**2 / a**2)*x**2)
     ym = -yp
-    yp, x1 = rotate_vector(yp,x,rotation)
-    ym, x2 = rotate_vector(ym,x,rotation)
-    x = np.hstack((x1,x2)) + x0
-    y = np.hstack((yp,ym)) + y0
-    return np.vstack((y,x)).T
+    yp, x1 = rotate_vector(yp, x, rotation)
+    ym, x2 = rotate_vector(ym, x, rotation)
+    x = np.hstack((x1, x2)) + x0
+    y = np.hstack((yp, ym)) + y0
+    return np.vstack((y, x)).T
 
 
 @pytest.mark.parametrize("a,b,x0,y0,rotation", [

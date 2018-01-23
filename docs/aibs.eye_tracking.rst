@@ -4,14 +4,6 @@ aibs\.eye\_tracking package
 Submodules
 ----------
 
-aibs\.eye\_tracking\.calibration module
----------------------------------------
-
-.. automodule:: aibs.eye_tracking.calibration
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 aibs\.eye\_tracking\.eye\_tracking module
 -----------------------------------------
 

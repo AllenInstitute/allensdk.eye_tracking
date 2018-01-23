@@ -1,5 +1,5 @@
-argschema>=1.15.13
+argschema>=1.15.14
 numpy
 scipy
-scikit-image
+scikit-image>=0.13.1
 matplotlib

@@ -6,14 +6,14 @@ import pytest
 
 @pytest.fixture
 def image():
-    image = np.zeros((100,100))
+    image = np.zeros((100, 100))
     image[circle(30, 30, 10, (100, 100))] = 1
     image[circle(60, 60, 10, (100, 100))] = 1
 
     return image
 
 
-@pytest.mark.parametrize("radius",[
+@pytest.mark.parametrize("radius", [
     5,
     10
 ])
@@ -22,7 +22,7 @@ def test_get_circle_mask(radius):
     assert(mask.shape == (2*radius+1, 2*radius+1))
 
 
-@pytest.mark.parametrize("value",[
+@pytest.mark.parametrize("value", [
     0,
     255,
     100
@@ -34,7 +34,7 @@ def test_max_image_at_value(value):
     assert(np.all(image[value_index] == value))
 
 
-@pytest.mark.parametrize("image,bounding_box",[
+@pytest.mark.parametrize("image,bounding_box", [
     (image(), None),
     (image(), (10, 45, 10, 45)),
     (image(), (45, 75, 45, 75))

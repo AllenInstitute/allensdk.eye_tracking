@@ -1,11 +1,18 @@
 import os
 import numpy as np
-from matplotlib import pyplot as plt
-from ._schemas import InputParameters, OutputParameters
+import marshmallow
 from argschema import ArgSchemaParser
-from .eye_tracking import EyeTracker
-from .frame_stream import CvInputStream, CvOutputStream
-from .plotting import plot_summary, plot_cumulative
+from argschema.utils import schema_argparser
+import warnings
+import matplotlib
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    matplotlib.use("Agg")
+from matplotlib import pyplot as plt  # noqa: E402
+from ._schemas import InputParameters, OutputParameters  # noqa: E402
+from .eye_tracking import EyeTracker  # noqa: E402
+from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
+from .plotting import plot_summary, plot_cumulative  # noqa: E402
 
 
 def setup_annotation(im_shape, annotate_movie, output_file):
@@ -42,36 +49,42 @@ def write_QC_output(output_dir, annotator, cr_parameters, pupil_parameters,
 
 def main():
     """Main entry point for running AIBS Eye Tracking."""
-    mod = ArgSchemaParser(schema_type=InputParameters,
-                          output_schema_type=OutputParameters)
-    istream = CvInputStream(mod.args["input_source"])
+    try:
+        mod = ArgSchemaParser(schema_type=InputParameters,
+                              output_schema_type=OutputParameters)
+        istream = CvInputStream(mod.args["input_source"])
 
-    im_shape = istream.frame_shape
+        im_shape = istream.frame_shape
 
-    ostream = setup_annotation(im_shape, **mod.args["annotation"])
+        ostream = setup_annotation(im_shape, **mod.args["annotation"])
 
-    tracker = EyeTracker(im_shape, istream,
-                         ostream,
-                         mod.args["starburst"],
-                         mod.args["ransac"],
-                         mod.args["pupil_bounding_box"],
-                         mod.args["cr_bounding_box"],
-                         mod.args["qc"]["generate_plots"],
-                         **mod.args["eye_params"])
-    pupil_parameters, cr_parameters = tracker.process_stream()
+        tracker = EyeTracker(im_shape, istream,
+                             ostream,
+                             mod.args["starburst"],
+                             mod.args["ransac"],
+                             mod.args["pupil_bounding_box"],
+                             mod.args["cr_bounding_box"],
+                             mod.args["qc"]["generate_plots"],
+                             **mod.args["eye_params"])
+        pupil_parameters, cr_parameters = tracker.process_stream()
 
-    output = write_output(mod.args["output_dir"], cr_parameters,
-                          pupil_parameters, tracker.mean_frame)
+        output = write_output(mod.args["output_dir"], cr_parameters,
+                              pupil_parameters, tracker.mean_frame)
 
-    if mod.args["qc"]["generate_plots"]:
-        write_QC_output(mod.args["qc"]["output_dir"], tracker.annotator,
-                        cr_parameters, pupil_parameters, tracker.mean_frame)
+        if mod.args["qc"]["generate_plots"]:
+            write_QC_output(mod.args["qc"]["output_dir"], tracker.annotator,
+                            cr_parameters, pupil_parameters,
+                            tracker.mean_frame)
 
-    output["input_parameters"] = mod.args
-    if "output_json" in mod.args:
-        mod.output(output)
-    else:
-        print(mod.get_output_json(output))
+        output["input_parameters"] = mod.args
+        if "output_json" in mod.args:
+            mod.output(output)
+        else:
+            print(mod.get_output_json(output))
+    except marshmallow.ValidationError as e:
+        print(e)
+        argparser = schema_argparser(InputParameters())
+        argparser.print_help()
 
 
 if __name__ == "__main__":
