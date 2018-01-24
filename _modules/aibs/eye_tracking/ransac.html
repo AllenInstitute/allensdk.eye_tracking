@@ -246,13 +246,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">inlier_idx</span><span class="p">,</span> <span class="n">outlier_idx</span> <span class="o">=</span> <span class="n">partition_candidate_indices</span><span class="p">(</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">minimum_points_for_fit</span><span class="p">)</span>
-    <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">inlier_idx</span><span class="p">,:])</span>
+    <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">inlier_idx</span><span class="p">,</span> <span class="p">:])</span>
     <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">also_inlier_idx</span> <span class="o">=</span> <span class="n">check_outliers</span><span class="p">(</span><span class="n">error_function</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
-                                        <span class="n">outlier_idx</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+                                         <span class="n">outlier_idx</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">also_inlier_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">number_of_close_points</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">inlier_idx</span><span class="p">,</span> <span class="n">also_inlier_idx</span><span class="p">))</span>
-            <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">,:])</span>
+            <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:])</span>
             <span class="k">return</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span>
     <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span></div>
 
@@ -283,7 +283,7 @@
 <span class="sd">        Index array of new inliers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">also_in_index</span> <span class="o">=</span> <span class="n">error_function</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span>
-                                   <span class="n">data</span><span class="p">[</span><span class="n">outlier_indices</span><span class="p">,:])</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+                                   <span class="n">data</span><span class="p">[</span><span class="n">outlier_indices</span><span class="p">,</span> <span class="p">:])</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 
     <span class="k">return</span> <span class="n">outlier_indices</span><span class="p">[</span><span class="n">also_in_index</span><span class="p">]</span></div>
 
@@ -304,7 +304,7 @@
 <span class="sd">        (inliers, outliers) tuple of index arrays for potential</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shuffled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-    
+
     <span class="n">inliers</span> <span class="o">=</span> <span class="n">shuffled</span><span class="p">[:</span><span class="n">minimum_points_for_fit</span><span class="p">]</span>
     <span class="n">outliers</span> <span class="o">=</span> <span class="n">shuffled</span><span class="p">[</span><span class="n">minimum_points_for_fit</span><span class="p">:]</span>
 

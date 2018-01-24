@@ -194,6 +194,7 @@
     <span class="n">DEFAULT_N_RAYS</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="n">DEFAULT_THRESHOLD_FACTOR</span> <span class="o">=</span> <span class="mf">1.6</span>
     <span class="n">DEFAULT_THRESHOLD_PIXELS</span> <span class="o">=</span> <span class="mi">10</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_length</span><span class="o">=</span><span class="n">DEFAULT_INDEX_LENGTH</span><span class="p">,</span>
                  <span class="n">n_rays</span><span class="o">=</span><span class="n">DEFAULT_N_RAYS</span><span class="p">,</span>
                  <span class="n">threshold_factor</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_FACTOR</span><span class="p">,</span>
@@ -296,7 +297,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        ray_values : numpy.ndarray</span>
 <span class="sd">            Values of the ray.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        threshold : float</span>
@@ -309,7 +310,7 @@
 
 <div class="viewcode-block" id="EyeTracker"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker">[docs]</a><span class="k">class</span> <span class="nc">EyeTracker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Mouse Eye-Tracker.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    im_shape : tuple</span>
@@ -344,6 +345,7 @@
     <span class="n">DEFAULT_CR_MASK_RADIUS</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_PUPIL_MASK_RADIUS</span> <span class="o">=</span> <span class="mi">40</span>
     <span class="n">DEFAULT_GENERATE_QC_OUTPUT</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">im_shape</span><span class="p">,</span> <span class="n">input_stream</span><span class="p">,</span> <span class="n">output_stream</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">starburst_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ransac_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">pupil_bounding_box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cr_bounding_box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -476,7 +478,7 @@
                                                <span class="bp">self</span><span class="o">.</span><span class="n">pupil_bounding_box</span><span class="p">)</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cr_parameters</span>
         <span class="n">filter_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">a</span><span class="p">,</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
         <span class="n">candidate_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_generator</span><span class="o">.</span><span class="n">get_candidate_points</span><span class="p">(</span>
             <span class="n">base_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filter_function</span><span class="o">=</span><span class="n">filter_function</span><span class="p">,</span>
             <span class="n">filter_args</span><span class="o">=</span><span class="p">(</span><span class="n">filter_params</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -495,7 +497,7 @@
         <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">b</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">ellipse_points</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">im_shape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cr_filled_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cr_filled_image</span><span class="p">[</span><span class="n">r</span><span class="p">,</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_pupil_color</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cr_filled_image</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_pupil_color</span></div>
 
 <div class="viewcode-block" id="EyeTracker.update_last_pupil_color"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker.update_last_pupil_color">[docs]</a>    <span class="k">def</span> <span class="nf">update_last_pupil_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update last pupil color with mean of fit.</span>
