@@ -15,9 +15,9 @@ from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
 from .plotting import plot_summary, plot_cumulative  # noqa: E402
 
 
-def setup_annotation(im_shape, annotate_movie, output_file):
+def setup_annotation(im_shape, annotate_movie, output_file, fourcc="H264"):
     if annotate_movie:
-        ostream = CvOutputStream(output_file, im_shape[::-1])
+        ostream = CvOutputStream(output_file, im_shape[::-1], fourcc=fourcc)
         ostream.open(output_file)
     else:
         ostream = None
