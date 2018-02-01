@@ -19,9 +19,11 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip
   - source activate test-environment
   - conda install -c conda-forge opencv
+  - pip install codecov
   - pip install -r requirements_dev.txt
   - pip install -r test_requirements.txt
   - pip install .
 
 script:
   - pytest
+  - codecov
