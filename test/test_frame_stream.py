@@ -209,7 +209,7 @@ def test_cv_output_context_manager(outfile):
     with pytest.raises(IOError):
         with fs.CvOutputStream(outfile, (200, 200)) as ostream:
             pass
-    with pytest.raises(OSError):
+    with pytest.raises(IOError):
         with fs.CvOutputStream(outfile, (200, 200)) as ostream:
             ostream.open(outfile)
             ostream.open(outfile)
