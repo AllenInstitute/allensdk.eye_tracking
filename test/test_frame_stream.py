@@ -1,4 +1,5 @@
 from aibs.eye_tracking import frame_stream as fs
+import sys
 import numpy as np
 from skimage.draw import circle
 import mock
@@ -6,6 +7,11 @@ import pytest
 
 DEFAULT_FRAMES = 101
 DEFAULT_CV_FRAMES = 10
+# H264 is not available by default on windows
+if sys.platform == "win32":
+    FOURCC = "FMP4"
+else:
+    FOURCC = "H264"
 
 
 def frame_gen(num_frames):
@@ -35,7 +41,8 @@ def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
 def movie(tmpdir_factory):
     filename = str(tmpdir_factory.mktemp("test").join('movie.avi'))
     frame = image()
-    ostream = fs.CvOutputStream(filename, frame.shape[::-1], is_color=False)
+    ostream = fs.CvOutputStream(filename, frame.shape[::-1], is_color=False,
+                                fourcc=FOURCC)
     ostream.open(filename)
     for i in range(DEFAULT_CV_FRAMES):
         ostream.write(frame)
@@ -110,9 +117,9 @@ def test_frame_input_create_images():
     patch_path = "aibs.eye_tracking.frame_stream.FrameInputStream._read_iter"
     with mock.patch(patch_path, frame_iter()):
         istream = fs.FrameInputStream("test_path")
-        with mock.patch.object(fs.scipy.misc, "imsave") as mock_imsave:
+        with mock.patch.object(fs.imageio, "imwrite") as mock_imwrite:
             istream.create_images("test", "png")
-            assert(mock_imsave.call_count == DEFAULT_FRAMES)
+            assert(mock_imwrite.call_count == DEFAULT_FRAMES)
 
 
 def test_cv_input_num_frames(movie):
@@ -198,7 +205,7 @@ def test_frame_output_write():
 
 
 def test_cv_output_open(outfile):
-    ostream = fs.CvOutputStream(outfile, (200, 200))
+    ostream = fs.CvOutputStream(outfile, (200, 200), fourcc=FOURCC)
     ostream.open(outfile)
     assert(ostream.movie_path == outfile)
     with pytest.raises(IOError):
@@ -207,16 +214,17 @@ def test_cv_output_open(outfile):
 
 def test_cv_output_context_manager(outfile):
     with pytest.raises(IOError):
-        with fs.CvOutputStream(outfile, (200, 200)) as ostream:
+        with fs.CvOutputStream(outfile, (200, 200), fourcc=FOURCC) as ostream:
             pass
     with pytest.raises(IOError):
-        with fs.CvOutputStream(outfile, (200, 200)) as ostream:
+        with fs.CvOutputStream(outfile, (200, 200), fourcc=FOURCC) as ostream:
             ostream.open(outfile)
             ostream.open(outfile)
 
 
 def test_cv_output_write(outfile):
-    ostream = fs.CvOutputStream(outfile, (200, 200), is_color=False)
+    ostream = fs.CvOutputStream(outfile, (200, 200), is_color=False,
+                                fourcc=FOURCC)
     ostream.write(image())
     ostream.write(image())
     ostream.close()
