@@ -2,4 +2,5 @@ argschema>=1.15.14
 numpy
 scipy
 scikit-image>=0.13.1
+imageio
 matplotlib

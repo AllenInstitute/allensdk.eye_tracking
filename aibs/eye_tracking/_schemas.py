@@ -1,7 +1,7 @@
 from argschema import ArgSchema
 from argschema.schemas import DefaultSchema
 from argschema.fields import (Nested, OutputDir, InputFile, Bool, Float, Int,
-                              OutputFile, NumpyArray)
+                              OutputFile, NumpyArray, Str)
 from .eye_tracking import PointGenerator, EyeTracker
 from .fit_ellipse import EllipseFitter
 
@@ -28,6 +28,10 @@ class AnnotationParameters(DefaultSchema):
         default=False,
         description="Flag for whether or not to annotate")
     output_file = OutputFile(default="./annotated.avi")
+    fourcc = Str(description=("FOURCC string for video encoding. On Windows "
+                              "H264 is not available by default, so it will "
+                              "need to be installed or a different codec "
+                              "used."))
 
 
 class StarburstParameters(DefaultSchema):
