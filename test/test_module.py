@@ -3,10 +3,16 @@ from aibs.eye_tracking.frame_stream import CvOutputStream, CvInputStream
 import mock
 import numpy as np
 import os
+import sys
 import json
 from skimage.draw import circle
 import pytest
 
+# H264 is not available by default on windows
+if sys.platform == "win32":
+    FOURCC = "FMP4"
+else:
+    FOURCC = "H264"
 
 def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
           pupil_radius=30, pupil_center=(100, 100)):
@@ -31,7 +37,8 @@ def input_stream(source):
 def input_source(tmpdir_factory):
     filename = str(tmpdir_factory.mktemp("test").join('input.avi'))
     frame = image()
-    ostream = CvOutputStream(filename, frame.shape[::-1], is_color=False)
+    ostream = CvOutputStream(filename, frame.shape[::-1], is_color=False,
+                             fourcc=FOURCC)
     ostream.open(filename)
     for i in range(10):
         ostream.write(frame)
@@ -44,14 +51,20 @@ def input_json(tmpdir_factory):
     filename = str(tmpdir_factory.mktemp("test").join('input.json'))
     output_dir = str(tmpdir_factory.mktemp("test"))
     annotation_file = str(tmpdir_factory.mktemp("test").join('anno.avi'))
-    in_json = ('{"starburst": { }, "ransac": { }, "eye_params": { },'
-               '"qc": {"generate_plots": false, "output_dir": "%s"}, '
-               '"annotation": {"annotate_movie": false, "output_file": "%s"}, '
-               '"cr_bounding_box": [], "pupil_bounding_box": [], '
-               '"output_dir": "%s"}') % (output_dir, annotation_file,
-                                         output_dir)
+    in_json = {"starburst": {},
+               "ransac": {},
+               "eye_params": {},
+               "qc": {
+                   "generate_plots": False,
+                   "output_dir": output_dir},
+               "annotation": {"annotate_movie": False,
+                              "output_file": annotation_file,
+                              "fourcc": FOURCC},
+               "cr_bounding_box": [],
+               "pupil_bounding_box": [],
+               "output_dir": output_dir}
     with open(filename, "w") as f:
-        f.write(in_json)
+        json.dump(in_json, f, indent=1)
     return str(filename)
 
 

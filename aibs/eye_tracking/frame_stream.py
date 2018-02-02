@@ -1,6 +1,6 @@
 import logging
 import os
-import scipy.misc
+import imageio
 import traceback
 import cv2
 
@@ -98,7 +98,7 @@ class FrameInputStream(object):
         for i, frame in enumerate(self):
             file_name = os.path.join(output_directory,
                                      "input_frame-%06d." % i + image_type)
-            scipy.misc.imsave(file_name, frame)
+            imageio.imwrite(file_name, frame)
 
 
 class CvInputStream(FrameInputStream):
@@ -217,7 +217,7 @@ class CvOutputStream(FrameOutputStream):
 
         self.frame_shape = frame_shape
         self.movie_path = movie_path
-        self.fourcc = cv2.VideoWriter_fourcc(*fourcc)
+        self.fourcc = cv2.VideoWriter_fourcc(*str(fourcc))
         self.frame_rate = frame_rate
         self.is_color = is_color
         self.writer = None
