@@ -2,7 +2,7 @@ from allensdk.eye_tracking import eye_tracking as et
 from skimage.draw import circle
 import numpy as np
 import pytest
-from mock import patch
+from mock import patch, MagicMock
 
 
 def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
@@ -131,6 +131,38 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
         assert(tracker.annotator.output_stream is not None)
 
 
+@pytest.mark.parametrize("pupil_params,recolor_cr", [
+    (np.array((np.nan, np.nan, np.nan, np.nan, np.nan)), True),
+    (np.array((1, 2, 3, 4, 5)), False),
+    (np.array((1, 2, 3, 4, 5)), True),
+
+])
+@patch("allensdk.eye_tracking.eye_tracking.ellipse_points",
+       return_value=(5, 5))
+def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
+                                 recolor_cr):
+    tracker = et.EyeTracker((10, 10), None, recolor_cr=recolor_cr)
+    with patch.object(tracker, "blurred_image",
+                      MagicMock(return_value=np.zeros((10, 10)))) as blur:
+        with patch.object(tracker, "cr_filled_image",
+                          MagicMock(return_value=np.ones((10, 10)))) as cr:
+            tracker.update_last_pupil_color(pupil_params)
+            if np.any(np.isnan(pupil_params)):
+                assert cr.__getitem__.call_count == 0
+                assert blur.__getitem__.call_count == 0
+                assert mock_ellipse_points.call_count == 0
+            elif recolor_cr:
+                cr.__getitem__.assert_called_once()
+                mock_ellipse_points.assert_called_once_with(pupil_params,
+                                                            (10, 10))
+                assert blur.__getitem__.call_count == 0
+            else:
+                blur.__getitem__.assert_called_once()
+                mock_ellipse_points.assert_called_once_with(pupil_params,
+                                                            (10, 10))
+                assert cr.__getitem__.call_count == 0
+
+
 @pytest.mark.parametrize(("image,input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,kwargs"), [
@@ -220,6 +252,10 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
     assert(pupil.shape == (3, 5))
     pupil, cr = tracker.process_stream(update_mean_frame=False)
     assert(pupil.shape == (input_stream.num_frames, 5))
+    tracker.input_stream = InputStream(0)
+    with patch.object(tracker, "process_image") as mock_process:
+        pupil, cr = tracker.process_stream()
+        assert mock_process.call_count == 0
 
 
 @pytest.mark.parametrize(("shape,input_stream,output_stream,"
