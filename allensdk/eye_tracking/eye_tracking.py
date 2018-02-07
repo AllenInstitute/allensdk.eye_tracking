@@ -449,6 +449,7 @@ class EyeTracker(object):
         """
         self.pupil_parameters = []
         self.cr_parameters = []
+        i = 0
 
         if update_mean_frame:
             mean_frame = np.zeros(self.im_shape, dtype=np.float64)
