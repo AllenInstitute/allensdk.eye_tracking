@@ -7,18 +7,18 @@ with open('test_requirements.txt', 'r') as f:
     test_requirements = f.read().splitlines()
 
 setup(
-    name='aibs_eye_tracking',
-    version='0.2.3',
-    description="""AIBS package for mouse eye tracking.""",
+    name='allensdk_eye_tracking',
+    version='1.0.0',
+    description="""Allen Institute package for mouse eye tracking.""",
     author="Jed Perkins",
     author_email="jedp@alleninstitute.org",
-    url='https://github.com/AllenInstitute/aibs.eye_tracking',
+    url='https://github.com/AllenInstitute/allensdk.eye_tracking',
     packages=find_packages(),
     include_package_data=True,
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'aibs.eye_tracking = aibs.eye_tracking.__main__:main'
+            'allensdk.eye_tracking = allensdk.eye_tracking.__main__:main'
         ]
     },
     setup_requires=['pytest-runner'],

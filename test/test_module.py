@@ -1,5 +1,5 @@
-from aibs.eye_tracking import __main__
-from aibs.eye_tracking.frame_stream import CvOutputStream, CvInputStream
+from allensdk.eye_tracking import __main__
+from allensdk.eye_tracking.frame_stream import CvOutputStream, CvInputStream
 import mock
 import numpy as np
 import os
@@ -98,7 +98,7 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
 
 
 def test_main_valid(input_source, input_json):
-    args = ["aibs.eye_tracking", "--input_json", input_json,
+    args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
     with open(input_json, "r") as f:
         json_data = json.load(f)
@@ -124,7 +124,7 @@ def test_main_valid(input_source, input_json):
 
 
 def test_starburst_override(input_source, input_json):
-    args = ["aibs.eye_tracking", "--input_json", input_json,
+    args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
     with open(input_json, "r") as f:
         json_data = json.load(f)
@@ -148,7 +148,7 @@ def test_starburst_override(input_source, input_json):
 
 
 def test_main_invalid():
-    with mock.patch("sys.argv", ["aibs.eye_tracking"]):
+    with mock.patch("sys.argv", ["allensdk.eye_tracking"]):
         with mock.patch("argparse.ArgumentParser.print_usage") as mock_print:
             __main__.main()
             mock_print.assert_called_once()

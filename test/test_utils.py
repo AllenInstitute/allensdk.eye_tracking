@@ -1,4 +1,4 @@
-from aibs.eye_tracking import utils
+from allensdk.eye_tracking import utils
 import numpy as np
 import pytest
 

@@ -2,11 +2,11 @@
     "email": "jedp@alleninstitute.org",
     "full_name": "Jed Perkins",
     "open_source_license": "Allen Institute Software License",
-    "project_name": "AIBS Eye Tracking",
-    "project_namespace": "aibs",
-    "project_short_description": "AIBS package for rodent eye tracking.",
+    "project_name": "AllenSDK Eye Tracking",
+    "project_namespace": "allensdk",
+    "project_short_description": "Allen Institute package for mouse eye tracking.",
     "project_slug": "eye_tracking",
-    "repo_url": "http://stash.corp.alleninstitute.org/scm/~jedp/aibs.eye_tracking",
+    "repo_url": "https://github.com/AllenInstitute/allensdk.eye_tracking",
     "user_name": "jedp",
     "version": "0.1.0"
 }

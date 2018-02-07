@@ -1,16 +1,16 @@
-[![Build Status](https://travis-ci.org/AllenInstitute/aibs.eye_tracking.svg?branch=master)](https://travis-ci.org/AllenInstitute/aibs.eye_tracking)
-[![Build status](https://ci.appveyor.com/api/projects/status/setjpywy4dfgyi99/branch/master?svg=true)](https://ci.appveyor.com/project/JFPerkins/aibs-eye-tracking/branch/master)
-[![codecov](https://codecov.io/gh/AllenInstitute/aibs.eye_tracking/branch/master/graph/badge.svg)](https://codecov.io/gh/AllenInstitute/aibs.eye_tracking)
+[![Build Status](https://travis-ci.org/AllenInstitute/allensdk.eye_tracking.svg?branch=master)](https://travis-ci.org/AllenInstitute/allensdk.eye_tracking)
+[![Build status](https://ci.appveyor.com/api/projects/status/spkm2kb09u70a3n5/branch/master?svg=true)](https://ci.appveyor.com/project/JFPerkins/allensdk-eye-tracking/branch/master)
+[![codecov](https://codecov.io/gh/AllenInstitute/allensdk.eye_tracking/branch/master/graph/badge.svg)](https://codecov.io/gh/AllenInstitute/allensdk.eye_tracking)
 
-AIBS Eye Tracking
-=================
+AllenSDK Eye Tracking
+=====================
 
 This is the python package the Allen Institute uses for estimating
 pupil position and shape from eye videos. The position of a LED
 reflection on the cornea is also tracked and is a required feature of
 the input streams. The input videos are black and white.
 
-Source: https://github.com/AllenInstitute/aibs.eye_tracking
+Source: https://github.com/AllenInstitute/allensdk.eye_tracking
 
 Installation
 ------------
@@ -38,16 +38,16 @@ Usage
 After installing the package, and entry point is created so it can be run
 from the command line. To minimally run with the default settings:
 
-    aibs.eye_tracking --input_source <path to an input video>
+    allensdk.eye_tracking --input_source <path to an input video>
 
 To see all options that can be set at the command line:
 
-    aibs.eye_tracking --help
+    allensdk.eye_tracking --help
 
 There are a lot of options that can be set, so often it can be more
 convenient to store them in a JSON-formatted file which can be used like:
 
-    aibs.eye_tracking --input_json <path to the input json>
+    allensdk.eye_tracking --input_json <path to the input json>
 
 The input json can be combined with other command line argument, which will
 take precedence over anything in the json.
