@@ -1,4 +1,4 @@
-from aibs.eye_tracking import fit_ellipse as fe
+from allensdk.eye_tracking import fit_ellipse as fe
 import numpy as np
 import pytest
 

@@ -1,7 +1,7 @@
-aibs
-====
+allensdk
+========
 
 .. toctree::
    :maxdepth: 4
 
-   aibs
+   allensdk
