@@ -63,7 +63,7 @@ def update_starburst_args(starburst_args):
 
 
 def main():
-    """Main entry point for running AIBS Eye Tracking."""
+    """Main entry point for running AllenSDK Eye Tracking."""
     try:
         mod = ArgSchemaParser(schema_type=InputParameters,
                               output_schema_type=OutputParameters)

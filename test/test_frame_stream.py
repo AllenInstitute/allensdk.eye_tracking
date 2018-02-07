@@ -1,4 +1,4 @@
-from aibs.eye_tracking import frame_stream as fs
+from allensdk.eye_tracking import frame_stream as fs
 import sys
 import numpy as np
 from skimage.draw import circle
@@ -98,7 +98,8 @@ def test_frame_input_iter(num_frames, block_size, cache_frames):
         n = DEFAULT_FRAMES
     else:
         n = num_frames
-    patch_path = "aibs.eye_tracking.frame_stream.FrameInputStream._read_iter"
+    patch_path = ("allensdk.eye_tracking.frame_stream.FrameInputStream."
+                  "_read_iter")
     with mock.patch(patch_path, frame_iter(num_frames)) as mock_iter:
         istream = fs.FrameInputStream("test_path", num_frames=num_frames,
                                       block_size=block_size,
@@ -114,7 +115,8 @@ def test_frame_input_iter(num_frames, block_size, cache_frames):
 
 
 def test_frame_input_create_images():
-    patch_path = "aibs.eye_tracking.frame_stream.FrameInputStream._read_iter"
+    patch_path = ("allensdk.eye_tracking.frame_stream.FrameInputStream."
+                  "_read_iter")
     with mock.patch(patch_path, frame_iter()):
         istream = fs.FrameInputStream("test_path")
         with mock.patch.object(fs.imageio, "imwrite") as mock_imwrite:

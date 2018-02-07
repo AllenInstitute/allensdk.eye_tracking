@@ -1,4 +1,4 @@
-from aibs.eye_tracking import feature_extraction
+from allensdk.eye_tracking import feature_extraction
 import numpy as np
 from skimage.draw import circle
 import pytest

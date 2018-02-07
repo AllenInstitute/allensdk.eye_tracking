@@ -1,5 +1,5 @@
-AIBS Eye Tracking documentation
-======================================
+AllenSDK Eye Tracking documentation
+===================================
 
 Contents:
 
@@ -24,4 +24,4 @@ License
 -------
 
 `The project is licensed under the BSD Clause 2 license with a non-commercial use clause. 
-<https://raw.githubusercontent.com/AllenInstitute/aibs.eye_tracking/master/LICENSE.txt>`_
+<https://raw.githubusercontent.com/AllenInstitute/allensdk.eye_tracking/master/LICENSE.txt>`_
