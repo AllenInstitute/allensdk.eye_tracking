@@ -323,6 +323,7 @@ class EyeTracker(object):
             base_image = self.blurred_image
             filter_function = None
             filter_params = None
+
         return base_image, filter_function, filter_params
 
     def find_pupil(self, cr_parameters):
@@ -346,12 +347,14 @@ class EyeTracker(object):
         self.pupil_max_image = seed_image
         seed_point = max_convolution_positions(seed_image, self.pupil_mask,
                                                self.pupil_bounding_box)
+
         x, y, r, a, b = cr_parameters
         filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
                          self.cr_recolor_scale_factor*b)
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, "pupil", filter_function=filter_function,
             filter_args=(filter_params, 2))
+
         return self.ellipse_fitter.fit(candidate_points)
 
     def recolor_corneal_reflection(self, cr_parameters):
@@ -413,6 +416,7 @@ class EyeTracker(object):
             logging.debug("Insufficient candidate points found for fitting "
                           "corneal reflection at frame %s", self.frame_index)
             cr_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
+
         try:
             pupil_parameters = self.find_pupil(cr_parameters)
             if self.adaptive_pupil:
@@ -421,6 +425,7 @@ class EyeTracker(object):
             logging.debug("Insufficient candidate points found for fitting "
                           "pupil at frame %s", self.frame_index)
             pupil_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
+
         return cr_parameters, pupil_parameters
 
     def process_stream(self, n_frames=None, update_mean_frame=True):
@@ -444,10 +449,13 @@ class EyeTracker(object):
         """
         self.pupil_parameters = []
         self.cr_parameters = []
+
         if update_mean_frame:
             mean_frame = np.zeros(self.im_shape, dtype=np.float64)
+
         if n_frames is None:
             n_frames = self.input_stream.num_frames
+
         for i, frame in enumerate(self.input_stream):
             if update_mean_frame:
                 mean_frame += frame
@@ -465,8 +473,7 @@ class EyeTracker(object):
             if i == n_frames-1:
                 break
 
-        if self.annotator is not None:
-            self.annotator.close()
+        self.annotator.close()
 
         if update_mean_frame:
             self._mean_frame = (mean_frame / (i+1)).astype(np.uint8)

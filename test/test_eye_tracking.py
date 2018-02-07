@@ -2,6 +2,7 @@ from allensdk.eye_tracking import eye_tracking as et
 from skimage.draw import circle
 import numpy as np
 import pytest
+from mock import patch
 
 
 def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
@@ -54,7 +55,7 @@ def test_invalid_point_type():
 ])
 def test_threshold_crossing(threshold_factor, threshold_pixels, point_type,
                             ray, raises):
-    pg = et.PointGenerator(100, 10, threshold_factor, threshold_factor, 
+    pg = et.PointGenerator(100, 10, threshold_factor, threshold_factor,
                            threshold_pixels, threshold_pixels)
     values = np.arange(50, dtype=np.uint8)
     if raises:
@@ -63,7 +64,8 @@ def test_threshold_crossing(threshold_factor, threshold_pixels, point_type,
     else:
         t = pg.get_threshold(values, pg.threshold_pixels[point_type],
                              pg.threshold_factor[point_type])
-        y, x = pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values, point_type)
+        y, x = pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values,
+                                     point_type)
         idx = np.where(pg.xs[ray] == x)
         if pg.above_threshold[point_type]:
             assert(idx == np.argmax(values[threshold_pixels:] > t) +
@@ -95,6 +97,14 @@ def test_get_candidate_points(image, seed, above):
       "number_of_close_points": 3},
      None,
      None,
+     {}),
+    ((200, 200),
+     None,
+     None,
+     None,
+     None,
+     [20, 40, 20, 40],
+     [20, 40, 20, 40],
      {})
 ])
 def test_eye_tracker_init(im_shape, input_stream, output_stream,
@@ -156,7 +166,7 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
       "number_of_close_points": 3},
      None,
      None,
-     {"recolor_cr": False})
+     {"recolor_cr": False, "adaptive_pupil": False})
 ])
 def test_process_image(image, input_stream, output_stream,
                        starburst_params, ransac_params, pupil_bounding_box,
@@ -165,7 +175,10 @@ def test_process_image(image, input_stream, output_stream,
     tracker = et.EyeTracker(im_shape, input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box, **kwargs)
-    cr, pupil = tracker.process_image(image)
+    with patch.object(tracker, "update_last_pupil_color") as mock_update:
+        cr, pupil = tracker.process_image(image)
+        if not kwargs.get("adaptive_pupil", True):
+            assert mock_update.call_count == 0
 
 
 @pytest.mark.parametrize(("shape,input_stream,output_stream,"
@@ -205,7 +218,7 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
                             generate_QC_output, **kwargs)
     pupil, cr = tracker.process_stream(3)
     assert(pupil.shape == (3, 5))
-    pupil, cr = tracker.process_stream()
+    pupil, cr = tracker.process_stream(update_mean_frame=False)
     assert(pupil.shape == (input_stream.num_frames, 5))
 
 
