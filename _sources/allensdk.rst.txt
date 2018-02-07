@@ -1,17 +1,17 @@
-aibs package
-============
+allensdk package
+================
 
 Subpackages
 -----------
 
 .. toctree::
 
-    aibs.eye_tracking
+    allensdk.eye_tracking
 
 Module contents
 ---------------
 
-.. automodule:: aibs
+.. automodule:: allensdk
     :members:
     :undoc-members:
     :show-inheritance:
