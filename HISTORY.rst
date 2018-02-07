@@ -2,6 +2,10 @@
 History
 =======
 
+1.0.0 (2018-02-07)
+------------------
+Rename from aibs.eye_tracking to allensdk.eye_tracking.
+
 0.2.3 (2018-02-06)
 ------------------
 Add options to set cr_threshold_factor, cr_threshold_pixels, pupil_threshold_factor,
