@@ -8,7 +8,7 @@ with open('test_requirements.txt', 'r') as f:
 
 setup(
     name='aibs_eye_tracking',
-    version='0.2.2',
+    version='0.2.3',
     description="""AIBS package for mouse eye tracking.""",
     author="Jed Perkins",
     author_email="jedp@alleninstitute.org",

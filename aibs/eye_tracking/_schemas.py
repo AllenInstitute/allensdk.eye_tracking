@@ -44,11 +44,28 @@ class StarburstParameters(DefaultSchema):
     threshold_factor = Float(
         default=PointGenerator.DEFAULT_THRESHOLD_FACTOR,
         description="Threshold factor for ellipse edges")
+    cr_threshold_factor = Float(
+        description=("Threshold factor for corneal reflection ellipse edges, "
+                     "will supercede `threshold_factor` for corneal "
+                     "reflection if specified"))
+    pupil_threshold_factor = Float(
+        description=("Threshold factor for pupil ellipse edges, will "
+                     "supercede `threshold_factor` for pupil if specified"))
     threshold_pixels = Int(
         default=PointGenerator.DEFAULT_THRESHOLD_PIXELS,
         description=("Number of pixels from start of ray to use for adaptive "
                      "threshold, also serves as a minimum cutoff for point "
                      "detection"))
+    cr_threshold_pixels = Int(
+        description=("Number of pixels from start of ray to use for adaptive "
+                     "threshold of the corneal reflection, will supercede "
+                     "`threshold_pixels` for corneal reflection if specified. "
+                     "Also serves as a minimum cutoff for point detection"))
+    pupil_threshold_pixels = Int(
+        description=("Number of pixels from start of ray to use for adaptive "
+                     "threshold of the pupil, will supercede `threshold_pixels"
+                     "` for pupil if specified. Also serves as a minimum "
+                     "cutoff for point detection"))
 
 
 class EyeParameters(DefaultSchema):
@@ -64,6 +81,9 @@ class EyeParameters(DefaultSchema):
     recolor_cr = Bool(
         default=EyeTracker.DEFAULT_RECOLOR_CR,
         description="Flag for recoloring corneal reflection")
+    adaptive_pupil = Bool(
+        default=EyeTracker.DEFAULT_ADAPTIVE_PUPIL,
+        description="Flag for whether or not to adaptively update pupil color")
     pupil_mask_radius = Int(
         default=EyeTracker.DEFAULT_PUPIL_MASK_RADIUS,
         description="Radius of pupil mask used to find seed point")
