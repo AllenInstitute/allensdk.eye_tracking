@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/AllenInstitute/allensdk.eye_tracking.svg?branch=master)](https://travis-ci.org/AllenInstitute/allensdk.eye_tracking)
-[![Build status](https://ci.appveyor.com/api/projects/status/setjpywy4dfgyi99/branch/master?svg=true)](https://ci.appveyor.com/project/JFPerkins/allensdk-eye-tracking/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/spkm2kb09u70a3n5/branch/master?svg=true)](https://ci.appveyor.com/project/JFPerkins/allensdk-eye-tracking/branch/master)
 [![codecov](https://codecov.io/gh/AllenInstitute/allensdk.eye_tracking/branch/master/graph/badge.svg)](https://codecov.io/gh/AllenInstitute/allensdk.eye_tracking)
 
 AllenSDK Eye Tracking
