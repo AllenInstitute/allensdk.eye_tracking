@@ -68,8 +68,16 @@ def input_json(tmpdir_factory):
     return str(filename)
 
 
+def validate_dict(reference_dict, compare_dict):
+    for k, v in reference_dict.items():
+        if isinstance(v, dict):
+            validate_dict(v, compare_dict[k])
+        else:
+            assert(compare_dict[k] == v)
+
+
 def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
-                  output_json=None):
+                  output_json=None, input_data=None):
     cr = np.load(os.path.join(output_dir, "cr_params.npy"))
     pupil = np.load(os.path.join(output_dir, "pupil_params.npy"))
     assert(os.path.exists(os.path.join(output_dir, "mean_frame.png")))
@@ -81,6 +89,10 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
         check.close()
     if output_json:
         assert(os.path.exists(output_json))
+        if input_data:
+            with open(output_json, "r") as f:
+                output_data = json.load(f)
+                validate_dict(input_data, output_data["input_parameters"])
     if qc_output_dir:
         assert(os.path.join(output_dir, "cr_all.png"))
 
@@ -100,15 +112,43 @@ def test_main_valid(input_source, input_json):
                  "--output_json", out_json])
     with mock.patch('sys.argv', args):
         __main__.main()
+        json_data["qc"]["generate_plots"] = True
+        json_data["annotation"]["annotate_movie"] = True
+        json_data["output_json"] = out_json
         assert_output(output_dir,
                       annotation_file=json_data["annotation"]["output_file"],
                       qc_output_dir=json_data["qc"]["output_dir"],
-                      output_json=out_json)
+                      output_json=out_json,
+                      input_data=json_data)
     __main__.plt.close("all")
+
+
+def test_starburst_override(input_source, input_json):
+    args = ["aibs.eye_tracking", "--input_json", input_json,
+            "--input_source", input_source]
+    with open(input_json, "r") as f:
+        json_data = json.load(f)
+    output_dir = json_data["output_dir"]
+    out_json = os.path.join(output_dir, "output.json")
+    args.extend(["--starburst.cr_threshold_factor", "1.8",
+                 "--starburst.pupil_threshold_factor", "2.0",
+                 "--starburst.cr_threshold_pixels", "5",
+                 "--starburst.pupil_threshold_pixels", "30",
+                 "--output_json", out_json])
+    with mock.patch('sys.argv', args):
+        __main__.main()
+        json_data["starburst"]["cr_threshold_factor"] = 1.8
+        json_data["starburst"]["pupil_threshold_factor"] = 2.0
+        json_data["starburst"]["cr_threshold_pixels"] = 5
+        json_data["starburst"]["pupil_threshold_pixels"] = 30
+        json_data["output_json"] = out_json
+        assert_output(output_dir,
+                      output_json=out_json,
+                      input_data=json_data)
 
 
 def test_main_invalid():
     with mock.patch("sys.argv", ["aibs.eye_tracking"]):
-        with mock.patch("argparse.ArgumentParser.print_help") as mock_print:
+        with mock.patch("argparse.ArgumentParser.print_usage") as mock_print:
             __main__.main()
             mock_print.assert_called_once()

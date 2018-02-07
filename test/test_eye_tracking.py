@@ -39,24 +39,33 @@ class OutputStream(object):
         self.closed = True
 
 
-@pytest.mark.parametrize(("threshold_factor,threshold_pixels,above,ray,"
+def test_invalid_point_type():
+    pg = et.PointGenerator(100, 10, 1.5, 1.5, 10, 10)
+    values = np.arange(50, dtype=np.uint8)
+    with pytest.raises(ValueError):
+        pg.threshold_crossing(pg.xs[0], pg.ys[0], values, "blah")
+
+
+@pytest.mark.parametrize(("threshold_factor,threshold_pixels,point_type,ray,"
                          "raises"), [
-    (1.5, 10, True, 0, False),
-    (5, 20, False, 5, False),
-    (3, 40, True, 0, True)
+    (1.5, 10, "pupil", 0, False),
+    (5, 20, "cr", 5, False),
+    (3, 40, "pupil", 0, True)
 ])
-def test_threshold_crossing(threshold_factor, threshold_pixels, above,
+def test_threshold_crossing(threshold_factor, threshold_pixels, point_type,
                             ray, raises):
-    pg = et.PointGenerator(100, 10, threshold_factor, threshold_pixels)
+    pg = et.PointGenerator(100, 10, threshold_factor, threshold_factor, 
+                           threshold_pixels, threshold_pixels)
     values = np.arange(50, dtype=np.uint8)
     if raises:
         with pytest.raises(ValueError):
-            pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values, above)
+            pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values, point_type)
     else:
-        t = pg.get_threshold(values)
-        y, x = pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values, above)
+        t = pg.get_threshold(values, pg.threshold_pixels[point_type],
+                             pg.threshold_factor[point_type])
+        y, x = pg.threshold_crossing(pg.xs[ray], pg.ys[ray], values, point_type)
         idx = np.where(pg.xs[ray] == x)
-        if above:
+        if pg.above_threshold[point_type]:
             assert(idx == np.argmax(values[threshold_pixels:] > t) +
                    threshold_pixels)
         else:
@@ -79,7 +88,8 @@ def test_get_candidate_points(image, seed, above):
     ((200, 200),
      None,
      None,
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -117,7 +127,8 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
     (image(),
      None,
      None,
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -127,7 +138,8 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
     (image(),
      None,
      None,
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -137,7 +149,8 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
     (image(cr_center=(85, 25), pupil_center=(70, 100)),
      None,
      None,
-     {"n_rays": 20, "threshold_factor": 0, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 0, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 0, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -161,7 +174,8 @@ def test_process_image(image, input_stream, output_stream,
     ((200, 200),
      InputStream(),
      None,
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -172,7 +186,8 @@ def test_process_image(image, input_stream, output_stream,
     ((200, 200),
      InputStream(),
      OutputStream((200, 200)),
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},
@@ -200,7 +215,8 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
     ((200, 200),
      InputStream(),
      None,
-     {"n_rays": 20, "threshold_factor": 1.4, "threshold_pixels": 5,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
       "index_length": 100},
      {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
       "number_of_close_points": 3},

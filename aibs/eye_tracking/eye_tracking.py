@@ -23,11 +23,16 @@ class PointGenerator(object):
         Initial default length for ray indices.
     n_rays : int
         The number of rays to check.
-    threshold_factor : float
-        Multiplicative factor for threshold.
-    threshold_pixels : int
+    cr_threshold_factor : float
+        Multiplicative factor for thresholding corneal reflection.
+    pupil_threshold_factor : float
+        Multiplicative factor for thresholding pupil.
+    cr_threshold_pixels : int
         Number of pixels (from beginning of ray) to use to determine
-        threshold.
+        threshold of corneal reflection.
+    pupil_threshold_pixels : int
+        Number of pixels (from beginning of ray) to use to determine
+        threshold of pupil.
     """
     DEFAULT_INDEX_LENGTH = 100
     DEFAULT_N_RAYS = 20
@@ -36,13 +41,19 @@ class PointGenerator(object):
 
     def __init__(self, index_length=DEFAULT_INDEX_LENGTH,
                  n_rays=DEFAULT_N_RAYS,
-                 threshold_factor=DEFAULT_THRESHOLD_FACTOR,
-                 threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
+                 cr_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
+                 pupil_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
+                 cr_threshold_pixels=DEFAULT_THRESHOLD_PIXELS,
+                 pupil_threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
         self.xs, self.ys = generate_ray_indices(index_length, n_rays)
-        self.threshold_pixels = threshold_pixels
-        self.threshold_factor = threshold_factor
+        self.threshold_pixels = {"cr": cr_threshold_pixels,
+                                 "pupil": pupil_threshold_pixels}
+        self.threshold_factor = {"cr": cr_threshold_factor,
+                                 "pupil": pupil_threshold_factor}
+        self.above_threshold = {"cr": False,
+                                "pupil": True}
 
-    def get_candidate_points(self, image, seed_point, above_threshold=True,
+    def get_candidate_points(self, image, seed_point, point_type,
                              filter_function=None, filter_args=()):
         """Get candidate points for ellipse fitting.
 
@@ -52,8 +63,10 @@ class PointGenerator(object):
             Image to check for threshold crossings.
         seed_point : tuple
             (y, x) center point for ray burst.
-        above_threshold : bool
-            Whether looking for transitions above or below a threshold.
+        point_type : str
+            Either 'cr' or 'pupil'. Determines if threshold crossing is
+            high-to-low or low-to-high and which `threshold_factor` and
+            `threshold_pixels` value to use.
 
         Returns
         -------
@@ -69,7 +82,7 @@ class PointGenerator(object):
         for i, values in enumerate(ray_values):
             try:
                 point = self.threshold_crossing(xs[i], ys[i], values,
-                                                above_threshold)
+                                                point_type)
                 if filter_function is not None:
                     if filter_function(point, *filter_args):
                         candidate_points.append(point)
@@ -86,7 +99,7 @@ class PointGenerator(object):
                           threshold_not_crossed)
         return candidate_points
 
-    def threshold_crossing(self, xs, ys, values, above_threshold=True):
+    def threshold_crossing(self, xs, ys, values, point_type):
         """Check a ray for where it crosses a threshold.
 
         The threshold is calculated using `get_threshold`.
@@ -99,8 +112,10 @@ class PointGenerator(object):
             Y indices of ray.
         values : numpy.ndarray
             Image values along ray.
-        above_threshold : bool
-            Whether to look for transitions above or below a threshold.
+        point_type : str
+            Either 'cr' or 'pupil'. Determines if threshold crossing is
+            high-to-low or low-to-high and which `threshold_factor` and
+            `threshold_pixels` value to use.
 
         Returns
         -------
@@ -114,19 +129,27 @@ class PointGenerator(object):
         ValueError
             If no threshold crossing found.
         """
-        threshold = self.get_threshold(values)
+        try:
+            above_threshold = self.above_threshold[point_type]
+            threshold_pixels = self.threshold_pixels[point_type]
+            threshold_factor = self.threshold_factor[point_type]
+        except KeyError:
+            raise ValueError(("'{}' is not a supported point type, must be "
+                              "'cr' or 'pupil'").format(point_type))
+        threshold = self.get_threshold(values, threshold_pixels,
+                                       threshold_factor)
         if above_threshold:
-            comparison = values[self.threshold_pixels:] > threshold
+            comparison = values[threshold_pixels:] > threshold
         else:
-            comparison = values[self.threshold_pixels:] < threshold
+            comparison = values[threshold_pixels:] < threshold
         sub_index = np.argmax(comparison)
         if comparison[sub_index]:
-            index = self.threshold_pixels + sub_index
+            index = threshold_pixels + sub_index
             return ys[index], xs[index]
         else:
             raise ValueError("No value in array crosses: {}".format(threshold))
 
-    def get_threshold(self, ray_values):
+    def get_threshold(self, ray_values, threshold_pixels, threshold_factor):
         """Calculate the threshold from the ray values.
 
         The threshold is determined from `threshold_factor` times the
@@ -136,15 +159,20 @@ class PointGenerator(object):
         ----------
         ray_values : numpy.ndarray
             Values of the ray.
+        threshold_factor : float
+            Multiplicative factor for thresholding.
+        threshold_pixels : int
+            Number of pixels (from beginning of ray) to use to determine
+            threshold.
 
         Returns
         -------
         threshold : float
             Threshold to set for candidate point.
         """
-        sub_ray = ray_values[:self.threshold_pixels]
+        sub_ray = ray_values[threshold_pixels]
 
-        return self.threshold_factor*np.mean(sub_ray)
+        return threshold_factor*np.mean(sub_ray)
 
 
 class EyeTracker(object):
@@ -181,6 +209,7 @@ class EyeTracker(object):
     DEFAULT_MAX_PUPIL_VALUE = 30
     DEFAULT_CR_RECOLOR_SCALE_FACTOR = 2.0
     DEFAULT_RECOLOR_CR = True
+    DEFAULT_ADAPTIVE_PUPIL = True
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
@@ -228,6 +257,8 @@ class EyeTracker(object):
             kwargs.get("cr_mask_radius", self.DEFAULT_CR_MASK_RADIUS))
         self.pupil_mask = get_circle_mask(
             kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
+        self.adaptive_pupil = kwargs.get(
+            "adaptive_pupil", self.DEFAULT_ADAPTIVE_PUPIL)
 
     @property
     def mean_frame(self):
@@ -253,7 +284,7 @@ class EyeTracker(object):
                                                self.cr_mask,
                                                self.cr_bounding_box)
         candidate_points = self.point_generator.get_candidate_points(
-            self.blurred_image, seed_point, False)
+            self.blurred_image, seed_point, "cr")
         return self.ellipse_fitter.fit(candidate_points)
 
     def setup_pupil_finder(self, cr_parameters):
@@ -319,7 +350,7 @@ class EyeTracker(object):
         filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
                          self.cr_recolor_scale_factor*b)
         candidate_points = self.point_generator.get_candidate_points(
-            base_image, seed_point, True, filter_function=filter_function,
+            base_image, seed_point, "pupil", filter_function=filter_function,
             filter_args=(filter_params, 2))
         return self.ellipse_fitter.fit(candidate_points)
 
@@ -384,7 +415,8 @@ class EyeTracker(object):
             cr_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
         try:
             pupil_parameters = self.find_pupil(cr_parameters)
-            self.update_last_pupil_color(pupil_parameters)
+            if self.adaptive_pupil:
+                self.update_last_pupil_color(pupil_parameters)
         except ValueError:
             logging.debug("Insufficient candidate points found for fitting "
                           "pupil at frame %s", self.frame_index)
