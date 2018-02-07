@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>aibs.eye_tracking.eye_tracking &mdash; AIBS Eye Tracking 0.2.2 documentation</title>
+  <title>aibs.eye_tracking.eye_tracking &mdash; AIBS Eye Tracking 0.2.3 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AIBS Eye Tracking 0.2.2 documentation" href="../../../index.html"/>
+    <link rel="top" title="AIBS Eye Tracking 0.2.3 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.2.2
+                0.2.3
               </div>
             
           
@@ -184,11 +184,16 @@
 <span class="sd">        Initial default length for ray indices.</span>
 <span class="sd">    n_rays : int</span>
 <span class="sd">        The number of rays to check.</span>
-<span class="sd">    threshold_factor : float</span>
-<span class="sd">        Multiplicative factor for threshold.</span>
-<span class="sd">    threshold_pixels : int</span>
+<span class="sd">    cr_threshold_factor : float</span>
+<span class="sd">        Multiplicative factor for thresholding corneal reflection.</span>
+<span class="sd">    pupil_threshold_factor : float</span>
+<span class="sd">        Multiplicative factor for thresholding pupil.</span>
+<span class="sd">    cr_threshold_pixels : int</span>
 <span class="sd">        Number of pixels (from beginning of ray) to use to determine</span>
-<span class="sd">        threshold.</span>
+<span class="sd">        threshold of corneal reflection.</span>
+<span class="sd">    pupil_threshold_pixels : int</span>
+<span class="sd">        Number of pixels (from beginning of ray) to use to determine</span>
+<span class="sd">        threshold of pupil.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">DEFAULT_INDEX_LENGTH</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="n">DEFAULT_N_RAYS</span> <span class="o">=</span> <span class="mi">20</span>
@@ -197,13 +202,19 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_length</span><span class="o">=</span><span class="n">DEFAULT_INDEX_LENGTH</span><span class="p">,</span>
                  <span class="n">n_rays</span><span class="o">=</span><span class="n">DEFAULT_N_RAYS</span><span class="p">,</span>
-                 <span class="n">threshold_factor</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_FACTOR</span><span class="p">,</span>
-                 <span class="n">threshold_pixels</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_PIXELS</span><span class="p">):</span>
+                 <span class="n">cr_threshold_factor</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_FACTOR</span><span class="p">,</span>
+                 <span class="n">pupil_threshold_factor</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_FACTOR</span><span class="p">,</span>
+                 <span class="n">cr_threshold_pixels</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_PIXELS</span><span class="p">,</span>
+                 <span class="n">pupil_threshold_pixels</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD_PIXELS</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span> <span class="o">=</span> <span class="n">generate_ray_indices</span><span class="p">(</span><span class="n">index_length</span><span class="p">,</span> <span class="n">n_rays</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span> <span class="o">=</span> <span class="n">threshold_pixels</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_factor</span> <span class="o">=</span> <span class="n">threshold_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="n">cr_threshold_pixels</span><span class="p">,</span>
+                                 <span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="n">pupil_threshold_pixels</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_factor</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="n">cr_threshold_factor</span><span class="p">,</span>
+                                 <span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="n">pupil_threshold_factor</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">above_threshold</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
-<div class="viewcode-block" id="PointGenerator.get_candidate_points"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.get_candidate_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_candidate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="n">above_threshold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="viewcode-block" id="PointGenerator.get_candidate_points"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.get_candidate_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_candidate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="n">point_type</span><span class="p">,</span>
                              <span class="n">filter_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_args</span><span class="o">=</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot;Get candidate points for ellipse fitting.</span>
 
@@ -213,8 +224,10 @@
 <span class="sd">            Image to check for threshold crossings.</span>
 <span class="sd">        seed_point : tuple</span>
 <span class="sd">            (y, x) center point for ray burst.</span>
-<span class="sd">        above_threshold : bool</span>
-<span class="sd">            Whether looking for transitions above or below a threshold.</span>
+<span class="sd">        point_type : str</span>
+<span class="sd">            Either &#39;cr&#39; or &#39;pupil&#39;. Determines if threshold crossing is</span>
+<span class="sd">            high-to-low or low-to-high and which `threshold_factor` and</span>
+<span class="sd">            `threshold_pixels` value to use.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -230,7 +243,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ray_values</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_crossing</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ys</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">values</span><span class="p">,</span>
-                                                <span class="n">above_threshold</span><span class="p">)</span>
+                                                <span class="n">point_type</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">filter_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">filter_function</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="o">*</span><span class="n">filter_args</span><span class="p">):</span>
                         <span class="n">candidate_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
@@ -247,7 +260,7 @@
                           <span class="n">threshold_not_crossed</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">candidate_points</span></div>
 
-<div class="viewcode-block" id="PointGenerator.threshold_crossing"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.threshold_crossing">[docs]</a>    <span class="k">def</span> <span class="nf">threshold_crossing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">above_threshold</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="PointGenerator.threshold_crossing"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.threshold_crossing">[docs]</a>    <span class="k">def</span> <span class="nf">threshold_crossing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">point_type</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check a ray for where it crosses a threshold.</span>
 
 <span class="sd">        The threshold is calculated using `get_threshold`.</span>
@@ -260,8 +273,10 @@
 <span class="sd">            Y indices of ray.</span>
 <span class="sd">        values : numpy.ndarray</span>
 <span class="sd">            Image values along ray.</span>
-<span class="sd">        above_threshold : bool</span>
-<span class="sd">            Whether to look for transitions above or below a threshold.</span>
+<span class="sd">        point_type : str</span>
+<span class="sd">            Either &#39;cr&#39; or &#39;pupil&#39;. Determines if threshold crossing is</span>
+<span class="sd">            high-to-low or low-to-high and which `threshold_factor` and</span>
+<span class="sd">            `threshold_pixels` value to use.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -275,19 +290,27 @@
 <span class="sd">        ValueError</span>
 <span class="sd">            If no threshold crossing found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_threshold</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">above_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">above_threshold</span><span class="p">[</span><span class="n">point_type</span><span class="p">]</span>
+            <span class="n">threshold_pixels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span><span class="p">[</span><span class="n">point_type</span><span class="p">]</span>
+            <span class="n">threshold_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_factor</span><span class="p">[</span><span class="n">point_type</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39; is not a supported point type, must be &quot;</span>
+                              <span class="s2">&quot;&#39;cr&#39; or &#39;pupil&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">point_type</span><span class="p">))</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_threshold</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">threshold_pixels</span><span class="p">,</span>
+                                       <span class="n">threshold_factor</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">above_threshold</span><span class="p">:</span>
-            <span class="n">comparison</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span><span class="p">:]</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+            <span class="n">comparison</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">threshold_pixels</span><span class="p">:]</span> <span class="o">&gt;</span> <span class="n">threshold</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">comparison</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+            <span class="n">comparison</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">threshold_pixels</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="n">threshold</span>
         <span class="n">sub_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">comparison</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">comparison</span><span class="p">[</span><span class="n">sub_index</span><span class="p">]:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span> <span class="o">+</span> <span class="n">sub_index</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">threshold_pixels</span> <span class="o">+</span> <span class="n">sub_index</span>
             <span class="k">return</span> <span class="n">ys</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No value in array crosses: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="PointGenerator.get_threshold"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.get_threshold">[docs]</a>    <span class="k">def</span> <span class="nf">get_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ray_values</span><span class="p">):</span>
+<div class="viewcode-block" id="PointGenerator.get_threshold"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.PointGenerator.get_threshold">[docs]</a>    <span class="k">def</span> <span class="nf">get_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ray_values</span><span class="p">,</span> <span class="n">threshold_pixels</span><span class="p">,</span> <span class="n">threshold_factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate the threshold from the ray values.</span>
 
 <span class="sd">        The threshold is determined from `threshold_factor` times the</span>
@@ -297,15 +320,20 @@
 <span class="sd">        ----------</span>
 <span class="sd">        ray_values : numpy.ndarray</span>
 <span class="sd">            Values of the ray.</span>
+<span class="sd">        threshold_factor : float</span>
+<span class="sd">            Multiplicative factor for thresholding.</span>
+<span class="sd">        threshold_pixels : int</span>
+<span class="sd">            Number of pixels (from beginning of ray) to use to determine</span>
+<span class="sd">            threshold.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        threshold : float</span>
 <span class="sd">            Threshold to set for candidate point.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sub_ray</span> <span class="o">=</span> <span class="n">ray_values</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_pixels</span><span class="p">]</span>
+        <span class="n">sub_ray</span> <span class="o">=</span> <span class="n">ray_values</span><span class="p">[</span><span class="n">threshold_pixels</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_factor</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sub_ray</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">threshold_factor</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sub_ray</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="EyeTracker"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker">[docs]</a><span class="k">class</span> <span class="nc">EyeTracker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -342,6 +370,7 @@
     <span class="n">DEFAULT_MAX_PUPIL_VALUE</span> <span class="o">=</span> <span class="mi">30</span>
     <span class="n">DEFAULT_CR_RECOLOR_SCALE_FACTOR</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="n">DEFAULT_RECOLOR_CR</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">DEFAULT_ADAPTIVE_PUPIL</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">DEFAULT_CR_MASK_RADIUS</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">DEFAULT_PUPIL_MASK_RADIUS</span> <span class="o">=</span> <span class="mi">40</span>
     <span class="n">DEFAULT_GENERATE_QC_OUTPUT</span> <span class="o">=</span> <span class="kc">False</span>
@@ -389,6 +418,8 @@
             <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cr_mask_radius&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_CR_MASK_RADIUS</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span> <span class="o">=</span> <span class="n">get_circle_mask</span><span class="p">(</span>
             <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pupil_mask_radius&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_PUPIL_MASK_RADIUS</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_pupil</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;adaptive_pupil&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_ADAPTIVE_PUPIL</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mean_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -414,7 +445,7 @@
                                                <span class="bp">self</span><span class="o">.</span><span class="n">cr_mask</span><span class="p">,</span>
                                                <span class="bp">self</span><span class="o">.</span><span class="n">cr_bounding_box</span><span class="p">)</span>
         <span class="n">candidate_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_generator</span><span class="o">.</span><span class="n">get_candidate_points</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="s2">&quot;cr&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ellipse_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">candidate_points</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EyeTracker.setup_pupil_finder"><a class="viewcode-back" href="../../../aibs.eye_tracking.html#aibs.eye_tracking.eye_tracking.EyeTracker.setup_pupil_finder">[docs]</a>    <span class="k">def</span> <span class="nf">setup_pupil_finder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">):</span>
@@ -480,7 +511,7 @@
         <span class="n">filter_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">a</span><span class="p">,</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
         <span class="n">candidate_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_generator</span><span class="o">.</span><span class="n">get_candidate_points</span><span class="p">(</span>
-            <span class="n">base_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filter_function</span><span class="o">=</span><span class="n">filter_function</span><span class="p">,</span>
+            <span class="n">base_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">filter_function</span><span class="o">=</span><span class="n">filter_function</span><span class="p">,</span>
             <span class="n">filter_args</span><span class="o">=</span><span class="p">(</span><span class="n">filter_params</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ellipse_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">candidate_points</span><span class="p">)</span></div>
 
@@ -545,7 +576,8 @@
             <span class="n">cr_parameters</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">pupil_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_pupil</span><span class="p">(</span><span class="n">cr_parameters</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">update_last_pupil_color</span><span class="p">(</span><span class="n">pupil_parameters</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_pupil</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_last_pupil_color</span><span class="p">(</span><span class="n">pupil_parameters</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Insufficient candidate points found for fitting &quot;</span>
                           <span class="s2">&quot;pupil at frame </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span><span class="p">)</span>
@@ -657,7 +689,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.2.2',
+            VERSION:'0.2.3',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
