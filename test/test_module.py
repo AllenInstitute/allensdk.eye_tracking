@@ -14,6 +14,7 @@ if sys.platform == "win32":
 else:
     FOURCC = "H264"
 
+
 def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
           pupil_radius=30, pupil_center=(100, 100)):
     im = np.ones(shape, dtype=np.uint8)*128
