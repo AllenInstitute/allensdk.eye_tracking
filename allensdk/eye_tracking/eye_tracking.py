@@ -428,14 +428,23 @@ class EyeTracker(object):
 
         return cr_parameters, pupil_parameters
 
-    def process_stream(self, n_frames=None, update_mean_frame=True):
-        """Get cr and pupil parameters at every frame of `input_stream`.
+    def process_stream(self, start=0, stop=None, step=1,
+                       update_mean_frame=True):
+        """Get cr and pupil parameters from frames of `input_stream`.
+
+        By default this will process every frame in the input stream.
 
         Parameters
         ----------
-        n_frames : int
-            Number of frames to process. If not specified, all frames in
-            the stream are processed.
+        start : int
+            Index of first frame to process. Defaults to 0.
+        stop : int
+            Stop index for processing. Defaults to None, which runs
+            runs until the end of the input stream.
+        step : int
+            Number of frames to advance at each iteration. Used to skip
+            frames while processing. Set to 1 to process every frame, 2
+            to process every other frame, etc. Defaults to 1.
         update_mean_frame : bool
             Whether or not to update the mean frame while processing
             the frames.
@@ -454,13 +463,10 @@ class EyeTracker(object):
         if update_mean_frame:
             mean_frame = np.zeros(self.im_shape, dtype=np.float64)
 
-        if n_frames is None:
-            n_frames = self.input_stream.num_frames
-
-        for i, frame in enumerate(self.input_stream):
+        for i, frame in enumerate(self.input_stream[start:stop:step]):
             if update_mean_frame:
                 mean_frame += frame
-            self.frame_index = i
+            self.frame_index = start + step*i
             cr_parameters, pupil_parameters = self.process_image(frame)
             self.cr_parameters.append(cr_parameters)
             self.pupil_parameters.append(pupil_parameters)
@@ -471,8 +477,6 @@ class EyeTracker(object):
                 self.annotator.compute_density(frame, pupil_parameters,
                                                cr_parameters)
             self.annotator.clear_rc()
-            if i == n_frames-1:
-                break
 
         self.annotator.close()
 

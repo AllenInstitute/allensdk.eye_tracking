@@ -2,6 +2,7 @@ from allensdk.eye_tracking import eye_tracking as et
 from skimage.draw import circle
 import numpy as np
 import pytest
+from itertools import islice
 from mock import patch, MagicMock
 
 
@@ -18,10 +19,23 @@ def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
 class InputStream(object):
     def __init__(self, n_frames=5):
         self.n_frames = n_frames
+        self._i = 0
+
+    def __getitem__(self, key):
+        return islice(self, key.start, key.stop, key.step)
 
     def __iter__(self):
-        for i in range(self.n_frames):
-            yield image()
+        self._i = 0
+        return self
+
+    def __next__(self):
+        if self._i >= self.n_frames:
+            raise StopIteration()
+        self._i += 1
+        return image()
+
+    def next(self):
+        return self.__next__()
 
     @property
     def num_frames(self):
@@ -248,8 +262,8 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box,
                             generate_QC_output, **kwargs)
-    pupil, cr = tracker.process_stream(3)
-    assert(pupil.shape == (3, 5))
+    pupil, cr = tracker.process_stream(start=3)
+    assert(pupil.shape == (input_stream.num_frames - 3, 5))
     pupil, cr = tracker.process_stream(update_mean_frame=False)
     assert(pupil.shape == (input_stream.num_frames, 5))
     tracker.input_stream = InputStream(0)
