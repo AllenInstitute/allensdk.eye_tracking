@@ -17,7 +17,7 @@ def image(shape=(200, 200), value=0):
     return np.ones(shape, dtype=np.uint8)*value*10
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def movie(tmpdir_factory):
     frame = image()
     filename = str(tmpdir_factory.mktemp("test").join('movie.avi'))
@@ -123,6 +123,7 @@ def test_frame_input_close():
 def test_cv_input_num_frames(movie):
     istream = fs.CvInputStream(movie)
     assert(istream.num_frames == DEFAULT_CV_FRAMES)
+    assert(istream.num_frames == DEFAULT_CV_FRAMES)  # using cached value
 
 
 def test_cv_input_frame_shape(movie):
@@ -143,6 +144,14 @@ def test_cv_input_open(movie):
 def test_cv_input_close(movie):
     istream = fs.CvInputStream(movie)
     istream.close()
+
+
+def test_cv_input_ioerrors(movie):
+    istream = fs.CvInputStream(movie)
+    with pytest.raises(IOError):
+        istream._seek_frame(10)
+    with pytest.raises(IOError):
+        istream._get_frame(10)
 
 
 def test_cv_input_iter(movie):
@@ -212,6 +221,11 @@ def test_frame_output_write():
     with mock.patch.object(fs.FrameOutputStream, "_write_frames") as write:
         ostream = fs.FrameOutputStream()
         ostream.write(1)
+        write.assert_called_once()
+    with mock.patch.object(fs.FrameOutputStream, "_write_frames") as write:
+        ostream = fs.FrameOutputStream(block_size=50)
+        ostream.write(1)
+        ostream.close()
         write.assert_called_once()
 
 

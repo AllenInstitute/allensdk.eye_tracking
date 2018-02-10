@@ -4,7 +4,7 @@ import cv2
 
 
 class FrameInputStream(object):
-    def __init__(self, movie_path, num_frames=0, block_size=1,
+    def __init__(self, movie_path, num_frames=None, block_size=1,
                  cache_frames=False, process_frame_cb=None):
         self.movie_path = movie_path
         self._num_frames = num_frames
@@ -54,7 +54,7 @@ class FrameInputStream(object):
 
     @property
     def num_frames(self):
-        return self._num_frames
+        return self._num_frames if self._num_frames is not None else 0
 
     @property
     def frame_shape(self):
@@ -95,11 +95,13 @@ class FrameInputStream(object):
         self._last_i = 0
         self._i = self._start - self._step
         self.open()
-        logging.debug("Iterating over %s from %d to %d by step %d" %
+        logging.debug("Iterating over %s from %d to %s by step %d" %
                       (self.movie_path, self._start, self._stop, self._step))
         return self
 
     def __next__(self):
+        if self._stop is None:
+            self._stop = self.num_frames
         self._i = self._i + self._step
         if (self._step < 0 and self._i <= self._stop) or \
            (self._step > 0 and self._i >= self._stop):
@@ -125,7 +127,7 @@ class CvInputStream(FrameInputStream):
                                             process_frame_cb=process_frame_cb)
         self.cap = None
         self._frame_shape = None
-        self._stop = self.num_frames
+        self._stop = num_frames
 
     @property
     def num_frames(self):
@@ -173,6 +175,8 @@ class CvInputStream(FrameInputStream):
         super(CvInputStream, self).close()
 
     def _seek_frame(self, i):
+        if self.cap is None:
+            raise IOError("capture is not open")
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
     def _get_frame(self, i):
