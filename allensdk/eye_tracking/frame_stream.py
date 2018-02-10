@@ -26,9 +26,14 @@ class FrameInputStream(object):
         return self.__next__()
 
     def __getitem__(self, key):
-        if isinstance(key, int) and key >= 0:
-            self._start = key
-            self._stop = key + 1
+        if isinstance(key, int):
+            if key >= self.num_frames or key < -self.num_frames:
+                raise IndexError("Index {} out of range".format(key))
+            elif key >= 0:
+                self._start = key
+            else:
+                self._start = self.num_frames + key
+            self._stop = self._start + 1
             self._step = 1
             return list(self)[0]  # force iteration and closing
         elif isinstance(key, slice):
