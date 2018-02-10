@@ -11,7 +11,7 @@ class FrameInputStream(object):
         self._start = 0
         self._stop = num_frames
         self._step = 1
-        self._i = 0
+        self._i = self._start - self._step
         self._last_i = 0
         self.block_size = block_size
         self.cache_frames = cache_frames
@@ -30,7 +30,7 @@ class FrameInputStream(object):
             self._start = key
             self._stop = key + 1
             self._step = 1
-            return self
+            return list(self)[0]  # force iteration and closing
         elif isinstance(key, slice):
             if key.step == 0:
                 raise ValueError("slice step cannot be 0")
@@ -120,7 +120,6 @@ class CvInputStream(FrameInputStream):
                                             process_frame_cb=process_frame_cb)
         self.cap = None
         self._frame_shape = None
-        self.load_capture_properties()
         self._stop = self.num_frames
 
     @property
