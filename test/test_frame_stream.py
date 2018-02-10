@@ -45,37 +45,57 @@ def test_frame_input_init():
         istream.frame_shape
 
 
-def test_frame_input_slice():
+def test_frame_input_slice_errors():
     mock_cb = mock.MagicMock()
-    istream = fs.FrameInputStream("test_path", num_frames=50,
+    istream = fs.FrameInputStream("test_path", num_frames=DEFAULT_FRAMES,
                                   process_frame_cb=mock_cb)
     with pytest.raises(NotImplementedError):
-        istream.get_frame(20)
+        istream._get_frame(20)
+    with pytest.raises(NotImplementedError):
+        istream._seek_frame(20)
+    with pytest.raises(ValueError):
+        for x in istream[6:10:0]:
+            pass
+    with pytest.raises(KeyError):
+        istream["invalid"]
+    with pytest.raises(IndexError):
+        istream[DEFAULT_FRAMES]
+    with pytest.raises(IndexError):
+        istream[-DEFAULT_FRAMES-1]
+
+
+@pytest.mark.parametrize("start,stop,step", [
+    (5, 10, None),
+    (2, 30, 2),
+    (30, 2, -2),
+    (None, -1, None),
+    (3, None, None)
+])
+def test_frame_input_slice(start, stop, step):
+    mock_cb = mock.MagicMock()
+    istream = fs.FrameInputStream("test_path", num_frames=DEFAULT_FRAMES,
+                                  process_frame_cb=mock_cb)
     with mock.patch.object(istream, "_get_frame", new=lambda a: a):
         count = 0
         for x in istream:
             count += 1
-        assert count == 50
-        assert mock_cb.call_count == 50
-        with pytest.raises(NotImplementedError):
-            istream._seek_frame(20)
+        assert count == DEFAULT_FRAMES
+        assert mock_cb.call_count == DEFAULT_FRAMES
         with mock.patch.object(istream, "_seek_frame", new=lambda b: b):
             mock_cb.reset_mock()
-            for x in istream[5:10]:
-                pass
-            expected = [mock.call(x) for x in range(5, 10)]
-            mock_cb.assert_has_calls(expected)
+            x = istream[5]
+            mock_cb.assert_called_once_with(5)
+            mock_cb.reset_mock()
+            x = istream[-20]
+            mock_cb.assert_called_once_with(DEFAULT_FRAMES-20)
         with mock.patch.object(istream, "_seek_frame", new=lambda b: b):
             mock_cb.reset_mock()
-            for x in istream[2:30:2]:
+            for x in istream[start:stop:step]:
                 pass
-            expected = [mock.call(x) for x in range(2, 30, 2)]
-            mock_cb.assert_has_calls(expected)
-        with mock.patch.object(istream, "_seek_frame", new=lambda b: b):
-            mock_cb.reset_mock()
-            for x in istream[30:2:-2]:
-                pass
-            expected = [mock.call(x) for x in range(30, 2, -2)]
+            rstop = stop if stop is not None else DEFAULT_FRAMES
+            rstart = start if start is not None else 0
+            rstep = step if step is not None else 1
+            expected = [mock.call(x) for x in range(rstart, rstop, rstep)]
             mock_cb.assert_has_calls(expected)
 
 
