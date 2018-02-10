@@ -21,6 +21,7 @@ class FrameInputStream(object):
             self.process_frame_cb = lambda f: f[:, :, 0].copy()
         self.frames_read = 0
         self.frame_cache = []
+        self.next = self.__next__
 
     def __getitem__(self, key):
         if isinstance(key, int) and key >= 0:
