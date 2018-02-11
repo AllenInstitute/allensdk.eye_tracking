@@ -1,6 +1,7 @@
 from allensdk.eye_tracking import fit_ellipse as fe
 import numpy as np
 import pytest
+from mock import patch
 
 
 def rotate_vector(y, x, theta):
@@ -34,6 +35,9 @@ def test_ellipse_fit(a, b, x0, y0, rotation):
     assert(np.abs(angle - np.degrees(rotation)) < 0.01)
     assert((np.abs(ax1-a) < 0.0001 and np.abs(ax2-b) < 0.0001) or
            (np.abs(ax1-b) < 0.0001 and np.abs(ax2-a) < 0.0001))
+    with patch.object(fitter._fitter, "fit", return_value=None):
+        res = fitter.fit(data)
+        assert(np.all(np.isnan(res)))
 
 
 @pytest.mark.parametrize("point,ellipse_params,tolerance,result", [
