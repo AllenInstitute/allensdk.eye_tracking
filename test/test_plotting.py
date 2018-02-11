@@ -20,6 +20,16 @@ def frame(height, width):
     return np.zeros((height, width), dtype=np.uint8)
 
 
+def test_get_rgb_frame():
+    img = frame(100, 100)
+    with pytest.raises(ValueError):
+        plotting.get_rgb_frame(np.dstack((img, img)))
+    f = plotting.get_rgb_frame(img)
+    assert f.shape == (100, 100, 3)
+    f = plotting.get_rgb_frame(np.dstack((img, img, img)))
+    assert f.shape == (100, 100, 3)
+
+
 @pytest.mark.parametrize("frame,pupil_params,cr_params", [
     (frame(100, 100),
      np.array((40, 50, 45, 10, 8)),
@@ -98,8 +108,20 @@ def test_annotate_with_cumulative(frame, pupil_params, cr_params):
                     "color_by_mask") as mock_color:
         with mock.patch.object(plotting.plt, "imsave") as mock_imsave:
             res = plotting.annotate_with_cumulative(frame, None)
-            assert mock_color.call_count == 0
-            assert mock_imsave.call_count == 0
+            assert(mock_color.call_count == 0)
+            assert(mock_imsave.call_count == 0)
+
+
+def test_annotate_with_box():
+    img = frame(100, 100)
+    bbox = np.array((20, 50, 40, 80), dtype="int")
+    with mock.patch.object(plotting.plt, "imsave") as mock_imsave:
+        res = plotting.annotate_with_box(img, bbox)
+        assert(res.shape == (100, 100, 3))
+        assert(mock_imsave.call_count == 0)
+        res = plotting.annotate_with_box(img, bbox, filename="test")
+        assert(res.shape == (100, 100, 3))
+        mock_imsave.assert_called_once_with("test", res)
 
 
 @pytest.mark.parametrize("frame,pupil_params,cr_params,output_dir", [

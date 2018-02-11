@@ -2,6 +2,7 @@ from allensdk.eye_tracking import __main__
 from allensdk.eye_tracking.frame_stream import CvOutputStream, CvInputStream
 import mock
 import numpy as np
+import ast
 import os
 import sys
 import json
@@ -95,10 +96,14 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
                 output_data = json.load(f)
                 validate_dict(input_data, output_data["input_parameters"])
     if qc_output_dir:
-        assert(os.path.join(output_dir, "cr_all.png"))
+        assert(os.path.exists(os.path.join(output_dir, "cr_all.png")))
 
 
-def test_main_valid(input_source, input_json):
+@pytest.mark.parametrize("pupil_bbox_str,cr_bbox_str", [
+    ("[20,50,40,70]", "[40,70,20,50]"),
+    ("[]", "[]")
+])
+def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str):
     args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
     with open(input_json, "r") as f:
@@ -110,12 +115,16 @@ def test_main_valid(input_source, input_json):
     out_json = os.path.join(output_dir, "output.json")
     args.extend(["--qc.generate_plots", "True",
                  "--annotation.annotate_movie", "True",
-                 "--output_json", out_json])
+                 "--output_json", out_json,
+                 "--pupil_bounding_box", pupil_bbox_str,
+                 "--cr_bounding_box", cr_bbox_str])
     with mock.patch('sys.argv', args):
         __main__.main()
         json_data["qc"]["generate_plots"] = True
         json_data["annotation"]["annotate_movie"] = True
         json_data["output_json"] = out_json
+        json_data["pupil_bounding_box"] = ast.literal_eval(pupil_bbox_str)
+        json_data["cr_bounding_box"] = ast.literal_eval(cr_bbox_str)
         assert_output(output_dir,
                       annotation_file=json_data["annotation"]["output_file"],
                       qc_output_dir=json_data["qc"]["output_dir"],
