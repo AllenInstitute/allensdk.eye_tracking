@@ -179,7 +179,7 @@ def get_rgb_frame(frame):
     ----------
     frame : numpy.ndarray
         Image frame.
-    
+
     Returns
     -------
     rgb_frame : numpy.ndarray
@@ -224,7 +224,8 @@ def annotate_with_cumulative(frame, density, rgb_vals=(255, 0, 0),
     return rgb_frame
 
 
-def annotate_with_box(image, bounding_box, rgb_vals=(255,0,0), filename=None):
+def annotate_with_box(image, bounding_box, rgb_vals=(255, 0, 0),
+                      filename=None):
     """Annotate image with bounding box.
 
     Parameters
