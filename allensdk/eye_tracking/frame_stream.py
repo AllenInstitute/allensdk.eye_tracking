@@ -4,8 +4,7 @@ import cv2
 
 
 class FrameInputStream(object):
-    def __init__(self, movie_path, num_frames=None, block_size=1,
-                 cache_frames=False, process_frame_cb=None):
+    def __init__(self, movie_path, num_frames=None, process_frame_cb=None):
         self.movie_path = movie_path
         self._num_frames = num_frames
         self._start = 0
@@ -13,8 +12,6 @@ class FrameInputStream(object):
         self._step = 1
         self._i = self._start - self._step
         self._last_i = 0
-        self.block_size = block_size
-        self.cache_frames = cache_frames
         if process_frame_cb:
             self.process_frame_cb = process_frame_cb
         else:
@@ -118,12 +115,9 @@ class FrameInputStream(object):
 
 
 class CvInputStream(FrameInputStream):
-    def __init__(self, movie_path, num_frames=None, block_size=1,
-                 cache_frames=False, process_frame_cb=None):
+    def __init__(self, movie_path, num_frames=None, process_frame_cb=None):
         super(CvInputStream, self).__init__(movie_path=movie_path,
                                             num_frames=num_frames,
-                                            block_size=block_size,
-                                            cache_frames=cache_frames,
                                             process_frame_cb=process_frame_cb)
         self.cap = None
         self._frame_shape = None

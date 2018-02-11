@@ -38,8 +38,6 @@ def outfile(tmpdir_factory):
 def test_frame_input_init():
     istream = fs.FrameInputStream("test_path")
     assert(istream.movie_path == "test_path")
-    assert(istream.block_size == 1)
-    assert(not istream.cache_frames)
     assert(istream.num_frames == 0)
     with pytest.raises(NotImplementedError):
         istream.frame_shape
