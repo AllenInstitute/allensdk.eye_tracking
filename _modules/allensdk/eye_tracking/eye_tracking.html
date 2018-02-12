@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking.eye_tracking &mdash; AllenSDK Eye Tracking 1.0.0 documentation</title>
+  <title>allensdk.eye_tracking.eye_tracking &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.0.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.0.0
+                1.1.0
               </div>
             
           
@@ -484,6 +484,7 @@
             <span class="n">base_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blurred_image</span>
             <span class="n">filter_function</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">filter_params</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="k">return</span> <span class="n">base_image</span><span class="p">,</span> <span class="n">filter_function</span><span class="p">,</span> <span class="n">filter_params</span></div>
 
 <div class="viewcode-block" id="EyeTracker.find_pupil"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.eye_tracking.EyeTracker.find_pupil">[docs]</a>    <span class="k">def</span> <span class="nf">find_pupil</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">):</span>
@@ -507,12 +508,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pupil_max_image</span> <span class="o">=</span> <span class="n">seed_image</span>
         <span class="n">seed_point</span> <span class="o">=</span> <span class="n">max_convolution_positions</span><span class="p">(</span><span class="n">seed_image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span><span class="p">,</span>
                                                <span class="bp">self</span><span class="o">.</span><span class="n">pupil_bounding_box</span><span class="p">)</span>
+
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cr_parameters</span>
         <span class="n">filter_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">a</span><span class="p">,</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">cr_recolor_scale_factor</span><span class="o">*</span><span class="n">b</span><span class="p">)</span>
         <span class="n">candidate_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_generator</span><span class="o">.</span><span class="n">get_candidate_points</span><span class="p">(</span>
             <span class="n">base_image</span><span class="p">,</span> <span class="n">seed_point</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">filter_function</span><span class="o">=</span><span class="n">filter_function</span><span class="p">,</span>
             <span class="n">filter_args</span><span class="o">=</span><span class="p">(</span><span class="n">filter_params</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ellipse_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">candidate_points</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="EyeTracker.recolor_corneal_reflection"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.eye_tracking.EyeTracker.recolor_corneal_reflection">[docs]</a>    <span class="k">def</span> <span class="nf">recolor_corneal_reflection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">):</span>
@@ -574,6 +577,7 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Insufficient candidate points found for fitting &quot;</span>
                           <span class="s2">&quot;corneal reflection at frame </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span><span class="p">)</span>
             <span class="n">cr_parameters</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">pupil_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_pupil</span><span class="p">(</span><span class="n">cr_parameters</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_pupil</span><span class="p">:</span>
@@ -582,16 +586,26 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Insufficient candidate points found for fitting &quot;</span>
                           <span class="s2">&quot;pupil at frame </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span><span class="p">)</span>
             <span class="n">pupil_parameters</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">cr_parameters</span><span class="p">,</span> <span class="n">pupil_parameters</span></div>
 
-<div class="viewcode-block" id="EyeTracker.process_stream"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.eye_tracking.EyeTracker.process_stream">[docs]</a>    <span class="k">def</span> <span class="nf">process_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_frames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_mean_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get cr and pupil parameters at every frame of `input_stream`.</span>
+<div class="viewcode-block" id="EyeTracker.process_stream"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.eye_tracking.EyeTracker.process_stream">[docs]</a>    <span class="k">def</span> <span class="nf">process_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                       <span class="n">update_mean_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get cr and pupil parameters from frames of `input_stream`.</span>
+
+<span class="sd">        By default this will process every frame in the input stream.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        n_frames : int</span>
-<span class="sd">            Number of frames to process. If not specified, all frames in</span>
-<span class="sd">            the stream are processed.</span>
+<span class="sd">        start : int</span>
+<span class="sd">            Index of first frame to process. Defaults to 0.</span>
+<span class="sd">        stop : int</span>
+<span class="sd">            Stop index for processing. Defaults to None, which runs</span>
+<span class="sd">            runs until the end of the input stream.</span>
+<span class="sd">        step : int</span>
+<span class="sd">            Number of frames to advance at each iteration. Used to skip</span>
+<span class="sd">            frames while processing. Set to 1 to process every frame, 2</span>
+<span class="sd">            to process every other frame, etc. Defaults to 1.</span>
 <span class="sd">        update_mean_frame : bool</span>
 <span class="sd">            Whether or not to update the mean frame while processing</span>
 <span class="sd">            the frames.</span>
@@ -605,14 +619,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pupil_parameters</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cr_parameters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
         <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
             <span class="n">mean_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">im_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_frames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">n_frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="o">.</span><span class="n">num_frames</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_stream</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">:</span><span class="n">step</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
                 <span class="n">mean_frame</span> <span class="o">+=</span> <span class="n">frame</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame_index</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">step</span><span class="o">*</span><span class="n">i</span>
             <span class="n">cr_parameters</span><span class="p">,</span> <span class="n">pupil_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_image</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cr_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cr_parameters</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pupil_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pupil_parameters</span><span class="p">)</span>
@@ -623,11 +638,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">annotator</span><span class="o">.</span><span class="n">compute_density</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">,</span>
                                                <span class="n">cr_parameters</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">annotator</span><span class="o">.</span><span class="n">clear_rc</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n_frames</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                <span class="k">break</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">annotator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">annotator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">update_mean_frame</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mean_frame</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean_frame</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
@@ -689,7 +701,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.0.0',
+            VERSION:'1.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

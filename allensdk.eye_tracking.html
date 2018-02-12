@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking package &mdash; AllenSDK Eye Tracking 1.0.0 documentation</title>
+  <title>allensdk.eye_tracking package &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.0.0 documentation" href="index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="index.html"/>
         <link rel="up" title="allensdk package" href="allensdk.html"/>
         <link rel="prev" title="allensdk package" href="allensdk.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.0
+                1.1.0
               </div>
             
           
@@ -313,15 +313,20 @@ used to prepare image if <cite>recolor_cr</cite> is set.</td>
 
 <dl class="method">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.process_stream">
-<code class="descname">process_stream</code><span class="sig-paren">(</span><em>n_frames=None</em>, <em>update_mean_frame=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker.process_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.process_stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get cr and pupil parameters at every frame of <cite>input_stream</cite>.</p>
+<code class="descname">process_stream</code><span class="sig-paren">(</span><em>start=0</em>, <em>stop=None</em>, <em>step=1</em>, <em>update_mean_frame=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker.process_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.process_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get cr and pupil parameters from frames of <cite>input_stream</cite>.</p>
+<p>By default this will process every frame in the input stream.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n_frames</strong> (<em>int</em>) – Number of frames to process. If not specified, all frames in
-the stream are processed.</li>
+<li><strong>start</strong> (<em>int</em>) – Index of first frame to process. Defaults to 0.</li>
+<li><strong>stop</strong> (<em>int</em>) – Stop index for processing. Defaults to None, which runs
+runs until the end of the input stream.</li>
+<li><strong>step</strong> (<em>int</em>) – Number of frames to advance at each iteration. Used to skip
+frames while processing. Set to 1 to process every frame, 2
+to process every other frame, etc. Defaults to 1.</li>
 <li><strong>update_mean_frame</strong> (<em>bool</em>) – Whether or not to update the mean frame while processing
 the frames.</li>
 </ul>
@@ -846,7 +851,7 @@ inlier.</li>
 <span id="allensdk-eye-tracking-frame-stream-module"></span><h2>allensdk.eye_tracking.frame_stream module<a class="headerlink" href="#module-allensdk.eye_tracking.frame_stream" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.CvInputStream">
-<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">CvInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>block_size=1</em>, <em>cache_frames=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvInputStream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">CvInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvInputStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="allensdk.eye_tracking.frame_stream.FrameInputStream"><code class="xref py py-class docutils literal"><span class="pre">allensdk.eye_tracking.frame_stream.FrameInputStream</span></code></a></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.CvInputStream.close">
@@ -893,21 +898,26 @@ inlier.</li>
 
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.FrameInputStream">
-<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">FrameInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>block_size=1</em>, <em>cache_frames=False</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">FrameInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.close" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.create_images">
-<code class="descname">create_images</code><span class="sig-paren">(</span><em>output_directory</em>, <em>image_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream.create_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.create_images" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.frame_shape">
 <code class="descname">frame_shape</code><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.frame_shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.get_frame">
+<code class="descname">get_frame</code><span class="sig-paren">(</span><em>i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.get_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.next">
+<code class="descname">next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.next" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1115,9 +1125,35 @@ border points at the right rows and columns.</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="allensdk.eye_tracking.plotting.annotate_with_box">
+<code class="descclassname">allensdk.eye_tracking.plotting.</code><code class="descname">annotate_with_box</code><span class="sig-paren">(</span><em>image</em>, <em>bounding_box</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#annotate_with_box"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.annotate_with_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Annotate image with bounding box.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>numpy.ndarray</em>) – Grayscale or RGB image to annotate.</li>
+<li><strong>bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin, xmax, ymin, ymax] bounding box.</li>
+<li><strong>rgb_vals</strong> (<em>tuple</em>) – (r, g, b) 0-255 color values for annotation.</li>
+<li><strong>filename</strong> (<em>string</em>) – Filename to save annotated image to, if provided.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rgb_image</strong> – Annotated color image.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="allensdk.eye_tracking.plotting.annotate_with_cumulative">
 <code class="descclassname">allensdk.eye_tracking.plotting.</code><code class="descname">annotate_with_cumulative</code><span class="sig-paren">(</span><em>frame</em>, <em>density</em>, <em>rgb_vals=(255</em>, <em>0</em>, <em>0)</em>, <em>filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#annotate_with_cumulative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.annotate_with_cumulative" title="Permalink to this definition">¶</a></dt>
-<dd><p>Annotate frame with all pupil ellipses from the density map.</p>
+<dd><p>Annotate frame with all values from <cite>density</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1252,6 +1288,25 @@ where the image should be annotated.</li>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">string</p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="allensdk.eye_tracking.plotting.get_rgb_frame">
+<code class="descclassname">allensdk.eye_tracking.plotting.</code><code class="descname">get_rgb_frame</code><span class="sig-paren">(</span><em>frame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#get_rgb_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.get_rgb_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a grayscale frame to an RGB frame.</p>
+<p>If the frame passed in already has 3 channels, it is simply returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frame</strong> (<em>numpy.ndarray</em>) – Image frame.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>rgb_frame</strong> – [height,width,3] RGB frame.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
 </tbody>
 </table>
@@ -1632,7 +1687,7 @@ to consider a good fit.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.0',
+            VERSION:'1.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
