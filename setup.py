@@ -8,7 +8,7 @@ with open('test_requirements.txt', 'r') as f:
 
 setup(
     name='allensdk_eye_tracking',
-    version='1.0.0',
+    version='1.1.0',
     description="""Allen Institute package for mouse eye tracking.""",
     author="Jed Perkins",
     author_email="jedp@alleninstitute.org",
