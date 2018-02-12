@@ -2,6 +2,11 @@
 History
 =======
 
+1.1.0 (2018-02-11)
+------------------
+Add frame iteration to allow processing subsets of movies. Also
+add bounding box image to QC output.
+
 1.0.0 (2018-02-07)
 ------------------
 Rename from aibs.eye_tracking to allensdk.eye_tracking.

@@ -1,12 +1,11 @@
 from allensdk.eye_tracking import frame_stream as fs
 import sys
 import numpy as np
-from skimage.draw import circle
 import mock
 import pytest
 
 DEFAULT_FRAMES = 101
-DEFAULT_CV_FRAMES = 10
+DEFAULT_CV_FRAMES = 20
 # H264 is not available by default on windows
 if sys.platform == "win32":
     FOURCC = "FMP4"
@@ -14,38 +13,19 @@ else:
     FOURCC = "H264"
 
 
-def frame_gen(num_frames):
-    for i in range(num_frames):
-        yield np.ones((200, 200, 3))
+def image(shape=(200, 200), value=0):
+    return np.ones(shape, dtype=np.uint8)*value*10
 
 
-def frame_iter(num_frames=None):
-    if num_frames is None:
-        num_frames = DEFAULT_FRAMES
-    mock_iter = mock.MagicMock(
-        return_value=frame_gen(num_frames))
-    return mock_iter
-
-
-def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
-          pupil_radius=30, pupil_center=(100, 100)):
-    im = np.ones(shape, dtype=np.uint8)*128
-    r, c = circle(pupil_center[0], pupil_center[1], pupil_radius, shape)
-    im[r, c] = 0
-    r, c = circle(cr_center[0], cr_center[1], cr_radius, shape)
-    im[r, c] = 255
-    return im
-
-
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def movie(tmpdir_factory):
-    filename = str(tmpdir_factory.mktemp("test").join('movie.avi'))
     frame = image()
+    filename = str(tmpdir_factory.mktemp("test").join('movie.avi'))
     ostream = fs.CvOutputStream(filename, frame.shape[::-1], is_color=False,
                                 fourcc=FOURCC)
     ostream.open(filename)
     for i in range(DEFAULT_CV_FRAMES):
-        ostream.write(frame)
+        ostream.write(image(value=i))
     ostream.close()
     return filename
 
@@ -57,13 +37,64 @@ def outfile(tmpdir_factory):
 
 def test_frame_input_init():
     istream = fs.FrameInputStream("test_path")
-    istream._read_iter()
     assert(istream.movie_path == "test_path")
-    assert(istream.block_size == 1)
-    assert(not istream.cache_frames)
-    assert(istream.num_frames is None)
+    assert(istream.num_frames == 0)
     with pytest.raises(NotImplementedError):
         istream.frame_shape
+
+
+def test_frame_input_slice_errors():
+    mock_cb = mock.MagicMock()
+    istream = fs.FrameInputStream("test_path", num_frames=DEFAULT_FRAMES,
+                                  process_frame_cb=mock_cb)
+    with pytest.raises(NotImplementedError):
+        istream._get_frame(20)
+    with pytest.raises(NotImplementedError):
+        istream._seek_frame(20)
+    with pytest.raises(ValueError):
+        for x in istream[6:10:0]:
+            pass
+    with pytest.raises(KeyError):
+        istream["invalid"]
+    with pytest.raises(IndexError):
+        istream[DEFAULT_FRAMES]
+    with pytest.raises(IndexError):
+        istream[-DEFAULT_FRAMES-1]
+
+
+@pytest.mark.parametrize("start,stop,step", [
+    (5, 10, None),
+    (2, 30, 2),
+    (30, 2, -2),
+    (None, -1, None),
+    (3, None, None)
+])
+def test_frame_input_slice(start, stop, step):
+    mock_cb = mock.MagicMock()
+    istream = fs.FrameInputStream("test_path", num_frames=DEFAULT_FRAMES,
+                                  process_frame_cb=mock_cb)
+    with mock.patch.object(istream, "_get_frame", new=lambda a: a):
+        count = 0
+        for x in istream:
+            count += 1
+        assert count == DEFAULT_FRAMES
+        assert mock_cb.call_count == DEFAULT_FRAMES
+        with mock.patch.object(istream, "_seek_frame", new=lambda b: b):
+            mock_cb.reset_mock()
+            x = istream[5]
+            mock_cb.assert_called_once_with(5)
+            mock_cb.reset_mock()
+            x = istream[-20]
+            mock_cb.assert_called_once_with(DEFAULT_FRAMES-20)
+        with mock.patch.object(istream, "_seek_frame", new=lambda b: b):
+            mock_cb.reset_mock()
+            for x in istream[start:stop:step]:
+                pass
+            rstop = stop if stop is not None else DEFAULT_FRAMES
+            rstart = start if start is not None else 0
+            rstep = step if step is not None else 1
+            expected = [mock.call(x) for x in range(rstart, rstop, rstep)]
+            mock_cb.assert_has_calls(expected)
 
 
 def test_frame_input_context_manager():
@@ -83,50 +114,14 @@ def test_frame_input_close():
         istream = fs.FrameInputStream("test_path")
         istream.close()
         istream = fs.FrameInputStream("test_path", num_frames=10)
-        with pytest.raises(IOError):
-            istream.close()
+        istream.close()
         assert(mock_debug.call_count == 2)
-
-
-@pytest.mark.parametrize("num_frames,block_size,cache_frames", [
-    (None, 1, False),
-    (30, None, False),
-    (30, 5, True),
-])
-def test_frame_input_iter(num_frames, block_size, cache_frames):
-    if num_frames is None:
-        n = DEFAULT_FRAMES
-    else:
-        n = num_frames
-    patch_path = ("allensdk.eye_tracking.frame_stream.FrameInputStream."
-                  "_read_iter")
-    with mock.patch(patch_path, frame_iter(num_frames)) as mock_iter:
-        istream = fs.FrameInputStream("test_path", num_frames=num_frames,
-                                      block_size=block_size,
-                                      cache_frames=cache_frames)
-        for frame in istream:
-            assert(frame.shape == (200, 200))
-        mock_iter.assert_called_once()
-        assert(istream.frames_read == n)
-        if cache_frames:
-            assert(len(istream.frame_cache) == n)
-            for frame in istream:
-                assert(frame.shape == (200, 200))
-
-
-def test_frame_input_create_images():
-    patch_path = ("allensdk.eye_tracking.frame_stream.FrameInputStream."
-                  "_read_iter")
-    with mock.patch(patch_path, frame_iter()):
-        istream = fs.FrameInputStream("test_path")
-        with mock.patch.object(fs.imageio, "imwrite") as mock_imwrite:
-            istream.create_images("test", "png")
-            assert(mock_imwrite.call_count == DEFAULT_FRAMES)
 
 
 def test_cv_input_num_frames(movie):
     istream = fs.CvInputStream(movie)
     assert(istream.num_frames == DEFAULT_CV_FRAMES)
+    assert(istream.num_frames == DEFAULT_CV_FRAMES)  # using cached value
 
 
 def test_cv_input_frame_shape(movie):
@@ -147,21 +142,42 @@ def test_cv_input_open(movie):
 def test_cv_input_close(movie):
     istream = fs.CvInputStream(movie)
     istream.close()
-    istream.open()
+
+
+def test_cv_input_ioerrors(movie):
+    istream = fs.CvInputStream(movie)
     with pytest.raises(IOError):
-        istream.close()
+        istream._seek_frame(10)
+    with pytest.raises(IOError):
+        istream._get_frame(10)
 
 
 def test_cv_input_iter(movie):
-    istream = fs.CvInputStream(movie)
-    with pytest.raises(IOError):
-        r = istream._read_iter()
-        next(r)
+    mock_cb = mock.MagicMock()
+    istream = fs.CvInputStream(movie, process_frame_cb=mock_cb)
     count = 0
-    for frame in istream:
-        assert(frame.shape == (200, 200))
+    for x in istream:
         count += 1
-    assert(count == DEFAULT_CV_FRAMES)
+    assert count == DEFAULT_CV_FRAMES
+    assert mock_cb.call_count == DEFAULT_CV_FRAMES
+    mock_cb.reset_mock()
+    for x in istream[5:10]:
+        pass
+    for i, x in enumerate(range(5, 10)):
+        assert(np.all(np.abs(image(value=x) -
+                             mock_cb.mock_calls[i][1][0][:, :, 0]) < 2))
+    mock_cb.reset_mock()
+    for x in istream[2:18:2]:
+        pass
+    for i, x in enumerate(range(2, 18, 2)):
+        assert(np.all(np.abs(image(value=x) -
+                             mock_cb.mock_calls[i][1][0][:, :, 0]) < 2))
+    mock_cb.reset_mock()
+    for x in istream[18:2:-2]:
+        pass
+    for i, x in enumerate(range(18, 2, -2)):
+        assert(np.all(np.abs(image(value=x) -
+                             mock_cb.mock_calls[i][1][0][:, :, 0]) < 2))
 
 
 def test_frame_output_init():
@@ -203,6 +219,11 @@ def test_frame_output_write():
     with mock.patch.object(fs.FrameOutputStream, "_write_frames") as write:
         ostream = fs.FrameOutputStream()
         ostream.write(1)
+        write.assert_called_once()
+    with mock.patch.object(fs.FrameOutputStream, "_write_frames") as write:
+        ostream = fs.FrameOutputStream(block_size=50)
+        ostream.write(1)
+        ostream.close()
         write.assert_called_once()
 
 

@@ -110,6 +110,14 @@ class InputParameters(ArgSchema):
         required=True)
     pupil_bounding_box = NumpyArray(dtype="int", default=[])
     cr_bounding_box = NumpyArray(dtype="int", default=[])
+    start_frame = Int(
+        description="Frame of movie to start processing at")
+    stop_frame = Int(
+        description="Frame of movie to end processing at")
+    frame_step = Int(
+        description=("Interval of frames to process. Used for skipping frames,"
+                     "if 1 it will process every frame between start and stop")
+    )
     ransac = Nested(RansacParameters)
     annotation = Nested(AnnotationParameters)
     starburst = Nested(StarburstParameters)

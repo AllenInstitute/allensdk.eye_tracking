@@ -1,17 +1,17 @@
 import logging
-import os
-import imageio
 import traceback
 import cv2
 
 
 class FrameInputStream(object):
-    def __init__(self, movie_path, num_frames=None, block_size=1,
-                 cache_frames=False, process_frame_cb=None):
+    def __init__(self, movie_path, num_frames=None, process_frame_cb=None):
         self.movie_path = movie_path
         self._num_frames = num_frames
-        self.block_size = block_size
-        self.cache_frames = cache_frames
+        self._start = 0
+        self._stop = num_frames
+        self._step = 1
+        self._i = self._start - self._step
+        self._last_i = 0
         if process_frame_cb:
             self.process_frame_cb = process_frame_cb
         else:
@@ -19,9 +19,39 @@ class FrameInputStream(object):
         self.frames_read = 0
         self.frame_cache = []
 
+    def next(self):
+        return self.__next__()
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            if key >= self.num_frames or key < -self.num_frames:
+                raise IndexError("Index {} out of range".format(key))
+            elif key >= 0:
+                self._start = key
+            else:
+                self._start = self.num_frames + key
+            self._stop = self._start + 1
+            self._step = 1
+            return list(self)[0]  # force iteration and closing
+        elif isinstance(key, slice):
+            if key.step == 0:
+                raise ValueError("slice step cannot be 0")
+            self._start = key.start if key.start is not None else 0
+            if key.stop is None:
+                self._stop = self.num_frames
+            elif key.stop < 0:
+                self._stop = max(self.num_frames + key.stop, -1)
+            else:
+                self._stop = min(self.num_frames, key.stop)
+            self._step = key.step if key.step is not None else 1
+            return self
+        else:
+            raise KeyError("Key must be non-negative integer or slice, not {}"
+                           .format(key))
+
     @property
     def num_frames(self):
-        return self._num_frames
+        return self._num_frames if self._num_frames is not None else 0
 
     @property
     def frame_shape(self):
@@ -34,59 +64,48 @@ class FrameInputStream(object):
     def close(self):
         logging.debug("Read total frames %d", self.frames_read)
 
-        if self.num_frames is not None and self.frames_read != self.num_frames:
-            raise IOError("read incorrect number of frames: %d vs %d",
-                          self.frames_read, self.num_frames)
-
     def _error(self):
         pass
 
-    def _process_frame(self, frame):
-        return self.process_frame_cb(frame)
+    def _seek_frame(self, i):
+        raise NotImplementedError(("_seek_frame must be implemented in a "
+                                   "subclass"))
 
-    def _read_iter(self):
-        pass
+    def _get_frame(self, i):
+        raise NotImplementedError(("_get_frame must be implemented in a "
+                                   "subclass"))
+
+    def get_frame(self, i):
+        if abs(i - self._last_i) > 1:
+            self._seek_frame(i)
+        self._last_i = self._i
+        self._i = i
+        self.frames_read += 1
+        if self.frames_read % 100 == 0:
+            logging.debug("Read frames %d", self.frames_read)
+        return self.process_frame_cb(self._get_frame(self._i))
 
     def __enter__(self):
         return self
 
     def __iter__(self):
-        # if we're caching frames and the cache exists, return it
-        if self.cache_frames and self.frame_cache:
-            cache_len = len(self.frame_cache)
-            n = self.num_frames if self.num_frames is not None else cache_len
-            for i in range(n):
-                yield self.frame_cache[i]
-        else:
-            self.open()
+        self._last_i = 0
+        self._i = self._start - self._step
+        self.open()
+        logging.debug("Iterating over %s from %d to %s by step %d" %
+                      (self.movie_path, self._start, self._stop, self._step))
+        return self
 
-            self.frame_cache = []
-
-            for frame in self._read_iter():
-                self.frame_cache.append(self._process_frame(frame))
-                self.frames_read += 1
-
-                if (self.frames_read % 100) == 0:
-                    logging.debug("Read frames %d", self.frames_read)
-
-                if self.block_size is None:
-                    continue
-                if self.block_size == 1:
-                    yield self.frame_cache[-1]
-                elif (self.frames_read % self.block_size) == 0:
-                    for i in range(-self.block_size, 0):
-                        yield self.frame_cache[i]
-
-                if not self.cache_frames:
-                    self.frame_cache = []
-
+    def __next__(self):
+        if self._stop is None:
+            self._stop = self.num_frames
+        self._i = self._i + self._step
+        if (self._step < 0 and self._i <= self._stop) or \
+           (self._step > 0 and self._i >= self._stop):
             self.close()
-
-            for frame in self.frame_cache:
-                yield frame
-
-            if not self.cache_frames:
-                self.frame_cache = []
+            raise StopIteration()
+        else:
+            return self.get_frame(self._i)
 
     def __exit__(self, exc_type, exc_value, tb):
         if exc_value:
@@ -94,27 +113,21 @@ class FrameInputStream(object):
             self._error()
             raise exc_value
 
-    def create_images(self, output_directory, image_type):
-        for i, frame in enumerate(self):
-            file_name = os.path.join(output_directory,
-                                     "input_frame-%06d." % i + image_type)
-            imageio.imwrite(file_name, frame)
-
 
 class CvInputStream(FrameInputStream):
-    def __init__(self, movie_path, num_frames=None, block_size=1,
-                 cache_frames=False):
+    def __init__(self, movie_path, num_frames=None, process_frame_cb=None):
         super(CvInputStream, self).__init__(movie_path=movie_path,
                                             num_frames=num_frames,
-                                            block_size=block_size,
-                                            cache_frames=cache_frames)
+                                            process_frame_cb=process_frame_cb)
         self.cap = None
         self._frame_shape = None
+        self._stop = num_frames
 
     @property
     def num_frames(self):
         if self._num_frames is None:
             self.load_capture_properties()
+            self._stop = self._num_frames
         return self._num_frames
 
     @property
@@ -155,16 +168,16 @@ class CvInputStream(FrameInputStream):
 
         super(CvInputStream, self).close()
 
-    def _read_iter(self):
+    def _seek_frame(self, i):
         if self.cap is None:
             raise IOError("capture is not open")
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-        while self.cap.isOpened():
-            ret, frame = self.cap.read()
-            yield frame
-
-            if self.frames_read == self.num_frames:
-                break
+    def _get_frame(self, i):
+        if self.cap is None:
+            raise IOError("capture is not open")
+        ret, frame = self.cap.read()
+        return frame
 
     def _error(self):
         self.cap.release()

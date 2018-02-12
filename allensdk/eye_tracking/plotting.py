@@ -1,7 +1,7 @@
 import os
 import warnings
 import numpy as np
-from skimage.draw import ellipse, ellipse_perimeter
+from skimage.draw import ellipse, ellipse_perimeter, polygon_perimeter
 import matplotlib
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -96,7 +96,7 @@ class Annotator(object):
         rgb_frame : numpy.ndarray
             Color annotated frame.
         """
-        rgb_frame = np.dstack([frame, frame, frame])
+        rgb_frame = get_rgb_frame(frame)
         if not np.any(np.isnan(pupil_parameters)):
             self._annotate("pupil", rgb_frame, pupil_parameters)
         if not np.any(np.isnan(cr_parameters)):
@@ -170,9 +170,33 @@ class Annotator(object):
             self.output_stream.close()
 
 
+def get_rgb_frame(frame):
+    """Convert a grayscale frame to an RGB frame.
+
+    If the frame passed in already has 3 channels, it is simply returned.
+
+    Parameters
+    ----------
+    frame : numpy.ndarray
+        Image frame.
+
+    Returns
+    -------
+    rgb_frame : numpy.ndarray
+        [height,width,3] RGB frame.
+    """
+    if frame.ndim == 3 and frame.shape[2] == 3:
+        rgb_frame = frame
+    elif frame.ndim == 2:
+        rgb_frame = np.dstack([frame, frame, frame])
+    else:
+        raise ValueError("Frame of shape {} is not valid".format(frame.shape))
+    return rgb_frame
+
+
 def annotate_with_cumulative(frame, density, rgb_vals=(255, 0, 0),
                              filename=None):
-    """Annotate frame with all pupil ellipses from the density map.
+    """Annotate frame with all values from `density`.
 
     Parameters
     ----------
@@ -191,13 +215,44 @@ def annotate_with_cumulative(frame, density, rgb_vals=(255, 0, 0),
     rgb_frame : numpy.ndarray
         Annotated color frame.
     """
-    rgb_frame = np.dstack([frame, frame, frame])
+    rgb_frame = get_rgb_frame(frame)
     if density is not None:
         mask = density > 0
         color_by_mask(rgb_frame, mask, rgb_vals)
     if filename is not None:
         plt.imsave(filename, rgb_frame)
     return rgb_frame
+
+
+def annotate_with_box(image, bounding_box, rgb_vals=(255, 0, 0),
+                      filename=None):
+    """Annotate image with bounding box.
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        Grayscale or RGB image to annotate.
+    bounding_box : numpy.ndarray
+        [xmin, xmax, ymin, ymax] bounding box.
+    rgb_vals : tuple
+        (r, g, b) 0-255 color values for annotation.
+    filename : string
+        Filename to save annotated image to, if provided.
+
+    Returns
+    -------
+    rgb_image : numpy.ndarray
+        Annotated color image.
+    """
+    rgb_image = get_rgb_frame(image)
+    xmin, xmax, ymin, ymax = bounding_box
+    r = np.array((ymin, ymin, ymax, ymax), dtype=int)
+    c = np.array((xmin, xmax, xmax, xmin), dtype=int)
+    rr, cc = polygon_perimeter(r, c, rgb_image.shape[:2])
+    color_by_points(rgb_image, rr, cc, rgb_vals)
+    if filename is not None:
+        plt.imsave(filename, rgb_image)
+    return rgb_image
 
 
 def color_by_points(rgb_image, row_points, column_points,

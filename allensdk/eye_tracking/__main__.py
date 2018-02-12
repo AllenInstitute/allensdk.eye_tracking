@@ -1,4 +1,5 @@
 import os
+import json
 import numpy as np
 import marshmallow
 from argschema import ArgSchemaParser
@@ -12,7 +13,8 @@ from matplotlib import pyplot as plt  # noqa: E402
 from ._schemas import InputParameters, OutputParameters  # noqa: E402
 from .eye_tracking import EyeTracker  # noqa: E402
 from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
-from .plotting import plot_summary, plot_cumulative  # noqa: E402
+from .plotting import (plot_summary, plot_cumulative,
+                       annotate_with_box)  # noqa: E402
 
 
 def setup_annotation(im_shape, annotate_movie, output_file, fourcc="H264"):
@@ -36,8 +38,9 @@ def write_output(output_dir, cr_parameters, pupil_parameters, mean_frame):
     return output
 
 
-def write_QC_output(output_dir, annotator, cr_parameters, pupil_parameters,
-                    mean_frame):
+def write_QC_output(annotator, cr_parameters, pupil_parameters,
+                    mean_frame, **kwargs):
+    output_dir = kwargs["qc"]["output_dir"]
     annotator.annotate_with_cumulative_cr(
         mean_frame, os.path.join(output_dir, "cr_all.png"))
     annotator.annotate_with_cumulative_pupil(
@@ -45,9 +48,19 @@ def write_QC_output(output_dir, annotator, cr_parameters, pupil_parameters,
     plot_cumulative(annotator.densities["pupil"], annotator.densities["cr"],
                     output_dir=output_dir)
     plot_summary(pupil_parameters, cr_parameters, output_dir=output_dir)
+    pupil_bbox = kwargs.get("pupil_bounding_box", [])
+    cr_bbox = kwargs.get("cr_bounding_box", [])
+    if len(pupil_bbox) == 4:
+        mean_frame = annotate_with_box(mean_frame, pupil_bbox,
+                                       (0, 0, 255))
+    if len(cr_bbox) == 4:
+        mean_frame = annotate_with_box(mean_frame, cr_bbox,
+                                       (255, 0, 0))
+    plt.imsave(os.path.join(output_dir, "mean_frame_bbox.png"), mean_frame)
 
 
-def update_starburst_args(starburst_args):
+def get_starburst_args(kwargs):
+    starburst_args = kwargs.copy()
     threshold_factor = starburst_args.pop("threshold_factor", None)
     threshold_pixels = starburst_args.pop("threshold_pixels", None)
 
@@ -61,6 +74,8 @@ def update_starburst_args(starburst_args):
     if starburst_args.get("pupil_threshold_pixels", None) is None:
         starburst_args["pupil_threshold_pixels"] = threshold_pixels
 
+    return starburst_args
+
 
 def main():
     """Main entry point for running AllenSDK Eye Tracking."""
@@ -68,7 +83,7 @@ def main():
         mod = ArgSchemaParser(schema_type=InputParameters,
                               output_schema_type=OutputParameters)
 
-        update_starburst_args(mod.args["starburst"])
+        starburst_args = get_starburst_args(mod.args["starburst"])
 
         istream = CvInputStream(mod.args["input_source"])
 
@@ -78,27 +93,30 @@ def main():
 
         tracker = EyeTracker(im_shape, istream,
                              ostream,
-                             mod.args["starburst"],
+                             starburst_args,
                              mod.args["ransac"],
                              mod.args["pupil_bounding_box"],
                              mod.args["cr_bounding_box"],
                              mod.args["qc"]["generate_plots"],
                              **mod.args["eye_params"])
-        pupil_parameters, cr_parameters = tracker.process_stream()
+        pupil_parameters, cr_parameters = tracker.process_stream(
+            start=mod.args.get("start_frame", 0),
+            stop=mod.args.get("stop_frame", None),
+            step=mod.args.get("frame_step", 1)
+        )
 
         output = write_output(mod.args["output_dir"], cr_parameters,
                               pupil_parameters, tracker.mean_frame)
 
         if mod.args["qc"]["generate_plots"]:
-            write_QC_output(mod.args["qc"]["output_dir"], tracker.annotator,
-                            cr_parameters, pupil_parameters,
-                            tracker.mean_frame)
+            write_QC_output(tracker.annotator, cr_parameters, pupil_parameters,
+                            tracker.mean_frame, **mod.args)
 
         output["input_parameters"] = mod.args
         if "output_json" in mod.args:
-            mod.output(output)
+            mod.output(output, indent=1)
         else:
-            print(mod.get_output_json(output))
+            print(json.dumps(mod.get_output_json(output), indent=1))
     except marshmallow.ValidationError as e:
         print(e)
         argparser = schema_argparser(InputParameters())
