@@ -76,7 +76,8 @@ class Annotator(object):
             color_by_points(rgb_frame, self._r[name], self._c[name],
                             self.COLORS[name])
 
-    def annotate_frame(self, frame, pupil_parameters, cr_parameters):
+    def annotate_frame(self, frame, pupil_parameters, cr_parameters,
+                       seed=None, pupil_candidates=None):
         """Annotate an image with ellipses for cr and pupil.
 
         If the annotator was initialized with an output stream, the
@@ -90,6 +91,11 @@ class Annotator(object):
             (x, y, r, a, b) ellipse parameters for pupil.
         cr_parameters : tuple
             (x, y, r, a, b) ellipse parameters for corneal reflection.
+        seed : tuple
+            (y, x) seed point of pupil.
+        pupil_candidates : list
+            List of (y, x) candidate points used for the ellipse
+            fit of the pupil.
 
         Returns
         -------
@@ -101,6 +107,13 @@ class Annotator(object):
             self._annotate("pupil", rgb_frame, pupil_parameters)
         if not np.any(np.isnan(cr_parameters)):
             self._annotate("cr", rgb_frame, cr_parameters)
+
+        if seed is not None:
+            color_by_points(rgb_frame, seed[0], seed[1], (0, 255, 0))
+
+        if pupil_candidates:
+            arr = np.array(pupil_candidates)
+            color_by_points(rgb_frame, arr[:, 0], arr[:, 1], (0, 255, 0))
 
         if self.output_stream is not None:
             self.output_stream.write(rgb_frame)

@@ -8,8 +8,6 @@ from .feature_extraction import (get_circle_mask, max_image_at_value,
                                  max_convolution_positions)
 from .plotting import Annotator, ellipse_points
 
-SMOOTHING_KERNEL_SIZE = 3
-
 
 class PointGenerator(object):
     """Class to find candidate points for ellipse fitting.
@@ -119,9 +117,9 @@ class PointGenerator(object):
 
         Returns
         -------
-        x_index : int
-            Y index of threshold crossing.
         y_index : int
+            Y index of threshold crossing.
+        x_index : int
             X index of threshold crossing.
 
         Raises
@@ -213,6 +211,7 @@ class EyeTracker(object):
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
+    DEFAULT_SMOOTHING_KERNEL_SIZE = 3
 
     def __init__(self, im_shape, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
@@ -236,6 +235,8 @@ class EyeTracker(object):
         self.pupil_parameters = []
         self.cr_parameters = []
         self.generate_QC_output = generate_QC_output
+        self.current_seed = None
+        self.current_pupil_candidates = None
         self.current_image = None
         self.blurred_image = None
         self.cr_filled_image = None
@@ -259,6 +260,8 @@ class EyeTracker(object):
             kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
         self.adaptive_pupil = kwargs.get(
             "adaptive_pupil", self.DEFAULT_ADAPTIVE_PUPIL)
+        self.smoothing_kernel_size = kwargs.get(
+            "smoothing_kernel_size", self.DEFAULT_SMOOTHING_KERNEL_SIZE)
 
     @property
     def mean_frame(self):
@@ -354,6 +357,8 @@ class EyeTracker(object):
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, "pupil", filter_function=filter_function,
             filter_args=(filter_params, 2))
+        self.current_seed = seed_point
+        self.current_pupil_candidates = candidate_points
 
         return self.ellipse_fitter.fit(candidate_points)
 
@@ -409,7 +414,7 @@ class EyeTracker(object):
         """
         self.current_image = image
         self.blurred_image = medfilt2d(image,
-                                       kernel_size=SMOOTHING_KERNEL_SIZE)
+                                       kernel_size=self.smoothing_kernel_size)
         try:
             cr_parameters = self.find_corneal_reflection()
         except ValueError:
@@ -472,7 +477,8 @@ class EyeTracker(object):
             self.pupil_parameters.append(pupil_parameters)
             if self.annotator.output_stream is not None:
                 self.annotator.annotate_frame(frame, pupil_parameters,
-                                              cr_parameters)
+                                              cr_parameters, self.current_seed,
+                                              self.current_pupil_candidates)
             if self.generate_QC_output:
                 self.annotator.compute_density(frame, pupil_parameters,
                                                cr_parameters)

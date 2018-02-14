@@ -2,6 +2,11 @@
 History
 =======
 
+1.1.1 (2018-02-13)
+------------------
+Expose median kernel smoothing to the command line.
+Add seed point and candidate pupil points to annotation output.
+
 1.1.0 (2018-02-11)
 ------------------
 Add frame iteration to allow processing subsets of movies. Also
