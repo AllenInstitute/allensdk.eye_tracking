@@ -260,7 +260,8 @@ class EyeTracker(object):
             kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
         self.adaptive_pupil = kwargs.get(
             "adaptive_pupil", self.DEFAULT_ADAPTIVE_PUPIL)
-        self.smoothing_kernel_size = self.DEFAULT_SMOOTHING_KERNEL_SIZE
+        self.smoothing_kernel_size = kwargs.get(
+            "smoothing_kernel_size", self.DEFAULT_SMOOTHING_KERNEL_SIZE)
 
     @property
     def mean_frame(self):
