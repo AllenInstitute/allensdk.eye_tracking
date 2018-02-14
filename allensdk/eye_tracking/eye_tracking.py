@@ -8,8 +8,6 @@ from .feature_extraction import (get_circle_mask, max_image_at_value,
                                  max_convolution_positions)
 from .plotting import Annotator, ellipse_points
 
-SMOOTHING_KERNEL_SIZE = 3
-
 
 class PointGenerator(object):
     """Class to find candidate points for ellipse fitting.
@@ -213,6 +211,7 @@ class EyeTracker(object):
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
+    DEFAULT_SMOOTHING_KERNEL_SIZE = 3
 
     def __init__(self, im_shape, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
@@ -261,6 +260,8 @@ class EyeTracker(object):
             kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
         self.adaptive_pupil = kwargs.get(
             "adaptive_pupil", self.DEFAULT_ADAPTIVE_PUPIL)
+        self.smoothing_kernel_size = kwargs.get(
+            "smoothing_kernel_size", self.DEFAULT_SMOOTHING_KERNEL_SIZE)
 
     @property
     def mean_frame(self):
@@ -413,7 +414,7 @@ class EyeTracker(object):
         """
         self.current_image = image
         self.blurred_image = medfilt2d(image,
-                                       kernel_size=SMOOTHING_KERNEL_SIZE)
+                                       kernel_size=self.smoothing_kernel_size)
         try:
             cr_parameters = self.find_corneal_reflection()
         except ValueError:
