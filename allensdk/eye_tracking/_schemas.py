@@ -90,6 +90,10 @@ class EyeParameters(DefaultSchema):
     cr_mask_radius = Int(
         default=EyeTracker.DEFAULT_CR_MASK_RADIUS,
         description="Radius of cr mask used to find seed point")
+    smoothing_kernel_size = Int(
+        default=EyeTracker.DEFAULT_SMOOTHING_KERNEL_SIZE,
+        description=("Kernel size for median filter smoothing kernel (must be "
+                     "odd)"))
 
 
 class QCParameters(DefaultSchema):
