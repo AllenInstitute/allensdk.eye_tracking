@@ -119,9 +119,9 @@ class PointGenerator(object):
 
         Returns
         -------
-        x_index : int
-            Y index of threshold crossing.
         y_index : int
+            Y index of threshold crossing.
+        x_index : int
             X index of threshold crossing.
 
         Raises
@@ -236,6 +236,8 @@ class EyeTracker(object):
         self.pupil_parameters = []
         self.cr_parameters = []
         self.generate_QC_output = generate_QC_output
+        self.current_seed = None
+        self.current_pupil_candidates = None
         self.current_image = None
         self.blurred_image = None
         self.cr_filled_image = None
@@ -354,6 +356,8 @@ class EyeTracker(object):
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, "pupil", filter_function=filter_function,
             filter_args=(filter_params, 2))
+        self.current_seed = seed_point
+        self.current_pupil_candidates = candidate_points
 
         return self.ellipse_fitter.fit(candidate_points)
 
@@ -472,7 +476,8 @@ class EyeTracker(object):
             self.pupil_parameters.append(pupil_parameters)
             if self.annotator.output_stream is not None:
                 self.annotator.annotate_frame(frame, pupil_parameters,
-                                              cr_parameters)
+                                              cr_parameters, self.current_seed,
+                                              self.current_pupil_candidates)
             if self.generate_QC_output:
                 self.annotator.compute_density(frame, pupil_parameters,
                                                cr_parameters)
