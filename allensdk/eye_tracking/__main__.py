@@ -87,11 +87,10 @@ def main():
 
         istream = CvInputStream(mod.args["input_source"])
 
-        im_shape = istream.frame_shape
+        ostream = setup_annotation(istream.frame_shape,
+                                   **mod.args["annotation"])
 
-        ostream = setup_annotation(im_shape, **mod.args["annotation"])
-
-        tracker = EyeTracker(im_shape, istream,
+        tracker = EyeTracker(istream,
                              ostream,
                              starburst_args,
                              mod.args["ransac"],
