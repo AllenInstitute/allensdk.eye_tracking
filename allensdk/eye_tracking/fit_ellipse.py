@@ -38,11 +38,20 @@ class EllipseFitter(object):
     def __init__(self, minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
                  number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
                  threshold=DEFAULT_THRESHOLD, iterations=DEFAULT_ITERATIONS):
+        self.update_params(minimum_points_for_fit=minimum_points_for_fit,
+                           number_of_close_points=number_of_close_points,
+                           iterations=iterations, threshold=threshold)
+        self._fitter = RansacFitter()
+
+    def update_params(self,
+                      minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
+                      number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
+                      threshold=DEFAULT_THRESHOLD,
+                      iterations=DEFAULT_ITERATIONS):
         self.minimum_points_for_fit = minimum_points_for_fit
         self.number_of_close_points = number_of_close_points
         self.threshold = threshold
         self.iterations = iterations
-        self._fitter = RansacFitter()
 
     def fit(self, candidate_points):
         """Perform a fit on (y,x) points.
