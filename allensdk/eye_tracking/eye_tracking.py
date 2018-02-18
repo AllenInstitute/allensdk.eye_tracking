@@ -43,13 +43,44 @@ class PointGenerator(object):
                  pupil_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
                  cr_threshold_pixels=DEFAULT_THRESHOLD_PIXELS,
                  pupil_threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
+        self.update_params(index_length=index_length, n_rays=n_rays,
+                           cr_threshold_factor=cr_threshold_factor,
+                           pupil_threshold_factor=pupil_threshold_factor,
+                           cr_threshold_pixels=cr_threshold_pixels,
+                           pupil_threshold_pixels=pupil_threshold_pixels)
+        self.above_threshold = {"cr": False,
+                                "pupil": True}
+
+    def update_params(self, index_length=DEFAULT_INDEX_LENGTH,
+                      n_rays=DEFAULT_N_RAYS,
+                      cr_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
+                      pupil_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
+                      cr_threshold_pixels=DEFAULT_THRESHOLD_PIXELS,
+                      pupil_threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
+        """Update starburst point generation parameters.
+
+        Parameters
+        ----------
+        index_length : int
+            Initial default length for ray indices.
+        n_rays : int
+            The number of rays to check.
+        cr_threshold_factor : float
+            Multiplicative factor for thresholding corneal reflection.
+        pupil_threshold_factor : float
+            Multiplicative factor for thresholding pupil.
+        cr_threshold_pixels : int
+            Number of pixels (from beginning of ray) to use to determine
+            threshold of corneal reflection.
+        pupil_threshold_pixels : int
+            Number of pixels (from beginning of ray) to use to determine
+            threshold of pupil.
+        """
         self.xs, self.ys = generate_ray_indices(index_length, n_rays)
         self.threshold_pixels = {"cr": cr_threshold_pixels,
                                  "pupil": pupil_threshold_pixels}
         self.threshold_factor = {"cr": cr_threshold_factor,
                                  "pupil": pupil_threshold_factor}
-        self.above_threshold = {"cr": False,
-                                "pupil": True}
 
     def get_candidate_points(self, image, seed_point, point_type,
                              filter_function=None, filter_args=()):
@@ -213,25 +244,29 @@ class EyeTracker(object):
     DEFAULT_GENERATE_QC_OUTPUT = False
     DEFAULT_SMOOTHING_KERNEL_SIZE = 3
 
-    def __init__(self, im_shape, input_stream, output_stream=None,
+    def __init__(self, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
                  pupil_bounding_box=None, cr_bounding_box=None,
                  generate_QC_output=DEFAULT_GENERATE_QC_OUTPUT, **kwargs):
-        if starburst_params is None:
-            starburst_params = {}
-        if ransac_params is None:
-            ransac_params = {}
-        self.point_generator = PointGenerator(**starburst_params)
-        self.ellipse_fitter = EllipseFitter(**ransac_params)
-        self.annotator = Annotator(output_stream)
-        self.im_shape = im_shape
+        self._mean_frame = None
+        self._input_stream = None
         self.input_stream = input_stream
-        if pupil_bounding_box is None or len(pupil_bounding_box) == 0:
-            pupil_bounding_box = default_bounding_box(im_shape)
-        if cr_bounding_box is None or len(cr_bounding_box) == 0:
-            cr_bounding_box = default_bounding_box(im_shape)
-        self.pupil_bounding_box = pupil_bounding_box
-        self.cr_bounding_box = cr_bounding_box
+        self.point_generator = None
+        self.ellipse_fitter = None
+        self.min_pupil_value = self.DEFAULT_MIN_PUPIL_VALUE
+        self.max_pupil_value = self.DEFAULT_MAX_PUPIL_VALUE
+        self.cr_recolor_scale_factor = self.DEFAULT_CR_RECOLOR_SCALE_FACTOR
+        self.recolor_cr = self.DEFAULT_RECOLOR_CR
+        self.cr_mask_radius = self.DEFAULT_CR_MASK_RADIUS
+        self.pupil_mask_radius = self.DEFAULT_PUPIL_MASK_RADIUS
+        self.adaptive_pupil = self.DEFAULT_ADAPTIVE_PUPIL
+        self.smoothing_kernel_size = self.DEFAULT_SMOOTHING_KERNEL_SIZE
+        self.update_fit_parameters(starburst_params=starburst_params,
+                                   ransac_params=ransac_params,
+                                   pupil_bounding_box=pupil_bounding_box,
+                                   cr_bounding_box=cr_bounding_box,
+                                   **kwargs)
+        self.annotator = Annotator(output_stream)
         self.pupil_parameters = []
         self.cr_parameters = []
         self.generate_QC_output = generate_QC_output
@@ -241,27 +276,72 @@ class EyeTracker(object):
         self.blurred_image = None
         self.cr_filled_image = None
         self.pupil_max_image = None
-        self._mean_frame = None
-        self._init_kwargs(**kwargs)
+        self.annotated_image = None
         self.frame_index = 0
+
+    def update_fit_parameters(self, starburst_params=None, ransac_params=None,
+                              pupil_bounding_box=None, cr_bounding_box=None,
+                              **kwargs):
+        if self.point_generator is None:
+            if starburst_params is None:
+                self.point_generator = PointGenerator()
+            else:
+                self.point_generator = PointGenerator(**starburst_params)
+        elif starburst_params is not None:
+            self.point_generator.update_params(**starburst_params)
+        if self.ellipse_fitter is None:
+            if ransac_params is None:
+                self.ellipse_fitter = EllipseFitter()
+            else:
+                self.ellipse_fitter = EllipseFitter(**ransac_params)
+        elif ransac_params is not None:
+            self.ellipse_fitter.update_params(**ransac_params)
+        if pupil_bounding_box is None or len(pupil_bounding_box) == 0:
+            pupil_bounding_box = default_bounding_box(self.im_shape)
+        if cr_bounding_box is None or len(cr_bounding_box) == 0:
+            cr_bounding_box = default_bounding_box(self.im_shape)
+        self.pupil_bounding_box = pupil_bounding_box
+        self.cr_bounding_box = cr_bounding_box
+        self._init_kwargs(**kwargs)
 
     def _init_kwargs(self, **kwargs):
         self.min_pupil_value = kwargs.get("min_pupil_value",
-                                          self.DEFAULT_MIN_PUPIL_VALUE)
+                                          self.min_pupil_value)
         self.max_pupil_value = kwargs.get("max_pupil_value",
-                                          self.DEFAULT_MAX_PUPIL_VALUE)
+                                          self.max_pupil_value)
         self.last_pupil_color = self.min_pupil_value
         self.cr_recolor_scale_factor = kwargs.get(
-            "cr_recolor_scale_factor", self.DEFAULT_CR_RECOLOR_SCALE_FACTOR)
-        self.recolor_cr = kwargs.get("recolor_cr", self.DEFAULT_RECOLOR_CR)
-        self.cr_mask = get_circle_mask(
-            kwargs.get("cr_mask_radius", self.DEFAULT_CR_MASK_RADIUS))
-        self.pupil_mask = get_circle_mask(
-            kwargs.get("pupil_mask_radius", self.DEFAULT_PUPIL_MASK_RADIUS))
+            "cr_recolor_scale_factor", self.cr_recolor_scale_factor)
+        self.recolor_cr = kwargs.get("recolor_cr", self.recolor_cr)
+        self.cr_mask_radius = kwargs.get("cr_mask_radius", self.cr_mask_radius)
+        self.cr_mask = get_circle_mask(self.cr_mask_radius)
+        self.pupil_mask_radius = kwargs.get("pupil_mask_radius",
+                                            self.pupil_mask_radius)
+        self.pupil_mask = get_circle_mask(self.pupil_mask_radius)
         self.adaptive_pupil = kwargs.get(
-            "adaptive_pupil", self.DEFAULT_ADAPTIVE_PUPIL)
+            "adaptive_pupil", self.adaptive_pupil)
         self.smoothing_kernel_size = kwargs.get(
-            "smoothing_kernel_size", self.DEFAULT_SMOOTHING_KERNEL_SIZE)
+            "smoothing_kernel_size", self.smoothing_kernel_size)
+
+    @property
+    def im_shape(self):
+        if self.input_stream is None:
+            return None
+        return self.input_stream.frame_shape
+
+    @property
+    def input_stream(self):
+        return self._input_stream
+
+    @input_stream.setter
+    def input_stream(self, stream):
+        self._mean_frame = None
+        if self._input_stream is not None:
+            self._input_stream.close()
+        if stream is not None and stream.frame_shape != self.im_shape:
+            self.cr_bounding_box = default_bounding_box(stream.frame_shape)
+            self.pupil_bounding_box = default_bounding_box(stream.frame_shape)
+        self._input_stream = stream
 
     @property
     def mean_frame(self):
@@ -373,7 +453,7 @@ class EyeTracker(object):
         x, y, r, a, b = cr_parameters
         a = self.cr_recolor_scale_factor*a + 1
         b = self.cr_recolor_scale_factor*b + 1
-        r, c = ellipse_points((x, y, r, a, b), self.im_shape)
+        r, c = ellipse_points((x, y, r, a, b), self.blurred_image.shape)
         self.cr_filled_image = self.blurred_image.copy()
         self.cr_filled_image[r, c] = self.last_pupil_color
 
@@ -391,7 +471,7 @@ class EyeTracker(object):
             image = self.cr_filled_image
         else:
             image = self.blurred_image
-        r, c = ellipse_points(pupil_parameters, self.im_shape)
+        r, c = ellipse_points(pupil_parameters, image.shape)
         value = int(np.mean(image[r, c]))
         value = max(self.min_pupil_value, value)
         value = min(self.max_pupil_value, value)
@@ -476,9 +556,9 @@ class EyeTracker(object):
             self.cr_parameters.append(cr_parameters)
             self.pupil_parameters.append(pupil_parameters)
             if self.annotator.output_stream is not None:
-                self.annotator.annotate_frame(frame, pupil_parameters,
-                                              cr_parameters, self.current_seed,
-                                              self.current_pupil_candidates)
+                self.annotated_image = self.annotator.annotate_frame(
+                    frame, pupil_parameters, cr_parameters, self.current_seed,
+                    self.current_pupil_candidates)
             if self.generate_QC_output:
                 self.annotator.compute_density(frame, pupil_parameters,
                                                cr_parameters)
@@ -505,6 +585,9 @@ def default_bounding_box(image_shape):
     bounding_box : numpy.ndarray
         [xmin, xmax, ymin, ymax] bounding box.
     """
+    if image_shape is None:
+        return np.array([1, -1, 1, -1], dtype='int')
+
     h, w = image_shape
     x_crop = int(0.1*w)
     y_crop = int(0.1*h)
