@@ -32,8 +32,8 @@ class PointGenerator(object):
         Number of pixels (from beginning of ray) to use to determine
         threshold of pupil.
     """
-    DEFAULT_INDEX_LENGTH = 100
-    DEFAULT_N_RAYS = 20
+    DEFAULT_INDEX_LENGTH = 150
+    DEFAULT_N_RAYS = 100
     DEFAULT_THRESHOLD_FACTOR = 1.6
     DEFAULT_THRESHOLD_PIXELS = 10
 
@@ -261,8 +261,8 @@ class EyeTracker(object):
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
-    DEFAULT_SMOOTHING_KERNEL_SIZE = 3
-    DEFAULT_CLIP_PUPIL_THRESHOLD = True
+    DEFAULT_SMOOTHING_KERNEL_SIZE = 7
+    DEFAULT_CLIP_PUPIL_THRESHOLD = False
 
     def __init__(self, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,

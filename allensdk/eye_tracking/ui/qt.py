@@ -412,9 +412,13 @@ class ViewerWindow(QtWidgets.QMainWindow):
         save.triggered.connect(self.widget.save_json)
 
 
-if __name__ == "__main__":
+def main():
     import sys
     app = QtWidgets.QApplication([])
     w = ViewerWindow(_schemas.InputParameters)
     w.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
