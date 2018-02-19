@@ -83,7 +83,8 @@ class PointGenerator(object):
                                  "pupil": pupil_threshold_factor}
 
     def get_candidate_points(self, image, seed_point, point_type,
-                             filter_function=None, filter_args=()):
+                             filter_function=None, filter_args=(),
+                             threshold_limits=None):
         """Get candidate points for ellipse fitting.
 
         Parameters
@@ -96,6 +97,9 @@ class PointGenerator(object):
             Either 'cr' or 'pupil'. Determines if threshold crossing is
             high-to-low or low-to-high and which `threshold_factor` and
             `threshold_pixels` value to use.
+        threshold_limits : tuple
+            (min_threshold, max_threshold) limits to set when calculating
+            adaptive threshold.
 
         Returns
         -------
@@ -111,7 +115,8 @@ class PointGenerator(object):
         for i, values in enumerate(ray_values):
             try:
                 point = self.threshold_crossing(xs[i], ys[i], values,
-                                                point_type)
+                                                point_type,
+                                                threshold_limits)
                 if filter_function is not None:
                     if filter_function(point, *filter_args):
                         candidate_points.append(point)
@@ -128,7 +133,8 @@ class PointGenerator(object):
                           threshold_not_crossed)
         return candidate_points
 
-    def threshold_crossing(self, xs, ys, values, point_type):
+    def threshold_crossing(self, xs, ys, values, point_type,
+                           threshold_limits=None):
         """Check a ray for where it crosses a threshold.
 
         The threshold is calculated using `get_threshold`.
@@ -145,6 +151,9 @@ class PointGenerator(object):
             Either 'cr' or 'pupil'. Determines if threshold crossing is
             high-to-low or low-to-high and which `threshold_factor` and
             `threshold_pixels` value to use.
+        threshold_limits : tuple
+            (min_threshold, max_threshold) limits to set when calculating
+            adaptive threshold.
 
         Returns
         -------
@@ -166,7 +175,8 @@ class PointGenerator(object):
             raise ValueError(("'{}' is not a supported point type, must be "
                               "'cr' or 'pupil'").format(point_type))
         threshold = self.get_threshold(values, threshold_pixels,
-                                       threshold_factor)
+                                       threshold_factor,
+                                       threshold_limits)
         if above_threshold:
             comparison = values[threshold_pixels:] > threshold
         else:
@@ -178,7 +188,8 @@ class PointGenerator(object):
         else:
             raise ValueError("No value in array crosses: {}".format(threshold))
 
-    def get_threshold(self, ray_values, threshold_pixels, threshold_factor):
+    def get_threshold(self, ray_values, threshold_pixels, threshold_factor,
+                      threshold_limits=None):
         """Calculate the threshold from the ray values.
 
         The threshold is determined from `threshold_factor` times the
@@ -193,6 +204,9 @@ class PointGenerator(object):
         threshold_pixels : int
             Number of pixels (from beginning of ray) to use to determine
             threshold.
+        threshold_limits : tuple
+            (min_threshold, max_threshold) limits to set when calculating
+            adaptive threshold.
 
         Returns
         -------
@@ -200,8 +214,12 @@ class PointGenerator(object):
             Threshold to set for candidate point.
         """
         sub_ray = ray_values[threshold_pixels]
+        threshold = threshold_factor*np.mean(sub_ray)
+        if threshold_limits is not None:
+            threshold = min(threshold, threshold_limits[1])
+            threshold = max(threshold, threshold_limits[0])
 
-        return threshold_factor*np.mean(sub_ray)
+        return threshold
 
 
 class EyeTracker(object):
@@ -233,6 +251,7 @@ class EyeTracker(object):
         recolor_cr : bool
         adaptive_pupil: bool
         smoothing_kernel_size : int
+        clip_pupil_threshold : bool
     """
     DEFAULT_MIN_PUPIL_VALUE = 0
     DEFAULT_MAX_PUPIL_VALUE = 30
@@ -243,6 +262,7 @@ class EyeTracker(object):
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
     DEFAULT_SMOOTHING_KERNEL_SIZE = 3
+    DEFAULT_CLIP_PUPIL_THRESHOLD = True
 
     def __init__(self, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
@@ -261,6 +281,7 @@ class EyeTracker(object):
         self.pupil_mask_radius = self.DEFAULT_PUPIL_MASK_RADIUS
         self.adaptive_pupil = self.DEFAULT_ADAPTIVE_PUPIL
         self.smoothing_kernel_size = self.DEFAULT_SMOOTHING_KERNEL_SIZE
+        self.clip_pupil_threshold = self.DEFAULT_CLIP_PUPIL_THRESHOLD
         self.update_fit_parameters(starburst_params=starburst_params,
                                    ransac_params=ransac_params,
                                    pupil_bounding_box=pupil_bounding_box,
@@ -305,6 +326,7 @@ class EyeTracker(object):
             recolor_cr : bool
             adaptive_pupil: bool
             smoothing_kernel_size : int
+            clip_pupil_threshold : bool
         """
         if self.point_generator is None:
             if starburst_params is None:
@@ -346,6 +368,13 @@ class EyeTracker(object):
             "adaptive_pupil", self.adaptive_pupil)
         self.smoothing_kernel_size = kwargs.get(
             "smoothing_kernel_size", self.smoothing_kernel_size)
+        self.clip_pupil_threshold = kwargs.get(
+            "clip_pupil_threshold", self.clip_pupil_threshold)
+        if self.clip_pupil_threshold:
+            self.pupil_threshold_limits = (self.min_pupil_value,
+                                           self.max_pupil_value)
+        else:
+            self.pupil_threshold_limits = None
 
     @property
     def im_shape(self):
@@ -462,7 +491,8 @@ class EyeTracker(object):
                          self.cr_recolor_scale_factor*b)
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, "pupil", filter_function=filter_function,
-            filter_args=(filter_params, 2))
+            filter_args=(filter_params, 2),
+            threshold_limits=self.pupil_threshold_limits)
         self.current_seed = seed_point
         self.current_pupil_candidates = candidate_points
 

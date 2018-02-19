@@ -94,6 +94,11 @@ class EyeParameters(DefaultSchema):
         default=EyeTracker.DEFAULT_SMOOTHING_KERNEL_SIZE,
         description=("Kernel size for median filter smoothing kernel (must be "
                      "odd)"))
+    clip_pupil_threshold = Bool(
+        default=EyeTracker.DEFAULT_CLIP_PUPIL_THRESHOLD,
+        description=("Flag of whether or not to restrict pupil threshold for "
+                     "starburst to fall within the range of (min_pupil_value, "
+                     "max_pupil_value)"))
 
 
 class QCParameters(DefaultSchema):
