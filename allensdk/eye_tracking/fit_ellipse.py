@@ -28,7 +28,7 @@ class EllipseFitter(object):
         Error threshold below which data should be considered an
         inlier.
     iterations : int
-            Number of iterations to run.
+        Number of iterations to run.
     """
     DEFAULT_MINIMUM_POINTS_FOR_FIT = 25
     DEFAULT_NUMBER_OF_CLOSE_POINTS = 10
@@ -53,7 +53,7 @@ class EllipseFitter(object):
         self.threshold = threshold
         self.iterations = iterations
 
-    def fit(self, candidate_points):
+    def fit(self, candidate_points, max_radius=None):
         """Perform a fit on (y,x) points.
 
         Parameters
@@ -69,7 +69,8 @@ class EllipseFitter(object):
         data = np.array(candidate_points)
         params = self._fitter.fit(fit_ellipse, fit_errors, data,
                                   self.threshold, self.minimum_points_for_fit,
-                                  self.number_of_close_points, self.iterations)
+                                  self.number_of_close_points, self.iterations,
+                                  max_radius=max_radius)
         if params is not None:
             x, y = ellipse_center(params)
             angle = ellipse_angle_of_rotation(params)*180/np.pi
@@ -79,13 +80,15 @@ class EllipseFitter(object):
             return (np.nan, np.nan, np.nan, np.nan, np.nan)
 
 
-def fit_ellipse(data):
+def fit_ellipse(data, max_radius=None):
     """Fit an ellipse to data.
 
     Parameters
     ----------
     data : numpy.ndarray
         [n,2] array of (y,x) data points.
+    max_radius : float
+        Maximum radius to allow.
 
     Returns
     -------
@@ -105,6 +108,10 @@ def fit_ellipse(data):
 
         params = U.T[0]
         error = np.dot(params, np.dot(S, params))/len(y)
+        if max_radius is not None:
+            ax1, ax2 = ellipse_axis_length(params)
+            if ax1 > max_radius or ax2 > max_radius:
+                error = np.inf
     except Exception as e:
         logging.debug(e)  # figure out which exception this is catching
         params = None

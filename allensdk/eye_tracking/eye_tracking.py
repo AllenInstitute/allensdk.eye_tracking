@@ -76,6 +76,7 @@ class PointGenerator(object):
             Number of pixels (from beginning of ray) to use to determine
             threshold of pupil.
         """
+        self.index_length = index_length
         self.xs, self.ys = generate_ray_indices(index_length, n_rays)
         self.threshold_pixels = {"cr": cr_threshold_pixels,
                                  "pupil": pupil_threshold_pixels}
@@ -423,7 +424,8 @@ class EyeTracker(object):
                                                self.cr_bounding_box)
         candidate_points = self.point_generator.get_candidate_points(
             self.blurred_image, seed_point, "cr")
-        return self.ellipse_fitter.fit(candidate_points)
+        return self.ellipse_fitter.fit(
+            candidate_points, max_radius=self.point_generator.index_length)
 
     def setup_pupil_finder(self, cr_parameters):
         """Initialize image and ransac filter for pupil fitting.
@@ -496,7 +498,8 @@ class EyeTracker(object):
         self.current_seed = seed_point
         self.current_pupil_candidates = candidate_points
 
-        return self.ellipse_fitter.fit(candidate_points)
+        return self.ellipse_fitter.fit(
+            candidate_points, max_radius=self.point_generator.index_length)
 
     def recolor_corneal_reflection(self, cr_parameters):
         """Reshade the corneal reflection with the last pupil color.
