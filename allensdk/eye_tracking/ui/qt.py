@@ -261,8 +261,8 @@ class ViewerWidget(QtWidgets.QWidget):
     schema_type : type(argschema.DefaultSchema)
         The input schema type.
     """
-    def __init__(self, schema_type):
-        super(ViewerWidget, self).__init__()
+    def __init__(self, schema_type, parent=None):
+        super(ViewerWidget, self).__init__(parent=parent)
         self.layout = QtWidgets.QGridLayout()
         self.schema_type = schema_type
         self.video = "./"
@@ -321,7 +321,7 @@ class ViewerWidget(QtWidgets.QWidget):
                                   schema_type=self.schema_type)
             return mod.args
         except Exception as e:
-            print(e)
+            self._json_error_popup(e)
         return None
 
     def _setup_tracker(self):
@@ -367,7 +367,8 @@ class ViewerWidget(QtWidgets.QWidget):
                     json.dump(json_data, f, indent=1)
 
     def load_video(self):
-        filepath, _ = QtWidgets.QFileDialog.getOpenFileName()
+        filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select video")
         if filepath:
             self._load_video(filepath)
 
@@ -396,11 +397,17 @@ class ViewerWidget(QtWidgets.QWidget):
         ax.axis("off")
         self.canvas.draw()
 
+    def _json_error_popup(self, msg):
+        message = "<pre>Error parsing input json: \n{}</pre>".format(msg)
+        box = QtWidgets.QMessageBox(self)
+        box.setText(message)
+        box.exec_()
+
 
 class ViewerWindow(QtWidgets.QMainWindow):
     def __init__(self, schema_type):
         super(ViewerWindow, self).__init__()
-        self.widget = ViewerWidget(schema_type)
+        self.widget = ViewerWidget(schema_type, parent=self)
         self.setCentralWidget(self.widget)
         self._init_menubar()
 
