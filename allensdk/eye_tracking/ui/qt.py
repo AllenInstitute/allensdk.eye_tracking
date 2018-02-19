@@ -3,7 +3,7 @@ from matplotlib.figure import Figure, SubplotParams
 import ast
 import os
 import json
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
 from argschema.schemas import mm
 from argschema import ArgSchemaParser
 from allensdk.eye_tracking import _schemas
@@ -17,6 +17,18 @@ LITERAL_EVAL_TYPES = {_schemas.NumpyArray, _schemas.Bool}
 
 
 class FieldWidget(QtWidgets.QLineEdit):
+    """Widget for displaying and editing a schema field.
+
+    Parameters
+    ----------
+    key : string
+        Name of the field.
+    field : argschema.Field
+        Argschema Field object containing serialization and default
+        data information.
+    parent : QtWidgets.QWidget
+        Parent widget.
+    """
     def __init__(self, key, field, parent=None):
         if field.default == mm.missing:
             default = ""
@@ -27,6 +39,13 @@ class FieldWidget(QtWidgets.QLineEdit):
         self.key = key
 
     def get_json(self):
+        """Get the JSON serializable data from this field.
+
+        Returns
+        -------
+        data : object
+            JSON serializable data in the widget, or None if empty.
+        """
         raw_value = str(self.text())
         if raw_value:
             if type(self.field) in LITERAL_EVAL_TYPES:
@@ -39,6 +58,17 @@ class FieldWidget(QtWidgets.QLineEdit):
 
 
 class SchemaWidget(QtWidgets.QWidget):
+    """Widget for displaying an ArgSchema.
+
+    Parameters
+    ----------
+    key : string
+        The key of the schema if it is nested.
+    schema : argschema.DefaultSchema
+        The schema to create a widget for.
+    parent : QtWidgets.QWidget
+        Parent widget.
+    """
     def __init__(self, key, schema, parent=None):
         super(SchemaWidget, self).__init__(parent=parent)
         self.key = key
@@ -78,17 +108,49 @@ class SchemaWidget(QtWidgets.QWidget):
             i += 1
 
     def get_json(self):
+        """Get the JSON serializable data from this schema.
+
+        Returns
+        -------
+        data : object
+            JSON serializable data in the widget, or None if empty.
+        """
         json_data = {}
-        for k, v in self.fields.items():
-            data = v.get_json()
+        for key, value in self.fields.items():
+            data = value.get_json()
             if data is not None:
-                json_data[k] = data
+                json_data[key] = data
         if json_data:
             return json_data
         return None
 
+    def update_value(self, attribute, value):
+        """Update a value in the schema.
+
+        Parameters
+        ----------
+        attribute : string
+            Attribute name to update.
+        value : string
+            Value to set the field edit box to.
+        """
+        attrs = attribute.split(".", 1)
+        if len(attrs) > 1:
+            self.fields[attrs[0]].update_value(attrs[1])
+        else:
+            self.fields[attribute].setText(value)
+
 
 class InputJsonWidget(QtWidgets.QScrollArea):
+    """Widget for displaying an editable input json in a scroll area.
+
+    Parameters
+    ----------
+    schema : argschema.DefaultSchema
+        Schema from which to build widgets.
+    parent : QtWidgets.QWidget
+        Parent widget.
+    """
     def __init__(self, schema, parent=None):
         super(InputJsonWidget, self).__init__(parent=parent)
         self.setWindowTitle("Input Parameters")
@@ -98,8 +160,107 @@ class InputJsonWidget(QtWidgets.QScrollArea):
     def get_json(self):
         return self.schema_widget.get_json()
 
+    def update_value(self, attribute, value):
+        self.schema_widget.update_value(attribute, value)
+
+
+class BBoxCanvas(FigureCanvasQTAgg):
+    """Matplotlib canvas widget with drawable box.
+
+    Parameters
+    ----------
+    figure : matplotlib.Figure
+        Matplob figure to contain in the canvas.
+    """
+    box_updated = QtCore.Signal(int, int, int, int)
+
+    def __init__(self, figure):
+        super(BBoxCanvas, self).__init__(figure)
+        self.rgba = (255, 255, 255, 20)
+        self.begin = QtCore.QPoint()
+        self.end = QtCore.QPoint()
+        self.drawing = False
+
+    def set_rgb(self, r, g, b):
+        """Set the RGB values for the bounding box tool.
+
+        Parameters
+        ----------
+        r : int
+            Red channel value (0-255).
+        g : int
+            Green channel value (0-255).
+        b : int
+            Blue channel value (0-255).
+        """
+        self.rgba = (r, g, b, 20)
+
+    def paintEvent(self, event):
+        """Event override for painting to draw bounding box.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The paint event.
+        """
+        super(BBoxCanvas, self).paintEvent(event)
+        if self.drawing:
+            painter = QtGui.QPainter(self)
+            brush = QtGui.QBrush(QtGui.QColor(*self.rgba))
+            painter.setBrush(brush)
+            painter.drawRect(QtCore.QRect(self.begin, self.end))
+
+    def mousePressEvent(self, event):
+        """Event override for painting to initialize bounding box.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The mouse press event.
+        """
+        self.begin = event.pos()
+        self.end = event.pos()
+        self.drawing = True
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        """Event override for painting to update bounding box.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The mouse move event.
+        """
+        self.end = event.pos()
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        """Event override for painting to finalize bounding box.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The mouse release event.
+        """
+        self.end = event.pos()
+        self.update()
+        self.drawing = False
+        x1 = self.begin.x()
+        x2 = self.end.x()
+        y1 = self.begin.y()
+        y2 = self.end.y()
+        self.box_updated.emit(min(x1, x2), max(x1, x2),
+                              min(y1, y2), max(y1, y2))
+
 
 class ViewerWidget(QtWidgets.QWidget):
+    """Widget for tweaking eye tracking parameters and viewing output.
+
+    Parameters
+    ----------
+    schema_type : type(argschema.DefaultSchema)
+        The input schema type.
+    """
     def __init__(self, schema_type):
         super(ViewerWidget, self).__init__()
         self.layout = QtWidgets.QGridLayout()
@@ -112,11 +273,12 @@ class ViewerWidget(QtWidgets.QWidget):
     def _init_widgets(self):
         sp_params = SubplotParams(0, 0, 1, 1)
         self.figure = Figure(frameon=False, subplotpars=sp_params)
-        self.canvas = FigureCanvasQTAgg(self.figure)
+        self.canvas = BBoxCanvas(self.figure)
         self.json_view = InputJsonWidget(self.schema_type(), parent=self)
         self.rerun_button = QtWidgets.QPushButton("Reprocess Frame",
                                                   parent=self)
-        self.save_button = QtWidgets.QPushButton("Save Json", parent=self)
+        self.pupil_radio = QtWidgets.QRadioButton("Pupil BBox", parent=self)
+        self.cr_radio = QtWidgets.QRadioButton("CR BBox", parent=self)
         self.slider = QtWidgets.QSlider(parent=self)
         self.slider.setMinimum(0)
         self.slider.setOrientation(QtCore.Qt.Horizontal)
@@ -124,16 +286,34 @@ class ViewerWidget(QtWidgets.QWidget):
         self._init_layout()
 
     def _init_layout(self):
-        self.layout.addWidget(self.canvas, 0, 0)
-        self.layout.addWidget(self.json_view, 0, 1)
-        self.layout.addWidget(self.slider, 1, 0)
+        self.layout.addWidget(self.canvas, 0, 0, 1, 2)
+        self.layout.addWidget(self.json_view, 0, 2, 1, 2)
+        self.layout.addWidget(self.slider, 1, 0, 1, 2)
         self.layout.addWidget(self.rerun_button, 2, 0)
-        self.layout.addWidget(self.save_button, 2, 1)
+        self.layout.addWidget(self.pupil_radio, 2, 1)
+        self.layout.addWidget(self.cr_radio, 2, 2)
 
     def _connect_signals(self):
         self.slider.sliderReleased.connect(self.show_frame)
         self.rerun_button.clicked.connect(self.update_tracker)
-        self.save_button.clicked.connect(self.save_json)
+        self.canvas.box_updated.connect(self.update_bbox)
+        self.pupil_radio.clicked.connect(self._setup_bbox)
+        self.cr_radio.clicked.connect(self._setup_bbox)
+
+    def _setup_bbox(self):
+        if self.pupil_radio.isChecked():
+            self.canvas.set_rgb(0, 0, 255)
+        elif self.cr_radio.isChecked():
+            self.canvas.set_rgb(255, 0, 0)
+
+    def update_bbox(self, xmin, xmax, ymin, ymax):
+        bbox = [xmin, xmax, ymin, ymax]
+        if self.pupil_radio.isChecked():
+            self.json_view.update_value("pupil_bounding_box", str(bbox))
+            self.update_tracker()
+        elif self.cr_radio.isChecked():
+            self.json_view.update_value("cr_bounding_box", str(bbox))
+            self.update_tracker()
 
     def _parse_args(self, json_data):
         try:
@@ -172,7 +352,7 @@ class ViewerWidget(QtWidgets.QWidget):
                 args["pupil_bounding_box"], args["cr_bounding_box"],
                 **args["eye_params"])
         if load:
-            self.load_video(input_source)
+            self._load_video(input_source)
         else:
             self.show_frame()
 
@@ -186,7 +366,12 @@ class ViewerWidget(QtWidgets.QWidget):
                 with open(filepath, "w") as f:
                     json.dump(json_data, f, indent=1)
 
-    def load_video(self, path):
+    def load_video(self):
+        filepath, _ = QtWidgets.QFileDialog.getOpenFileName()
+        if filepath:
+            self._load_video(filepath)
+
+    def _load_video(self, path):
         self.video = os.path.normpath(path)
         input_stream = CvInputStream(self.video)
         self.tracker.input_stream = input_stream
@@ -212,9 +397,24 @@ class ViewerWidget(QtWidgets.QWidget):
         self.canvas.draw()
 
 
+class ViewerWindow(QtWidgets.QMainWindow):
+    def __init__(self, schema_type):
+        super(ViewerWindow, self).__init__()
+        self.widget = ViewerWidget(schema_type)
+        self.setCentralWidget(self.widget)
+        self._init_menubar()
+
+    def _init_menubar(self):
+        file_menu = self.menuBar().addMenu("&File")
+        load = file_menu.addAction("Load Video")
+        save = file_menu.addAction("Save JSON")
+        load.triggered.connect(self.widget.load_video)
+        save.triggered.connect(self.widget.save_json)
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication([])
-    w = ViewerWidget(_schemas.InputParameters)
+    w = ViewerWindow(_schemas.InputParameters)
     w.show()
     sys.exit(app.exec_())
