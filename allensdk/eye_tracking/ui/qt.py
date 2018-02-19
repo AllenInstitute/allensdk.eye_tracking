@@ -370,7 +370,9 @@ class ViewerWidget(QtWidgets.QWidget):
         filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video")
         if filepath:
-            self._load_video(filepath)
+            self.json_view.update_value("input_source",
+                                        os.path.normpath(filepath))
+            self.update_tracker()
 
     def _load_video(self, path):
         self.video = os.path.normpath(path)
