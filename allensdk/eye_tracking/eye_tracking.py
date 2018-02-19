@@ -209,8 +209,6 @@ class EyeTracker(object):
 
     Parameters
     ----------
-    im_shape : tuple
-        (height, width) of images.
     input_stream : generator
         Generator that yields numpy.ndarray frames to analyze.
     output_stream : stream
@@ -233,6 +231,8 @@ class EyeTracker(object):
         pupil_mask_radius : int
         cr_recolor_scale_factor : float
         recolor_cr : bool
+        adaptive_pupil: bool
+        smoothing_kernel_size : int
     """
     DEFAULT_MIN_PUPIL_VALUE = 0
     DEFAULT_MAX_PUPIL_VALUE = 30
@@ -282,6 +282,30 @@ class EyeTracker(object):
     def update_fit_parameters(self, starburst_params=None, ransac_params=None,
                               pupil_bounding_box=None, cr_bounding_box=None,
                               **kwargs):
+        """Update EyeTracker fitting parameters.
+
+        Parameters
+        ----------
+        starburst_params : dict
+            Dictionary of keyword arguments for `PointGenerator`.
+        ransac_params : dict
+            Dictionary of keyword arguments for `EllipseFitter`.
+        pupil_bounding_box : numpy.ndarray
+            [xmin xmax ymin ymax] bounding box for pupil seed point search.
+        cr_bounding_box : numpy.ndarray
+            [xmin xmax ymin ymax] bounding box for cr seed point search.
+        generate_QC_output : bool
+            Flag to compute extra QC data on frames.
+        **kwargs
+            pupil_min_value : int
+            pupil_max_value : int
+            cr_mask_radius : int
+            pupil_mask_radius : int
+            cr_recolor_scale_factor : float
+            recolor_cr : bool
+            adaptive_pupil: bool
+            smoothing_kernel_size : int
+        """
         if self.point_generator is None:
             if starburst_params is None:
                 self.point_generator = PointGenerator()
@@ -296,9 +320,9 @@ class EyeTracker(object):
                 self.ellipse_fitter = EllipseFitter(**ransac_params)
         elif ransac_params is not None:
             self.ellipse_fitter.update_params(**ransac_params)
-        if pupil_bounding_box is None or len(pupil_bounding_box) == 0:
+        if pupil_bounding_box is None or len(pupil_bounding_box) != 4:
             pupil_bounding_box = default_bounding_box(self.im_shape)
-        if cr_bounding_box is None or len(cr_bounding_box) == 0:
+        if cr_bounding_box is None or len(cr_bounding_box) != 4:
             cr_bounding_box = default_bounding_box(self.im_shape)
         self.pupil_bounding_box = pupil_bounding_box
         self.cr_bounding_box = cr_bounding_box
@@ -325,12 +349,14 @@ class EyeTracker(object):
 
     @property
     def im_shape(self):
+        """Image shape."""
         if self.input_stream is None:
             return None
         return self.input_stream.frame_shape
 
     @property
     def input_stream(self):
+        """Input frame source."""
         return self._input_stream
 
     @input_stream.setter
