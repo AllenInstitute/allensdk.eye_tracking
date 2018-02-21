@@ -20,7 +20,7 @@ def get_circle_template(radius, fill=1, surround=0):
         Circle template.
     """
     global _CIRCLE_TEMPLATES
-    mask = _CIRCLE_TEMPLATES.get(radius, None)
+    mask = _CIRCLE_TEMPLATES.get((radius, int(fill), int(surround)), None)
     if mask is None:
         Y, X = np.meshgrid(np.arange(-radius-3, radius+4),
                            np.arange(-radius-3, radius+4))
