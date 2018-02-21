@@ -3,6 +3,7 @@ from matplotlib.figure import Figure, SubplotParams
 import ast
 import os
 import json
+import cProfile
 from qtpy import QtCore, QtWidgets, QtGui
 from argschema.schemas import mm
 from argschema import ArgSchemaParser
@@ -261,8 +262,9 @@ class ViewerWidget(QtWidgets.QWidget):
     schema_type : type(argschema.DefaultSchema)
         The input schema type.
     """
-    def __init__(self, schema_type, parent=None):
+    def __init__(self, schema_type, profile_runs=False, parent=None):
         super(ViewerWidget, self).__init__(parent=parent)
+        self.profile_runs = profile_runs
         self.layout = QtWidgets.QGridLayout()
         self.schema_type = schema_type
         self.video = "./"
@@ -325,8 +327,12 @@ class ViewerWidget(QtWidgets.QWidget):
         return None
 
     def _setup_tracker(self):
-        json_data = self.json_view.get_json()
-        json_data["input_source"] = os.path.abspath(__file__)
+        try:
+            json_data = self.json_view.get_json()
+            json_data["input_source"] = os.path.abspath(__file__)
+        except Exception as e:
+            self._json_error_popup(e)
+            return
         args = self._parse_args(json_data)
         if args:
             tracker = EyeTracker(
@@ -369,7 +375,8 @@ class ViewerWidget(QtWidgets.QWidget):
     def load_video(self):
         filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select video")
-        if filepath:
+        filepath = filepath.strip("'\" ")
+        if os.path.exists(filepath):
             self.json_view.update_value("input_source",
                                         os.path.normpath(filepath))
             self.update_tracker()
@@ -386,11 +393,17 @@ class ViewerWidget(QtWidgets.QWidget):
         ax = self.figure.add_subplot(111)
         ax.clear()
         frame = self.tracker.input_stream[self.slider.value()]
+        if self.profile_runs:
+            p = cProfile.Profile()
+            p.enable()
         cr, pupil = self.tracker.process_image(frame)
         anno = self.tracker.annotator.annotate_frame(
             self.tracker.current_image, pupil, cr, self.tracker.current_seed,
             self.tracker.current_pupil_candidates)
         self.tracker.annotator.clear_rc()
+        if self.profile_runs:
+            p.disable()
+            p.print_stats('cumulative')
         anno = annotate_with_box(anno, self.tracker.cr_bounding_box,
                                  (0, 0, 255))
         anno = annotate_with_box(anno, self.tracker.pupil_bounding_box,
@@ -407,9 +420,10 @@ class ViewerWidget(QtWidgets.QWidget):
 
 
 class ViewerWindow(QtWidgets.QMainWindow):
-    def __init__(self, schema_type):
+    def __init__(self, schema_type, profile_runs=False):
         super(ViewerWindow, self).__init__()
-        self.widget = ViewerWidget(schema_type, parent=self)
+        self.widget = ViewerWidget(schema_type, profile_runs=profile_runs,
+                                   parent=self)
         self.setCentralWidget(self.widget)
         self._init_menubar()
 
@@ -423,8 +437,13 @@ class ViewerWindow(QtWidgets.QMainWindow):
 
 def main():
     import sys
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--profile", action="store_true")
+    args, left = parser.parse_known_args()
+    sys.argv = sys.argv[:1] + left
     app = QtWidgets.QApplication([])
-    w = ViewerWindow(_schemas.InputParameters)
+    w = ViewerWindow(_schemas.InputParameters, args.profile)
     w.show()
     sys.exit(app.exec_())
 
