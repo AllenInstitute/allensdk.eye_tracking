@@ -147,6 +147,55 @@ def test_eye_tracker_init(input_stream, output_stream, starburst_params,
         assert(tracker.annotator.output_stream is not None)
 
 
+@pytest.mark.parametrize(("input_stream,output_stream,"
+                          "starburst_params,ransac_params,pupil_bounding_box,"
+                          "cr_bounding_box,kwargs"), [
+    (InputStream(),
+     None,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {}),
+    (None,
+     None,
+     None,
+     None,
+     [20, 40, 20, 40],
+     [20, 40, 20, 40],
+     {})
+])
+def test_update_fit_parameters(input_stream, output_stream, starburst_params,
+                               ransac_params, pupil_bounding_box,
+                               cr_bounding_box, kwargs):
+    tracker = et.EyeTracker(input_stream)
+    tracker.update_fit_parameters(starburst_params, ransac_params,
+                                  pupil_bounding_box, cr_bounding_box,
+                                  **kwargs)
+    if input_stream is None:
+        assert(tracker.im_shape is None)
+    else:
+        assert(tracker.im_shape == input_stream.frame_shape)
+    if pupil_bounding_box is None:
+        test_pupil_bbox = et.default_bounding_box(tracker.im_shape)
+    else:
+        test_pupil_bbox = pupil_bounding_box
+    if cr_bounding_box is None:
+        test_cr_bbox = et.default_bounding_box(tracker.im_shape)
+    else:
+        test_cr_bbox = cr_bounding_box
+    assert(np.all(tracker.pupil_bounding_box == test_pupil_bbox))
+    assert(np.all(tracker.cr_bounding_box == test_cr_bbox))
+    assert(input_stream == tracker.input_stream)
+    if output_stream is None:
+        assert(tracker.annotator.output_stream is None)
+    else:
+        assert(tracker.annotator.output_stream is not None)
+
+
 @pytest.mark.parametrize("pupil_params,recolor_cr", [
     (np.array((np.nan, np.nan, np.nan, np.nan, np.nan)), True),
     (np.array((1, 2, 3, 4, 5)), False),
@@ -205,7 +254,7 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
       "number_of_close_points": 3},
      None,
      None,
-     {"clip_pupil_threshold": False}),
+     {"clip_pupil_threshold": True}),
     (image(),
      None,
      None,

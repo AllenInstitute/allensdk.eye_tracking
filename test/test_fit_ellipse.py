@@ -38,6 +38,10 @@ def test_ellipse_fit(a, b, x0, y0, rotation):
     with patch.object(fitter._fitter, "fit", return_value=None):
         res = fitter.fit(data)
         assert(np.all(np.isnan(res)))
+    results = fitter.fit(data, max_radius=min(a, b))
+    assert(np.all(np.isnan(results)))
+    results = fitter.fit(data, max_eccentricity=-1)
+    assert(np.all(np.isnan(results)))
 
 
 @pytest.mark.parametrize("point,ellipse_params,tolerance,result", [

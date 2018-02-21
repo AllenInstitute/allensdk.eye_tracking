@@ -20,6 +20,8 @@ def image():
 def test_get_circle_template(radius):
     mask = feature_extraction.get_circle_template(radius)
     assert(mask.shape == (2*radius+7, 2*radius+7))
+    mask = feature_extraction.get_circle_template(radius)
+    assert(mask.shape == (2*radius+7, 2*radius+7))
 
 
 @pytest.mark.parametrize("image,bounding_box", [
