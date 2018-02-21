@@ -1,10 +1,10 @@
+from qtpy import QtCore, QtWidgets, QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure, SubplotParams
 import ast
 import os
 import json
 import cProfile
-from qtpy import QtCore, QtWidgets, QtGui
 from argschema.schemas import mm
 from argschema import ArgSchemaParser
 from allensdk.eye_tracking import _schemas
@@ -137,7 +137,7 @@ class SchemaWidget(QtWidgets.QWidget):
         """
         attrs = attribute.split(".", 1)
         if len(attrs) > 1:
-            self.fields[attrs[0]].update_value(attrs[1])
+            self.fields[attrs[0]].update_value(attrs[1], value)
         else:
             self.fields[attribute].setText(value)
 
