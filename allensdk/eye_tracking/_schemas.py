@@ -99,6 +99,12 @@ class EyeParameters(DefaultSchema):
         description=("Flag of whether or not to restrict pupil threshold for "
                      "starburst to fall within the range of (min_pupil_value, "
                      "max_pupil_value)"))
+    average_iris_intensity = Int(
+        default=EyeTracker.DEFAULT_AVERAGE_IRIS_INTENSITY,
+        description="Average expected intensity of the iris")
+    max_eccentricity = Float(
+        default=EyeTracker.DEFAULT_MAX_ECCENTRICITY,
+        description="Maximum eccentricity allowed for pupil.")
 
 
 class QCParameters(DefaultSchema):
