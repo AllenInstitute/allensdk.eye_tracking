@@ -44,7 +44,9 @@ install:
   - pip install codecov
   - pip install -r requirements_dev.txt
   - pip install -r test_requirements.txt
-  - pip install pytest-xvfb
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      pip install pytest-xvfb;
+    fi
   - pip install .
 
 script:
