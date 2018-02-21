@@ -1,11 +1,10 @@
 import logging
-from scipy.signal import medfilt2d
+import cv2
 import numpy as np
-
 from .fit_ellipse import EllipseFitter, not_on_ellipse
 from .utils import generate_ray_indices, get_ray_values
-from .feature_extraction import (get_circle_mask, max_image_at_value,
-                                 max_convolution_positions)
+from .feature_extraction import (get_circle_template,
+                                 max_correlation_positions)
 from .plotting import Annotator, ellipse_points
 
 
@@ -33,7 +32,7 @@ class PointGenerator(object):
         threshold of pupil.
     """
     DEFAULT_INDEX_LENGTH = 150
-    DEFAULT_N_RAYS = 100
+    DEFAULT_N_RAYS = 150
     DEFAULT_THRESHOLD_FACTOR = 1.6
     DEFAULT_THRESHOLD_PIXELS = 10
 
@@ -253,6 +252,7 @@ class EyeTracker(object):
         adaptive_pupil: bool
         smoothing_kernel_size : int
         clip_pupil_threshold : bool
+        average_iris_intensity : int
     """
     DEFAULT_MIN_PUPIL_VALUE = 0
     DEFAULT_MAX_PUPIL_VALUE = 30
@@ -264,6 +264,7 @@ class EyeTracker(object):
     DEFAULT_GENERATE_QC_OUTPUT = False
     DEFAULT_SMOOTHING_KERNEL_SIZE = 7
     DEFAULT_CLIP_PUPIL_THRESHOLD = False
+    DEFAULT_AVERAGE_IRIS_INTENSITY = 40
 
     def __init__(self, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
@@ -283,6 +284,7 @@ class EyeTracker(object):
         self.adaptive_pupil = self.DEFAULT_ADAPTIVE_PUPIL
         self.smoothing_kernel_size = self.DEFAULT_SMOOTHING_KERNEL_SIZE
         self.clip_pupil_threshold = self.DEFAULT_CLIP_PUPIL_THRESHOLD
+        self.average_iris_intensity = self.DEFAULT_AVERAGE_IRIS_INTENSITY
         self.update_fit_parameters(starburst_params=starburst_params,
                                    ransac_params=ransac_params,
                                    pupil_bounding_box=pupil_bounding_box,
@@ -295,6 +297,7 @@ class EyeTracker(object):
         self.current_seed = None
         self.current_pupil_candidates = None
         self.current_image = None
+        self.current_image_mean = 0
         self.blurred_image = None
         self.cr_filled_image = None
         self.pupil_max_image = None
@@ -328,6 +331,7 @@ class EyeTracker(object):
             adaptive_pupil: bool
             smoothing_kernel_size : int
             clip_pupil_threshold : bool
+            average_iris_intensity : int
         """
         if self.point_generator is None:
             if starburst_params is None:
@@ -350,6 +354,13 @@ class EyeTracker(object):
         self.pupil_bounding_box = pupil_bounding_box
         self.cr_bounding_box = cr_bounding_box
         self._init_kwargs(**kwargs)
+        self.current_seed = None
+        self.current_pupil_candidates = None
+        self.current_image = None
+        self.current_image_mean = 0
+        self.blurred_image = None
+        self.cr_filled_image = None
+        self.annotated_image = None
 
     def _init_kwargs(self, **kwargs):
         self.min_pupil_value = kwargs.get("min_pupil_value",
@@ -361,10 +372,10 @@ class EyeTracker(object):
             "cr_recolor_scale_factor", self.cr_recolor_scale_factor)
         self.recolor_cr = kwargs.get("recolor_cr", self.recolor_cr)
         self.cr_mask_radius = kwargs.get("cr_mask_radius", self.cr_mask_radius)
-        self.cr_mask = get_circle_mask(self.cr_mask_radius)
+        self.cr_mask = get_circle_template(self.cr_mask_radius, fill=1,
+                                           surround=-1)
         self.pupil_mask_radius = kwargs.get("pupil_mask_radius",
                                             self.pupil_mask_radius)
-        self.pupil_mask = get_circle_mask(self.pupil_mask_radius)
         self.adaptive_pupil = kwargs.get(
             "adaptive_pupil", self.adaptive_pupil)
         self.smoothing_kernel_size = kwargs.get(
@@ -376,6 +387,8 @@ class EyeTracker(object):
                                            self.max_pupil_value)
         else:
             self.pupil_threshold_limits = None
+        self.average_iris_intensity = kwargs.get(
+            "average_iris_intensity", self.average_iris_intensity)
 
     @property
     def im_shape(self):
@@ -419,9 +432,8 @@ class EyeTracker(object):
         ellipse_parameters : tuple
             (x, y, r, a, b) ellipse parameters.
         """
-        seed_point = max_convolution_positions(self.blurred_image,
-                                               self.cr_mask,
-                                               self.cr_bounding_box)
+        seed_point = max_correlation_positions(
+            self.blurred_image, self.cr_mask, self.cr_bounding_box)
         candidate_points = self.point_generator.get_candidate_points(
             self.blurred_image, seed_point, "cr")
         return self.ellipse_fitter.fit(
@@ -482,15 +494,23 @@ class EyeTracker(object):
         """
         base_image, filter_function, filter_params = self.setup_pupil_finder(
             cr_parameters)
-        seed_image = max_image_at_value(base_image,
-                                        self.last_pupil_color)
-        self.pupil_max_image = seed_image
-        seed_point = max_convolution_positions(seed_image, self.pupil_mask,
-                                               self.pupil_bounding_box)
+        pupil_mask = get_circle_template(
+            self.pupil_mask_radius,
+            int(self.last_pupil_color),
+            int(self.average_iris_intensity))
+
+        if self.recolor_cr:
+            reject = (self._recolored_r, self._recolored_c)
+        else:
+            reject = None
+        seed_point = max_correlation_positions(
+            base_image, pupil_mask,
+            self.pupil_bounding_box, reject_coords=reject)
 
         x, y, r, a, b = cr_parameters
         filter_params = (x, y, r, self.cr_recolor_scale_factor*a,
                          self.cr_recolor_scale_factor*b)
+
         candidate_points = self.point_generator.get_candidate_points(
             base_image, seed_point, "pupil", filter_function=filter_function,
             filter_args=(filter_params, 2),
@@ -515,6 +535,8 @@ class EyeTracker(object):
         r, c = ellipse_points((x, y, r, a, b), self.blurred_image.shape)
         self.cr_filled_image = self.blurred_image.copy()
         self.cr_filled_image[r, c] = self.last_pupil_color
+        self._recolored_r = r
+        self._recolored_c = c
 
     def update_last_pupil_color(self, pupil_parameters):
         """Update last pupil color with mean of fit.
@@ -552,8 +574,8 @@ class EyeTracker(object):
             (x, y, r, a, b) pupil parameters.
         """
         self.current_image = image
-        self.blurred_image = medfilt2d(image,
-                                       kernel_size=self.smoothing_kernel_size)
+        self.current_image_mean = self.current_image.mean()
+        self.blurred_image = cv2.medianBlur(image, self.smoothing_kernel_size)
         try:
             cr_parameters = self.find_corneal_reflection()
         except ValueError:
