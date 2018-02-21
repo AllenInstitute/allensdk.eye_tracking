@@ -44,7 +44,7 @@ def max_correlation_positions(image, template, bounding_box=None,
     ----------
     image : numpy.ndarray
         Image over which to convolve the kernel.
-    kernel : numpy.ndarray
+    template : numpy.ndarray
         Kernel to convolve with the image.
     bounding_box : numpy.ndarray
         [xmin, xmax, ymin, ymax] bounding box on the image.

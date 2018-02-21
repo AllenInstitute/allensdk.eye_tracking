@@ -85,7 +85,7 @@ def fit_iteration(fit_function, error_function, data, threshold,
         to consider a good fit.
     **kwargs
         Additional constraint keyword arguments passed to
-        `error_function`.
+        `fit_function`.
 
     Returns
     -------
