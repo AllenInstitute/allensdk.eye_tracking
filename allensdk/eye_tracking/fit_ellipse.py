@@ -30,10 +30,10 @@ class EllipseFitter(object):
     iterations : int
         Number of iterations to run.
     """
-    DEFAULT_MINIMUM_POINTS_FOR_FIT = 25
-    DEFAULT_NUMBER_OF_CLOSE_POINTS = 10
+    DEFAULT_MINIMUM_POINTS_FOR_FIT = 40
+    DEFAULT_NUMBER_OF_CLOSE_POINTS = 15
     DEFAULT_THRESHOLD = 0.0001
-    DEFAULT_ITERATIONS = 15
+    DEFAULT_ITERATIONS = 20
 
     def __init__(self, minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
                  number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
