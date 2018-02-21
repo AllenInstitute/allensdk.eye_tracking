@@ -53,7 +53,7 @@ class EllipseFitter(object):
         self.threshold = threshold
         self.iterations = iterations
 
-    def fit(self, candidate_points, max_radius=None):
+    def fit(self, candidate_points, **kwargs):
         """Perform a fit on (y,x) points.
 
         Parameters
@@ -70,7 +70,7 @@ class EllipseFitter(object):
         params = self._fitter.fit(fit_ellipse, fit_errors, data,
                                   self.threshold, self.minimum_points_for_fit,
                                   self.number_of_close_points, self.iterations,
-                                  max_radius=max_radius)
+                                  **kwargs)
         if params is not None:
             x, y = ellipse_center(params)
             angle = ellipse_angle_of_rotation(params)*180/np.pi
@@ -80,7 +80,7 @@ class EllipseFitter(object):
             return (np.nan, np.nan, np.nan, np.nan, np.nan)
 
 
-def fit_ellipse(data, max_radius=None):
+def fit_ellipse(data, max_radius=None, max_eccentricity=None):
     """Fit an ellipse to data.
 
     Parameters
@@ -89,6 +89,8 @@ def fit_ellipse(data, max_radius=None):
         [n,2] array of (y,x) data points.
     max_radius : float
         Maximum radius to allow.
+    max_eccentricity : float
+        Maximum eccentricity to allow.
 
     Returns
     -------
@@ -111,6 +113,9 @@ def fit_ellipse(data, max_radius=None):
         if max_radius is not None:
             ax1, ax2 = ellipse_axis_length(params)
             if ax1 > max_radius or ax2 > max_radius:
+                error = np.inf
+        if max_eccentricity is not None:
+            if eccentricity(params) > max_eccentricity:
                 error = np.inf
     except Exception as e:
         logging.debug(e)  # figure out which exception this is catching
@@ -262,3 +267,22 @@ def not_on_ellipse(point, ellipse_params, tolerance):
     if err < tolerance:
         return False
     return True
+
+
+def eccentricity(parameters):
+    """Get the eccentricity of an ellipse from the conic parameters.
+
+    Parameters
+    ----------
+    parameters : numpy.ndarray
+        Conic parameters of the ellipse.
+
+    Returns
+    -------
+    eccentricity : float
+        Eccentricity of the ellipse.
+    """
+    axes = ellipse_axis_length(parameters)
+    minor = np.min(axes)
+    major = np.max(axes)
+    return 1 - (minor/major)

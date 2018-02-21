@@ -33,8 +33,8 @@ class PointGenerator(object):
     """
     DEFAULT_INDEX_LENGTH = 150
     DEFAULT_N_RAYS = 150
-    DEFAULT_THRESHOLD_FACTOR = 1.6
-    DEFAULT_THRESHOLD_PIXELS = 10
+    DEFAULT_THRESHOLD_FACTOR = 1.2
+    DEFAULT_THRESHOLD_PIXELS = 15
 
     def __init__(self, index_length=DEFAULT_INDEX_LENGTH,
                  n_rays=DEFAULT_N_RAYS,
@@ -256,7 +256,7 @@ class EyeTracker(object):
     """
     DEFAULT_MIN_PUPIL_VALUE = 0
     DEFAULT_MAX_PUPIL_VALUE = 30
-    DEFAULT_CR_RECOLOR_SCALE_FACTOR = 2.0
+    DEFAULT_CR_RECOLOR_SCALE_FACTOR = 1.5
     DEFAULT_RECOLOR_CR = True
     DEFAULT_ADAPTIVE_PUPIL = True
     DEFAULT_CR_MASK_RADIUS = 10
@@ -265,6 +265,7 @@ class EyeTracker(object):
     DEFAULT_SMOOTHING_KERNEL_SIZE = 7
     DEFAULT_CLIP_PUPIL_THRESHOLD = False
     DEFAULT_AVERAGE_IRIS_INTENSITY = 40
+    DEFAULT_MAX_ECCENTRICITY = 0.25
 
     def __init__(self, input_stream, output_stream=None,
                  starburst_params=None, ransac_params=None,
@@ -285,6 +286,7 @@ class EyeTracker(object):
         self.smoothing_kernel_size = self.DEFAULT_SMOOTHING_KERNEL_SIZE
         self.clip_pupil_threshold = self.DEFAULT_CLIP_PUPIL_THRESHOLD
         self.average_iris_intensity = self.DEFAULT_AVERAGE_IRIS_INTENSITY
+        self.max_eccentricity = self.DEFAULT_MAX_ECCENTRICITY
         self.update_fit_parameters(starburst_params=starburst_params,
                                    ransac_params=ransac_params,
                                    pupil_bounding_box=pupil_bounding_box,
@@ -389,6 +391,8 @@ class EyeTracker(object):
             self.pupil_threshold_limits = None
         self.average_iris_intensity = kwargs.get(
             "average_iris_intensity", self.average_iris_intensity)
+        self.max_eccentricity = kwargs.get(
+            "max_eccentricity", self.max_eccentricity)
 
     @property
     def im_shape(self):
@@ -519,7 +523,8 @@ class EyeTracker(object):
         self.current_pupil_candidates = candidate_points
 
         return self.ellipse_fitter.fit(
-            candidate_points, max_radius=self.point_generator.index_length)
+            candidate_points, max_radius=self.point_generator.index_length,
+            max_eccentricity=self.max_eccentricity)
 
     def recolor_corneal_reflection(self, cr_parameters):
         """Reshade the corneal reflection with the last pupil color.
