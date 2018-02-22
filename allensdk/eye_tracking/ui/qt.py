@@ -50,7 +50,10 @@ class FieldWidget(QtWidgets.QLineEdit):
         raw_value = str(self.text())
         if raw_value:
             if type(self.field) in LITERAL_EVAL_TYPES:
-                raw_value = ast.literal_eval(raw_value)
+                try:
+                    raw_value = ast.literal_eval(raw_value)
+                except SyntaxError:
+                    pass  # let validation handle it
             value = self.field.deserialize(raw_value)
             if isinstance(self.field, _schemas.NumpyArray):
                 value = value.tolist()
@@ -154,7 +157,6 @@ class InputJsonWidget(QtWidgets.QScrollArea):
     """
     def __init__(self, schema, parent=None):
         super(InputJsonWidget, self).__init__(parent=parent)
-        self.setWindowTitle("Input Parameters")
         self.schema_widget = SchemaWidget(None, schema, self)
         self.setWidget(self.schema_widget)
 
@@ -269,12 +271,14 @@ class ViewerWidget(QtWidgets.QWidget):
         self.schema_type = schema_type
         self.video = "./"
         self._init_widgets()
-        self.tracker = self._setup_tracker()
+        self.tracker = EyeTracker(None, None)
+        self.update_tracker()
         self.setLayout(self.layout)
 
     def _init_widgets(self):
         sp_params = SubplotParams(0, 0, 1, 1)
         self.figure = Figure(frameon=False, subplotpars=sp_params)
+        self.axes = self.figure.add_subplot(111)
         self.canvas = BBoxCanvas(self.figure)
         self.json_view = InputJsonWidget(self.schema_type(), parent=self)
         self.rerun_button = QtWidgets.QPushButton("Reprocess Frame",
@@ -326,25 +330,16 @@ class ViewerWidget(QtWidgets.QWidget):
             self._json_error_popup(e)
         return None
 
-    def _setup_tracker(self):
+    def get_json_data(self):
         try:
-            json_data = self.json_view.get_json()
-            json_data["input_source"] = os.path.abspath(__file__)
+            return self.json_view.get_json()
         except Exception as e:
             self._json_error_popup(e)
-            return
-        args = self._parse_args(json_data)
-        if args:
-            tracker = EyeTracker(
-                None, None, get_starburst_args(args["starburst"]),
-                args["ransac"], args["pupil_bounding_box"],
-                args["cr_bounding_box"], False, **args["eye_params"])
-        else:
-            tracker = None
-        return tracker
 
     def update_tracker(self):
-        json_data = self.json_view.get_json()
+        json_data = self.get_json_data()
+        if json_data is None:
+            return
         input_source = os.path.normpath(json_data.get("input_source", "./"))
         load = False
         if not os.path.isfile(input_source):
@@ -359,16 +354,18 @@ class ViewerWidget(QtWidgets.QWidget):
                 **args["eye_params"])
         if load:
             self._load_video(input_source)
-        else:
+        elif self.tracker.input_stream is not None:
             self.show_frame()
 
     def save_json(self):
-        json_data = self.json_view.get_json()
+        json_data = self.get_json_data()
+        if json_data is None:
+            return
         valid = self._parse_args(json_data)
         if valid:
             filepath, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self, "Json file")
-            if filepath:
+            if os.path.exists(os.path.dirname(filepath)):
                 with open(filepath, "w") as f:
                     json.dump(json_data, f, indent=1)
 
@@ -390,8 +387,7 @@ class ViewerWidget(QtWidgets.QWidget):
         self.show_frame()
 
     def show_frame(self):
-        ax = self.figure.add_subplot(111)
-        ax.clear()
+        self.axes.clear()
         frame = self.tracker.input_stream[self.slider.value()]
         if self.profile_runs:
             p = cProfile.Profile()
@@ -408,8 +404,8 @@ class ViewerWidget(QtWidgets.QWidget):
                                  (0, 0, 255))
         anno = annotate_with_box(anno, self.tracker.pupil_bounding_box,
                                  (255, 0, 0))
-        ax.imshow(anno[:, :, ::-1], interpolation="none")
-        ax.axis("off")
+        self.axes.imshow(anno[:, :, ::-1], interpolation="none")
+        self.axes.axis("off")
         self.canvas.draw()
 
     def _json_error_popup(self, msg):
@@ -422,6 +418,7 @@ class ViewerWidget(QtWidgets.QWidget):
 class ViewerWindow(QtWidgets.QMainWindow):
     def __init__(self, schema_type, profile_runs=False):
         super(ViewerWindow, self).__init__()
+        self.setWindowTitle("Eye Tracking Configuration Tool")
         self.widget = ViewerWidget(schema_type, profile_runs=profile_runs,
                                    parent=self)
         self.setCentralWidget(self.widget)
