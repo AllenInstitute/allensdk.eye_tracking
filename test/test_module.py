@@ -122,7 +122,7 @@ def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str,
                  "--eye_params.adaptive_pupil", str(adaptive_pupil)])
     with mock.patch('sys.argv', args):
         __main__.main()
-        json_data["eye_params"]["adaptive_pupil"]= adaptive_pupil
+        json_data["eye_params"]["adaptive_pupil"] = adaptive_pupil
         json_data["qc"]["generate_plots"] = True
         json_data["annotation"]["annotate_movie"] = True
         json_data["output_json"] = out_json
