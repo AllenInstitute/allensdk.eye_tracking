@@ -99,11 +99,12 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
         assert(os.path.exists(os.path.join(output_dir, "cr_all.png")))
 
 
-@pytest.mark.parametrize("pupil_bbox_str,cr_bbox_str", [
-    ("[20,50,40,70]", "[40,70,20,50]"),
-    ("[]", "[]")
+@pytest.mark.parametrize("pupil_bbox_str,cr_bbox_str, adaptive_pupil", [
+    ("[20,50,40,70]", "[40,70,20,50]", True),
+    ("[]", "[]", False)
 ])
-def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str):
+def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str,
+                    adaptive_pupil):
     args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
     with open(input_json, "r") as f:
@@ -117,9 +118,11 @@ def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str):
                  "--annotation.annotate_movie", "True",
                  "--output_json", out_json,
                  "--pupil_bounding_box", pupil_bbox_str,
-                 "--cr_bounding_box", cr_bbox_str])
+                 "--cr_bounding_box", cr_bbox_str,
+                 "--eye_params.adaptive_pupil", str(adaptive_pupil)])
     with mock.patch('sys.argv', args):
         __main__.main()
+        json_data["eye_params"]["adaptive_pupil"]= adaptive_pupil
         json_data["qc"]["generate_plots"] = True
         json_data["annotation"]["annotate_movie"] = True
         json_data["output_json"] = out_json

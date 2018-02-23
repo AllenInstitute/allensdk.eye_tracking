@@ -14,7 +14,7 @@ from ._schemas import InputParameters, OutputParameters  # noqa: E402
 from .eye_tracking import EyeTracker  # noqa: E402
 from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
 from .plotting import (plot_summary, plot_cumulative,
-                       annotate_with_box)  # noqa: E402
+                       annotate_with_box, plot_timeseries)  # noqa: E402
 
 
 def setup_annotation(im_shape, annotate_movie, output_file, fourcc="H264"):
@@ -39,7 +39,7 @@ def write_output(output_dir, cr_parameters, pupil_parameters, mean_frame):
 
 
 def write_QC_output(annotator, cr_parameters, pupil_parameters,
-                    mean_frame, **kwargs):
+                    mean_frame, pupil_intensity=None, **kwargs):
     output_dir = kwargs["qc"]["output_dir"]
     annotator.annotate_with_cumulative_cr(
         mean_frame, os.path.join(output_dir, "cr_all.png"))
@@ -57,6 +57,10 @@ def write_QC_output(annotator, cr_parameters, pupil_parameters,
         mean_frame = annotate_with_box(mean_frame, cr_bbox,
                                        (255, 0, 0))
     plt.imsave(os.path.join(output_dir, "mean_frame_bbox.png"), mean_frame)
+    if pupil_intensity:
+        plot_timeseries(
+            pupil_intensity, "estimated pupil intensity",
+            filename=os.path.join(output_dir, "pupil_intensity.png"))
 
 
 def get_starburst_args(kwargs):
@@ -107,9 +111,13 @@ def main():
         output = write_output(mod.args["output_dir"], cr_parameters,
                               pupil_parameters, tracker.mean_frame)
 
+        pupil_intensity = None
+        if tracker.adaptive_pupil:
+            pupil_intensity = tracker.pupil_colors
         if mod.args["qc"]["generate_plots"]:
-            write_QC_output(tracker.annotator, cr_parameters, pupil_parameters,
-                            tracker.mean_frame, **mod.args)
+            write_QC_output(tracker.annotator, cr_parameters,
+                            pupil_parameters, tracker.mean_frame,
+                            pupil_intensity=pupil_intensity, **mod.args)
 
         output["input_parameters"] = mod.args
         if "output_json" in mod.args:

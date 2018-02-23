@@ -295,6 +295,7 @@ class EyeTracker(object):
         self.annotator = Annotator(output_stream)
         self.pupil_parameters = []
         self.cr_parameters = []
+        self.pupil_colors = []
         self.generate_QC_output = generate_QC_output
         self.current_seed = None
         self.current_pupil_candidates = None
@@ -629,6 +630,7 @@ class EyeTracker(object):
         """
         self.pupil_parameters = []
         self.cr_parameters = []
+        self.pupil_colors = []
         i = 0
 
         if update_mean_frame:
@@ -641,6 +643,7 @@ class EyeTracker(object):
             cr_parameters, pupil_parameters = self.process_image(frame)
             self.cr_parameters.append(cr_parameters)
             self.pupil_parameters.append(pupil_parameters)
+            self.pupil_colors.append(self.last_pupil_color)
             if self.annotator.output_stream is not None:
                 self.annotated_image = self.annotator.annotate_frame(
                     frame, pupil_parameters, cr_parameters, self.current_seed,
