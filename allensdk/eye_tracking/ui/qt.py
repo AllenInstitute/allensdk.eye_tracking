@@ -393,7 +393,7 @@ class ViewerWidget(QtWidgets.QWidget):
             p = cProfile.Profile()
             p.enable()
         self.tracker.last_pupil_color = self.tracker.min_pupil_value
-        cr, pupil = self.tracker.process_image(frame)
+        cr, pupil, cr_err, pupil_err = self.tracker.process_image(frame)
         anno = self.tracker.annotator.annotate_frame(
             self.tracker.current_image, pupil, cr, self.tracker.current_seed,
             self.tracker.current_pupil_candidates)

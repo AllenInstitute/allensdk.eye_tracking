@@ -285,7 +285,7 @@ def test_process_image(image, input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box, **kwargs)
     with patch.object(tracker, "update_last_pupil_color") as mock_update:
-        cr, pupil = tracker.process_image(image)
+        cr, pupil, cr_err, pupil_err = tracker.process_image(image)
         if not kwargs.get("adaptive_pupil", True):
             assert mock_update.call_count == 0
 
@@ -323,13 +323,14 @@ def test_process_stream(input_stream, output_stream, starburst_params,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box,
                             generate_QC_output, **kwargs)
-    pupil, cr = tracker.process_stream(start=3)
+    cr, pupil, cr_err, pupil_err = tracker.process_stream(start=3)
     assert(pupil.shape == (input_stream.num_frames - 3, 5))
-    pupil, cr = tracker.process_stream(update_mean_frame=False)
+    cr, pupil, cr_err, pupil_err = tracker.process_stream(
+        update_mean_frame=False)
     assert(pupil.shape == (input_stream.num_frames, 5))
     tracker.input_stream = InputStream(0)
     with patch.object(tracker, "process_image") as mock_process:
-        pupil, cr = tracker.process_stream()
+        cr, pupil, cr_err, pupil_err = tracker.process_stream()
         assert mock_process.call_count == 0
 
 

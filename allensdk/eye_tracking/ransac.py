@@ -37,7 +37,10 @@ class RansacFitter(object):
 
         Returns
         -------
-        Best model parameters, or None if no good fit found.
+        best_params : numpy.ndarray
+            Best parameters of the model.
+        best_error : float
+            Best error in the fitting.
 
         Raises
         ------
@@ -57,7 +60,7 @@ class RansacFitter(object):
             if error < self.best_error:
                 self.best_params = parameters
                 self.best_error = error
-        return self.best_params
+        return self.best_params, self.best_error
 
 
 def fit_iteration(fit_function, error_function, data, threshold,

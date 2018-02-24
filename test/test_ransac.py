@@ -58,11 +58,11 @@ def test_partition_candidate_indices():
 def test_fit():
     data = line_data(0, 1)
     rf = ransac.RansacFitter()
-    model = rf.fit(fit_function, error_function, data, 1.5, 20, 10, 10)
+    model, err = rf.fit(fit_function, error_function, data, 1.5, 20, 10, 10)
     assert(np.abs(model[0] - 1) < 0.0000001)
     assert(np.abs(model[1] - 0) < 0.0000001)
     with pytest.raises(ValueError):
         rf.fit(fit_function, error_function, data, 1.5, 200, 10, 10)
     data = poly_data(1, 2, 3)
-    model = rf.fit(fit_function, error_function, data, 1.5, 20, 10, 10)
+    model, err = rf.fit(fit_function, error_function, data, 1.5, 20, 10, 10)
     assert(model is None)

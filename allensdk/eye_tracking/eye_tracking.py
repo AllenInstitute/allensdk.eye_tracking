@@ -570,27 +570,33 @@ class EyeTracker(object):
             (x, y, r, a, b) corneal reflection parameters.
         pupil_parameters : tuple
             (x, y, r, a, b) pupil parameters.
+        cr_error : float
+            Ellipse fit error for best fit.
+        pupil_error : float
+            Ellipse fit error for best fit.
         """
         self.current_image = image
         self.current_image_mean = self.current_image.mean()
         self.blurred_image = cv2.medianBlur(image, self.smoothing_kernel_size)
         try:
-            cr_parameters = self.find_corneal_reflection()
+            cr_parameters, cr_error = self.find_corneal_reflection()
         except ValueError:
             logging.debug("Insufficient candidate points found for fitting "
                           "corneal reflection at frame %s", self.frame_index)
             cr_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
+            cr_error = np.nan
 
         try:
-            pupil_parameters = self.find_pupil(cr_parameters)
+            pupil_parameters, pupil_error = self.find_pupil(cr_parameters)
             if self.adaptive_pupil:
                 self.update_last_pupil_color(pupil_parameters)
         except ValueError:
             logging.debug("Insufficient candidate points found for fitting "
                           "pupil at frame %s", self.frame_index)
             pupil_parameters = (np.nan, np.nan, np.nan, np.nan, np.nan)
+            pupil_error = np.nan
 
-        return cr_parameters, pupil_parameters
+        return cr_parameters, pupil_parameters, cr_error, pupil_error
 
     def process_stream(self, start=0, stop=None, step=1,
                        update_mean_frame=True):
@@ -615,13 +621,20 @@ class EyeTracker(object):
 
         Returns
         -------
-        pupil_parameters : numpy.ndarray
-            [n_frames,5] array of corneal reflection parameters.
         cr_parameters : numpy.ndarray
+            [n_frames,5] array of corneal reflection parameters.
+        pupil_parameters : numpy.ndarray
             [n_frames,5] array of pupil parameters.
+        cr_errors : numpy.ndarray
+            [n_frames,] array of fit errors for corneal reflection
+            ellipses.
+        pupil_errors : numpy.ndarray
+            [n_frames,] array of fit errors for pupil ellipses.
         """
         self.pupil_parameters = []
         self.cr_parameters = []
+        self.pupil_errors = []
+        self.cr_errors = []
         self.pupil_colors = []
         i = 0
 
@@ -632,9 +645,12 @@ class EyeTracker(object):
             if update_mean_frame:
                 mean_frame += frame
             self.frame_index = start + step*i
-            cr_parameters, pupil_parameters = self.process_image(frame)
+            cr_parameters, pupil_parameters, cr_error, pupil_error = \
+                self.process_image(frame)
             self.cr_parameters.append(cr_parameters)
             self.pupil_parameters.append(pupil_parameters)
+            self.cr_errors.append(cr_error)
+            self.pupil_errors.append(pupil_error)
             self.pupil_colors.append(self.last_pupil_color)
             if self.annotator.output_stream is not None:
                 self.annotated_image = self.annotator.annotate_frame(
@@ -650,7 +666,8 @@ class EyeTracker(object):
         if update_mean_frame:
             self._mean_frame = (mean_frame / (i+1)).astype(np.uint8)
 
-        return np.array(self.pupil_parameters), np.array(self.cr_parameters)
+        return (np.array(self.cr_parameters), np.array(self.pupil_parameters),
+                np.array(self.cr_errors), np.array(self.pupil_errors))
 
 
 def default_bounding_box(image_shape):

@@ -65,19 +65,21 @@ class EllipseFitter(object):
         -------
         ellipse_parameters : tuple
             (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
+        error : float
+            Fit error for the ellipse.
         """
         data = np.array(candidate_points)
-        params = self._fitter.fit(fit_ellipse, fit_errors, data,
-                                  self.threshold, self.minimum_points_for_fit,
-                                  self.number_of_close_points, self.iterations,
-                                  **kwargs)
+        params, error = self._fitter.fit(
+            fit_ellipse, fit_errors, data, self.threshold,
+            self.minimum_points_for_fit, self.number_of_close_points,
+            self.iterations, **kwargs)
         if params is not None:
             x, y = ellipse_center(params)
             angle = ellipse_angle_of_rotation(params)*180/np.pi
             ax1, ax2 = ellipse_axis_length(params)
-            return (x, y, angle, ax1, ax2)
+            return (x, y, angle, ax1, ax2), error
         else:
-            return (np.nan, np.nan, np.nan, np.nan, np.nan)
+            return (np.nan, np.nan, np.nan, np.nan, np.nan), np.nan
 
 
 def fit_ellipse(data, max_radius=None, max_eccentricity=None):
