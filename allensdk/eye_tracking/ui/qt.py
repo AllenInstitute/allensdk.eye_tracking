@@ -386,12 +386,13 @@ class ViewerWidget(QtWidgets.QWidget):
         self.slider.setValue(0)
         self.show_frame()
 
-    def show_frame(self):
+    def show_frame(self, n=None):
         self.axes.clear()
         frame = self.tracker.input_stream[self.slider.value()]
         if self.profile_runs:
             p = cProfile.Profile()
             p.enable()
+        self.tracker.last_pupil_color = self.tracker.min_pupil_value
         cr, pupil = self.tracker.process_image(frame)
         anno = self.tracker.annotator.annotate_frame(
             self.tracker.current_image, pupil, cr, self.tracker.current_seed,

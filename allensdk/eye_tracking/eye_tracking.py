@@ -124,7 +124,6 @@ class PointGenerator(object):
                     else:
                         filtered_out += 1
                 else:
-                    print(self._intensity_estimate)
                     candidate_points.append(point)
             except ValueError:
                 threshold_not_crossed += 1
@@ -249,7 +248,7 @@ class EyeTracker(object):
     DEFAULT_MAX_PUPIL_VALUE = 30
     DEFAULT_CR_RECOLOR_SCALE_FACTOR = 1.5
     DEFAULT_RECOLOR_CR = True
-    DEFAULT_ADAPTIVE_PUPIL = True
+    DEFAULT_ADAPTIVE_PUPIL = False
     DEFAULT_CR_MASK_RADIUS = 10
     DEFAULT_PUPIL_MASK_RADIUS = 40
     DEFAULT_GENERATE_QC_OUTPUT = False
