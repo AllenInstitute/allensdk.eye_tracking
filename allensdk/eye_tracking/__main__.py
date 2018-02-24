@@ -15,6 +15,7 @@ from .eye_tracking import EyeTracker  # noqa: E402
 from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
 from .plotting import (plot_summary, plot_cumulative,
                        annotate_with_box, plot_timeseries)  # noqa: E402
+from allensdk.eye_tracking import __version__  # noqa E402
 
 
 def setup_annotation(im_shape, annotate_movie, output_file, fourcc="H264"):
@@ -30,11 +31,13 @@ def write_output(output_dir, cr_parameters, pupil_parameters, mean_frame):
     output = {
         "cr_parameter_file": os.path.join(output_dir, "cr_params.npy"),
         "pupil_parameter_file": os.path.join(output_dir, "pupil_params.npy"),
-        "mean_frame_file": os.path.join(output_dir, "mean_frame.png")
+        "mean_frame_file": os.path.join(output_dir, "mean_frame.png"),
+        "module_version": __version__
     }
     plt.imsave(output["mean_frame_file"], mean_frame, cmap="gray")
     np.save(output["cr_parameter_file"], cr_parameters)
     np.save(output["pupil_parameter_file"], pupil_parameters)
+
     return output
 
 

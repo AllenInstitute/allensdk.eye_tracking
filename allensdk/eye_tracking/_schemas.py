@@ -151,3 +151,4 @@ class OutputParameters(OutputSchema):
     cr_parameter_file = OutputFile(required=True)
     pupil_parameter_file = OutputFile(required=True)
     mean_frame_file = OutputFile(required=True)
+    module_version = Str(required=True)
