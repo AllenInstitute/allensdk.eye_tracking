@@ -94,9 +94,9 @@ class EyeParameters(DefaultSchema):
         default=EyeTracker.DEFAULT_SMOOTHING_KERNEL_SIZE,
         description=("Kernel size for median filter smoothing kernel (must be "
                      "odd)"))
-    clip_pupil_threshold = Bool(
-        default=EyeTracker.DEFAULT_CLIP_PUPIL_THRESHOLD,
-        description=("Flag of whether or not to restrict pupil threshold for "
+    clip_pupil_values = Bool(
+        default=EyeTracker.DEFAULT_CLIP_PUPIL_VALUES,
+        description=("Flag of whether or not to restrict pupil values for "
                      "starburst to fall within the range of (min_pupil_value, "
                      "max_pupil_value)"))
     average_iris_intensity = Int(

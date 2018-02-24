@@ -269,6 +269,44 @@ def not_on_ellipse(point, ellipse_params, tolerance):
     return True
 
 
+def ellipse_pass_filter(point, ellipse_params, tolerance,
+                        pupil_intensity_estimate=None,
+                        pupil_limits=None):
+    """Function to pass or reject an ellipse candidate point.
+
+    Points are rejected if they fall on the border defined by
+    `ellipse_params`. If `pupil_limits` is provided and
+    `pupil_intensity_limits` falls outside it the point is
+    rejected as well.
+
+    Parameters
+    ----------
+    point : tuple
+        (y, x) point.
+    ellipse_params : numpy.ndarray
+        Ellipse parameters to check against.
+    tolerance : float
+        Tolerance for determining point is on ellipse.
+    pupil_intensity_estimage : float
+        Estimated intensity of the pupil used for generating
+        the point.
+    pupil_limits : tuple
+        (min, max) valid intensities for the pupil.
+
+    Returns
+    ------
+    passed : bool
+        True if the point passes the filter and is a good candidate
+        for fitting.
+    """
+    passed = not_on_ellipse(point, ellipse_params, tolerance)
+    if (pupil_limits is not None) and passed:
+        in_range = (pupil_intensity_estimate >= pupil_limits[0]) and \
+                   (pupil_intensity_estimate <= pupil_limits[1])
+        passed = in_range
+    return passed
+
+
 def eccentricity(parameters):
     """Get the eccentricity of an ellipse from the conic parameters.
 
