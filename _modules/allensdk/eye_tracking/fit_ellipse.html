@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking.fit_ellipse &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>allensdk.eye_tracking.fit_ellipse &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -189,23 +189,32 @@
 <span class="sd">        Error threshold below which data should be considered an</span>
 <span class="sd">        inlier.</span>
 <span class="sd">    iterations : int</span>
-<span class="sd">            Number of iterations to run.</span>
+<span class="sd">        Number of iterations to run.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">DEFAULT_MINIMUM_POINTS_FOR_FIT</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="n">DEFAULT_NUMBER_OF_CLOSE_POINTS</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">DEFAULT_MINIMUM_POINTS_FOR_FIT</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">DEFAULT_NUMBER_OF_CLOSE_POINTS</span> <span class="o">=</span> <span class="mi">15</span>
     <span class="n">DEFAULT_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.0001</span>
-    <span class="n">DEFAULT_ITERATIONS</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">DEFAULT_ITERATIONS</span> <span class="o">=</span> <span class="mi">20</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum_points_for_fit</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_POINTS_FOR_FIT</span><span class="p">,</span>
                  <span class="n">number_of_close_points</span><span class="o">=</span><span class="n">DEFAULT_NUMBER_OF_CLOSE_POINTS</span><span class="p">,</span>
                  <span class="n">threshold</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">DEFAULT_ITERATIONS</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span> <span class="o">=</span> <span class="n">minimum_points_for_fit</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span> <span class="o">=</span> <span class="n">number_of_close_points</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="n">iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_params</span><span class="p">(</span><span class="n">minimum_points_for_fit</span><span class="o">=</span><span class="n">minimum_points_for_fit</span><span class="p">,</span>
+                           <span class="n">number_of_close_points</span><span class="o">=</span><span class="n">number_of_close_points</span><span class="p">,</span>
+                           <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span> <span class="o">=</span> <span class="n">RansacFitter</span><span class="p">()</span>
 
-<div class="viewcode-block" id="EllipseFitter.fit"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.EllipseFitter.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_points</span><span class="p">):</span>
+<div class="viewcode-block" id="EllipseFitter.update_params"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.EllipseFitter.update_params">[docs]</a>    <span class="k">def</span> <span class="nf">update_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">minimum_points_for_fit</span><span class="o">=</span><span class="n">DEFAULT_MINIMUM_POINTS_FOR_FIT</span><span class="p">,</span>
+                      <span class="n">number_of_close_points</span><span class="o">=</span><span class="n">DEFAULT_NUMBER_OF_CLOSE_POINTS</span><span class="p">,</span>
+                      <span class="n">threshold</span><span class="o">=</span><span class="n">DEFAULT_THRESHOLD</span><span class="p">,</span>
+                      <span class="n">iterations</span><span class="o">=</span><span class="n">DEFAULT_ITERATIONS</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span> <span class="o">=</span> <span class="n">minimum_points_for_fit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span> <span class="o">=</span> <span class="n">number_of_close_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="n">iterations</span>
+
+<div class="viewcode-block" id="EllipseFitter.fit"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.EllipseFitter.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_points</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform a fit on (y,x) points.</span>
 
 <span class="sd">        Parameters</span>
@@ -217,27 +226,34 @@
 <span class="sd">        -------</span>
 <span class="sd">        ellipse_parameters : tuple</span>
 <span class="sd">            (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</span>
+<span class="sd">        error : float</span>
+<span class="sd">            Fit error for the ellipse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">candidate_points</span><span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fit_ellipse</span><span class="p">,</span> <span class="n">fit_errors</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span><span class="p">,</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">fit_ellipse</span><span class="p">,</span> <span class="n">fit_errors</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_close_points</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">ellipse_center</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
             <span class="n">angle</span> <span class="o">=</span> <span class="n">ellipse_angle_of_rotation</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
             <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">ellipse_axis_length</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span></div></div>
+            <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">),</span> <span class="n">error</span>
+        <span class="k">else</span><span class="p">:</span></div></div>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
 
-<div class="viewcode-block" id="fit_ellipse"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.fit_ellipse">[docs]</a><span class="k">def</span> <span class="nf">fit_ellipse</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="fit_ellipse"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.fit_ellipse">[docs]</a><span class="k">def</span> <span class="nf">fit_ellipse</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">max_radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_eccentricity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Fit an ellipse to data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : numpy.ndarray</span>
 <span class="sd">        [n,2] array of (y,x) data points.</span>
+<span class="sd">    max_radius : float</span>
+<span class="sd">        Maximum radius to allow.</span>
+<span class="sd">    max_eccentricity : float</span>
+<span class="sd">        Maximum eccentricity to allow.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -257,12 +273,19 @@
 
         <span class="n">params</span> <span class="o">=</span> <span class="n">U</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">ellipse_axis_length</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ax1</span> <span class="o">&gt;</span> <span class="n">max_radius</span> <span class="ow">or</span> <span class="n">ax2</span> <span class="o">&gt;</span> <span class="n">max_radius</span><span class="p">:</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">if</span> <span class="n">max_eccentricity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">eccentricity</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_eccentricity</span><span class="p">:</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># figure out which exception this is catching</span>
         <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-
-    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">error</span></div>
+</div>
+    <span class="k">return</span> <span class="n">params</span><span class="p">,</span> <span class="n">error</span>
 
 
 <div class="viewcode-block" id="fit_errors"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.fit_errors">[docs]</a><span class="k">def</span> <span class="nf">fit_errors</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
@@ -283,8 +306,8 @@
     <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
     <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))])</span>
     <span class="n">errors</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
-
-    <span class="k">return</span> <span class="n">errors</span></div>
+</div>
+    <span class="k">return</span> <span class="n">errors</span>
 
 
 <div class="viewcode-block" id="quadratic_parameters"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.quadratic_parameters">[docs]</a><span class="k">def</span> <span class="nf">quadratic_parameters</span><span class="p">(</span><span class="n">conic_parameters</span><span class="p">):</span>
@@ -307,8 +330,8 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span></div>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">conic_parameters</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ellipse_center"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.ellipse_center">[docs]</a><span class="k">def</span> <span class="nf">ellipse_center</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
@@ -329,8 +352,8 @@
     <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
     <span class="n">num</span> <span class="o">=</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">c</span>
     <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">d</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">f</span><span class="p">)</span><span class="o">/</span><span class="n">num</span>
-    <span class="n">y0</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">f</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">/</span><span class="n">num</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span></div>
+    <span class="n">y0</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">f</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">d</span><span class="p">)</span><span class="o">/</span><span class="n">num</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span>
 
 
 <div class="viewcode-block" id="ellipse_angle_of_rotation"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.ellipse_angle_of_rotation">[docs]</a><span class="k">def</span> <span class="nf">ellipse_angle_of_rotation</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
@@ -348,8 +371,8 @@
 <span class="sd">    rotation : float</span>
 <span class="sd">        Rotation of the ellipse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="o">/</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">))</span></div>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">quadratic_parameters</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="o">/</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">c</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="ellipse_axis_length"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.ellipse_axis_length">[docs]</a><span class="k">def</span> <span class="nf">ellipse_axis_length</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
@@ -376,8 +399,8 @@
     <span class="n">down2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="o">.</span><span class="mi">0000000001</span><span class="p">,</span> <span class="n">down2</span><span class="p">)</span>
 
     <span class="n">res1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">up</span><span class="o">/</span><span class="n">down1</span><span class="p">)</span>
-    <span class="n">res2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">up</span><span class="o">/</span><span class="n">down2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">])</span></div>
+    <span class="n">res2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">up</span><span class="o">/</span><span class="n">down2</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">])</span>
 
 
 <div class="viewcode-block" id="not_on_ellipse"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.not_on_ellipse">[docs]</a><span class="k">def</span> <span class="nf">not_on_ellipse</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">ellipse_params</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
@@ -405,8 +428,65 @@
     <span class="n">ty</span> <span class="o">=</span> <span class="p">(</span><span class="n">px</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">py</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span>
     <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">tx</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">ty</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">err</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">False</span></div>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="ellipse_pass_filter"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.ellipse_pass_filter">[docs]</a><span class="k">def</span> <span class="nf">ellipse_pass_filter</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">ellipse_params</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span>
+                        <span class="n">pupil_intensity_estimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">pupil_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to pass or reject an ellipse candidate point.</span>
+
+<span class="sd">    Points are rejected if they fall on the border defined by</span>
+<span class="sd">    `ellipse_params`. If `pupil_limits` is provided and</span>
+<span class="sd">    `pupil_intensity_limits` falls outside it the point is</span>
+<span class="sd">    rejected as well.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    point : tuple</span>
+<span class="sd">        (y, x) point.</span>
+<span class="sd">    ellipse_params : numpy.ndarray</span>
+<span class="sd">        Ellipse parameters to check against.</span>
+<span class="sd">    tolerance : float</span>
+<span class="sd">        Tolerance for determining point is on ellipse.</span>
+<span class="sd">    pupil_intensity_estimage : float</span>
+<span class="sd">        Estimated intensity of the pupil used for generating</span>
+<span class="sd">        the point.</span>
+<span class="sd">    pupil_limits : tuple</span>
+<span class="sd">        (min, max) valid intensities for the pupil.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ------</span>
+<span class="sd">    passed : bool</span>
+<span class="sd">        True if the point passes the filter and is a good candidate</span>
+<span class="sd">        for fitting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">passed</span> <span class="o">=</span> <span class="n">not_on_ellipse</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">ellipse_params</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pupil_limits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">passed</span><span class="p">:</span>
+        <span class="n">in_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">pupil_intensity_estimate</span> <span class="o">&gt;=</span> <span class="n">pupil_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> \
+                   <span class="p">(</span><span class="n">pupil_intensity_estimate</span> <span class="o">&lt;=</span> <span class="n">pupil_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">passed</span> <span class="o">=</span> <span class="n">in_range</span></div>
+    <span class="k">return</span> <span class="n">passed</span>
+
+
+<div class="viewcode-block" id="eccentricity"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.fit_ellipse.eccentricity">[docs]</a><span class="k">def</span> <span class="nf">eccentricity</span><span class="p">(</span><span class="n">parameters</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the eccentricity of an ellipse from the conic parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : numpy.ndarray</span>
+<span class="sd">        Conic parameters of the ellipse.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eccentricity : float</span>
+<span class="sd">        Eccentricity of the ellipse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="n">ellipse_axis_length</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="n">minor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+    <span class="n">major</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">minor</span><span class="o">/</span><span class="n">major</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -443,7 +523,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

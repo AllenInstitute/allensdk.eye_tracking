@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>Installation &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="index.html"/>
         <link rel="next" title="Usage" href="usage.html"/>
         <link rel="prev" title="AllenSDK Eye Tracking documentation" href="index.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -165,18 +165,23 @@
 OpenCV on pip seems to not be built with the necessary backend, as the
 methods fail silently. As a result, we have not included OpenCV in the
 requirements and it is necessary to get it seperately, built with the
-video capture and writing functional. The simplest way to accomplish
-that is to use conda:</p>
-<blockquote>
-<div>conda install -c conda-forge opencv</div></blockquote>
+video capture and writing functional. Additionally, on some platforms
+scikit-image does not build easily from source and the developers don’t
+have bindary distributions for all platforms yet. The simplest way to
+install these difficult dependencies is to use conda:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">scikit</span><span class="o">-</span><span class="n">image</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">pyqt</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">opencv</span>
+</pre></div>
+</div>
 <p>The rest of the dependencies are all in the requirements, so to install
 just clone or download the repository and then from inside the top
 level directory either run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 </pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
 </div>
@@ -225,7 +230,7 @@ level directory either run:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

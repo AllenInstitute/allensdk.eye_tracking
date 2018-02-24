@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking.feature_extraction &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>allensdk.eye_tracking.feature_extraction &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -160,15 +160,15 @@
             
   <h1>Source code for allensdk.eye_tracking.feature_extraction</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="k">import</span> <span class="n">fftconvolve</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
 
-<span class="n">_CIRCLE_MASKS</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_CIRCLE_TEMPLATES</span> <span class="o">=</span> <span class="p">{}</span>
 
 
-<div class="viewcode-block" id="get_circle_mask"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.feature_extraction.get_circle_mask">[docs]</a><span class="k">def</span> <span class="nf">get_circle_mask</span><span class="p">(</span><span class="n">radius</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get circular mask for estimating center point.</span>
+<div class="viewcode-block" id="get_circle_template"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.feature_extraction.get_circle_template">[docs]</a><span class="k">def</span> <span class="nf">get_circle_template</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">surround</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get circular template for estimating center point.</span>
 
-<span class="sd">    Returns a cached mask if it has already been computed.</span>
+<span class="sd">    Returns a cached template if it has already been computed.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -177,45 +177,26 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    mask : numpy.ndarray</span>
-<span class="sd">        Circle mask.</span>
+<span class="sd">    template : numpy.ndarray</span>
+<span class="sd">        Circle template.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">_CIRCLE_MASKS</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">_CIRCLE_MASKS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">global</span> <span class="n">_CIRCLE_TEMPLATES</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">_CIRCLE_TEMPLATES</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">radius</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">fill</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">surround</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Y</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius</span><span class="p">,</span> <span class="n">radius</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
-                           <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius</span><span class="p">,</span> <span class="n">radius</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">2</span><span class="o">*</span><span class="n">radius</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">radius</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="n">ones</span> <span class="o">=</span> <span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Y</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">mask</span><span class="p">[</span><span class="n">ones</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">_CIRCLE_MASKS</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
-    <span class="k">return</span> <span class="n">mask</span></div>
+        <span class="n">Y</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">radius</span><span class="o">+</span><span class="mi">4</span><span class="p">),</span>
+                           <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">radius</span><span class="o">+</span><span class="mi">4</span><span class="p">))</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="mi">2</span><span class="o">*</span><span class="n">radius</span> <span class="o">+</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">radius</span> <span class="o">+</span> <span class="mi">7</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="o">*</span><span class="n">surround</span>
+        <span class="n">circle</span> <span class="o">=</span> <span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Y</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="n">radius</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">circle</span><span class="p">]</span> <span class="o">=</span> <span class="n">fill</span>
+        <span class="n">_CIRCLE_TEMPLATES</span><span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">radius</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">fill</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">surround</span><span class="p">))]</span> <span class="o">=</span> <span class="n">mask</span></div>
+    <span class="k">return</span> <span class="n">mask</span>
 
 
-<div class="viewcode-block" id="max_image_at_value"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.feature_extraction.max_image_at_value">[docs]</a><span class="k">def</span> <span class="nf">max_image_at_value</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get an image where pixels closest to `value` are brightest.</span>
+<div class="viewcode-block" id="max_correlation_positions"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.feature_extraction.max_correlation_positions">[docs]</a><span class="k">def</span> <span class="nf">max_correlation_positions</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">bounding_box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">reject_coords</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlate image with template and return the max location.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    image : numpy.ndarray</span>
-<span class="sd">        Image to transform.</span>
-<span class="sd">    value : int</span>
-<span class="sd">        Value to make brightest in the transformed image.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    image : numpy.ndarry</span>
-<span class="sd">        Transformed image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">min_at_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">-</span> <span class="n">value</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">min_at_value</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">min_at_value</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="max_convolution_positions"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.feature_extraction.max_convolution_positions">[docs]</a><span class="k">def</span> <span class="nf">max_convolution_positions</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bounding_box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                              <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convolve image with kernel and return the max location.</span>
-
-<span class="sd">    Convolution is done using fftconvolve with mode set to `mode`. It</span>
+<span class="sd">    Correlation is done with mode set to `mode` and method &#39;fft&#39;. It</span>
 <span class="sd">    is only performed over the image region within `bounding_box` if it</span>
 <span class="sd">    is provided. The resulting coordinates are provided in the context</span>
 <span class="sd">    of the original image.</span>
@@ -224,23 +205,18 @@
 <span class="sd">    ----------</span>
 <span class="sd">    image : numpy.ndarray</span>
 <span class="sd">        Image over which to convolve the kernel.</span>
-<span class="sd">    kernel : numpy.ndarray</span>
+<span class="sd">    template : numpy.ndarray</span>
 <span class="sd">        Kernel to convolve with the image.</span>
 <span class="sd">    bounding_box : numpy.ndarray</span>
 <span class="sd">        [xmin, xmax, ymin, ymax] bounding box on the image.</span>
-<span class="sd">    mode : string</span>
-<span class="sd">        Mode to run fftconvolve with.</span>
+<span class="sd">    reject_coords : tuple</span>
+<span class="sd">        (r, c) coordinates to disallow as best fit.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    max_position : tuple</span>
 <span class="sd">        (y, x) mean location maximum of the convolution of the kernel</span>
 <span class="sd">        with the image.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If bounding box is provided but incorrectly defined.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">bounding_box</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cropped_image</span> <span class="o">=</span> <span class="n">image</span>
@@ -250,10 +226,22 @@
         <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">bounding_box</span>
         <span class="n">cropped_image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
 
-    <span class="n">conv</span> <span class="o">=</span> <span class="n">fftconvolve</span><span class="p">(</span><span class="n">cropped_image</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
-    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">conv</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">conv</span><span class="p">))</span>
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">matchTemplate</span><span class="p">(</span><span class="n">cropped_image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                             <span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                             <span class="n">cv2</span><span class="o">.</span><span class="n">TM_CCORR_NORMED</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="n">ymin</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="n">xmin</span><span class="p">))</span></div>
+    <span class="k">if</span> <span class="n">reject_coords</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">reject_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ymin</span> <span class="o">-</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">reject_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xmin</span> <span class="o">-</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">c</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">corr</span><span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">max_loc</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">minMaxLoc</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_loc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">+</span> <span class="n">ymin</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">template</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">+</span> <span class="n">xmin</span><span class="p">)</span>
+</div>
+    <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
 </pre></div>
 
            </div>
@@ -290,7 +278,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

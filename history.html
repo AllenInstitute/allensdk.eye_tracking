@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>History &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>History &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="index.html"/>
         <link rel="next" title="allensdk" href="modules.html"/>
         <link rel="prev" title="Credits" href="authors.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -95,13 +95,15 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">History</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">1.1.0 (2018-02-11)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">1.0.0 (2018-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">0.2.3 (2018-02-06)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">0.2.2 (2018-01-20)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">0.2.1 (2017-12-13)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">0.2.0 (2017-12-11)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id7">0.1.0 (2017-10-19)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">1.2.0 (2018-02-24)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">1.1.1 (2018-02-13)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">1.1.0 (2018-02-11)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">1.0.0 (2018-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">0.2.3 (2018-02-06)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">0.2.2 (2018-01-20)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">0.2.1 (2017-12-13)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">0.2.0 (2017-12-11)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">0.1.0 (2017-10-19)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">allensdk</a></li>
@@ -171,39 +173,80 @@
   <div class="section" id="history">
 <h1>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
-<h2>1.1.0 (2018-02-11)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Add frame iteration to allow processing subsets of movies. Also
-add bounding box image to QC output.</p>
+<h2>1.2.0 (2018-02-24)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Rework median filtering and correlation functions to use OpenCV instead of
+scipy for performance improvements.</li>
+<li>Fix seed point finding method to use template matching to improve point finding
+with the default bounding boxes.</li>
+<li>Add keyword arguments to filters for candidate points.</li>
+<li>Expose additional input parameters: average_iris_intensity, clip_pupil_values,
+and max_eccentricity.</li>
+<li>Add constraints to EllipseFitter, preventing any ellipse axis longer than the
+index ray length as well as limiting eccentricity to below max_eccentricity.</li>
+<li>Use the keyword arguments for candidate point filters to filter rays where a
+the baseline intensity is out of pupil limits if clip_pupil_values is set.</li>
+<li>Add plot of average pupil intensity to QC output to check behavior of adaptive
+pupil tracking.</li>
+<li>Add plot of best fit error to QC output.</li>
+<li>Add UI for testing configuration parameters and generating input jsons.</li>
+</ul>
 </div>
 <div class="section" id="id2">
-<h2>1.0.0 (2018-02-07)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<p>Rename from aibs.eye_tracking to allensdk.eye_tracking.</p>
+<h2>1.1.1 (2018-02-13)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Expose median kernel smoothing to the command line.</li>
+<li>Add seed point and candidate pupil points to annotation output.</li>
+</ul>
 </div>
 <div class="section" id="id3">
-<h2>0.2.3 (2018-02-06)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
-<p>Add options to set cr_threshold_factor, cr_threshold_pixels, pupil_threshold_factor,
-pupil_threshold_pixels in the starburst parameters. They will override the
-default threshold_factor and threshold_pixels if set.
-Add option to turn off adaptive pupil shade tracking.
-Exposes fourcc string as parameter for annotation in case default codec is not
-supported or desired.</p>
+<h2>1.1.0 (2018-02-11)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Add frame iteration to allow processing subsets of movies. Also
+add bounding box image to QC output.</li>
+</ul>
 </div>
 <div class="section" id="id4">
-<h2>0.2.2 (2018-01-20)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
-<p>Fix matplotlib backend warning.
-Show help if required argument is missing or input command is incorrect.</p>
+<h2>1.0.0 (2018-02-07)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Rename from aibs.eye_tracking to allensdk.eye_tracking.</li>
+</ul>
 </div>
 <div class="section" id="id5">
-<h2>0.2.1 (2017-12-13)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
-<p>Fix bug preventing module running when number of frames was not specified.</p>
+<h2>0.2.3 (2018-02-06)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Add options to set cr_threshold_factor, cr_threshold_pixels, pupil_threshold_factor,
+pupil_threshold_pixels in the starburst parameters. They will override the
+default threshold_factor and threshold_pixels if set.</li>
+<li>Add option to turn off adaptive pupil shade tracking.
+Exposes fourcc string as parameter for annotation in case default codec is not
+supported or desired.</li>
+</ul>
 </div>
 <div class="section" id="id6">
-<h2>0.2.0 (2017-12-11)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
-<p>Initial release of independent eye tracker.</p>
+<h2>0.2.2 (2018-01-20)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix matplotlib backend warning.</li>
+<li>Show help if required argument is missing or input command is incorrect.</li>
+</ul>
 </div>
 <div class="section" id="id7">
-<h2>0.1.0 (2017-10-19)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
-<p>Initial port over of eye tracking code from AllenSDK internal.</p>
+<h2>0.2.1 (2017-12-13)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Fix bug preventing module running when number of frames was not specified.</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h2>0.2.0 (2017-12-11)<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Initial release of independent eye tracker.</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h2>0.1.0 (2017-10-19)<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Initial port over of eye tracking code from AllenSDK internal.</li>
+</ul>
 </div>
 </div>
 
@@ -251,7 +294,7 @@ Show help if required argument is missing or input command is incorrect.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

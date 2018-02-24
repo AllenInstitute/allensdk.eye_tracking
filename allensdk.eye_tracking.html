@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking package &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>allensdk.eye_tracking package &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="index.html"/>
         <link rel="up" title="allensdk package" href="allensdk.html"/>
         <link rel="prev" title="allensdk package" href="allensdk.html"/> 
 
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -182,15 +182,14 @@
 <span id="allensdk-eye-tracking-eye-tracking-module"></span><h2>allensdk.eye_tracking.eye_tracking module<a class="headerlink" href="#module-allensdk.eye_tracking.eye_tracking" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker">
-<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.eye_tracking.</code><code class="descname">EyeTracker</code><span class="sig-paren">(</span><em>im_shape</em>, <em>input_stream</em>, <em>output_stream=None</em>, <em>starburst_params=None</em>, <em>ransac_params=None</em>, <em>pupil_bounding_box=None</em>, <em>cr_bounding_box=None</em>, <em>generate_QC_output=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.eye_tracking.</code><code class="descname">EyeTracker</code><span class="sig-paren">(</span><em>input_stream</em>, <em>output_stream=None</em>, <em>starburst_params=None</em>, <em>ransac_params=None</em>, <em>pupil_bounding_box=None</em>, <em>cr_bounding_box=None</em>, <em>generate_QC_output=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Mouse Eye-Tracker.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>im_shape</strong> (<em>tuple</em>) – (height, width) of images.</li>
 <li><strong>input_stream</strong> (<em>generator</em>) – Generator that yields numpy.ndarray frames to analyze.</li>
 <li><strong>output_stream</strong> (<em>stream</em>) – Stream that accepts numpuy.ndarrays in the write method. None if
 not outputting annotations.</li>
@@ -204,7 +203,11 @@ pupil_max_value : int
 cr_mask_radius : int
 pupil_mask_radius : int
 cr_recolor_scale_factor : float
-recolor_cr : bool</li>
+recolor_cr : bool
+adaptive_pupil: bool
+smoothing_kernel_size : int
+clip_pupil_values : bool
+average_iris_intensity : int</li>
 </ul>
 </td>
 </tr>
@@ -212,7 +215,17 @@ recolor_cr : bool</li>
 </table>
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_ADAPTIVE_PUPIL">
-<code class="descname">DEFAULT_ADAPTIVE_PUPIL</code><em class="property"> = True</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_ADAPTIVE_PUPIL" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_ADAPTIVE_PUPIL</code><em class="property"> = False</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_ADAPTIVE_PUPIL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_AVERAGE_IRIS_INTENSITY">
+<code class="descname">DEFAULT_AVERAGE_IRIS_INTENSITY</code><em class="property"> = 40</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_AVERAGE_IRIS_INTENSITY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_CLIP_PUPIL_VALUES">
+<code class="descname">DEFAULT_CLIP_PUPIL_VALUES</code><em class="property"> = True</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_CLIP_PUPIL_VALUES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -222,12 +235,17 @@ recolor_cr : bool</li>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_CR_RECOLOR_SCALE_FACTOR">
-<code class="descname">DEFAULT_CR_RECOLOR_SCALE_FACTOR</code><em class="property"> = 2.0</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_CR_RECOLOR_SCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_CR_RECOLOR_SCALE_FACTOR</code><em class="property"> = 1.7</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_CR_RECOLOR_SCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_GENERATE_QC_OUTPUT">
 <code class="descname">DEFAULT_GENERATE_QC_OUTPUT</code><em class="property"> = False</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_GENERATE_QC_OUTPUT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_MAX_ECCENTRICITY">
+<code class="descname">DEFAULT_MAX_ECCENTRICITY</code><em class="property"> = 0.25</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_MAX_ECCENTRICITY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -248,6 +266,11 @@ recolor_cr : bool</li>
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_RECOLOR_CR">
 <code class="descname">DEFAULT_RECOLOR_CR</code><em class="property"> = True</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_RECOLOR_CR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_SMOOTHING_KERNEL_SIZE">
+<code class="descname">DEFAULT_SMOOTHING_KERNEL_SIZE</code><em class="property"> = 7</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.DEFAULT_SMOOTHING_KERNEL_SIZE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -286,6 +309,18 @@ used to prepare image if <cite>recolor_cr</cite> is set.</td>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.im_shape">
+<code class="descname">im_shape</code><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.im_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Image shape.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.input_stream">
+<code class="descname">input_stream</code><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.input_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input frame source.</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.mean_frame">
 <code class="descname">mean_frame</code><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.mean_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Average frame calculated from the input source.</p>
@@ -304,6 +339,8 @@ used to prepare image if <cite>recolor_cr</cite> is set.</td>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
 <li><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) corneal reflection parameters.</li>
 <li><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) pupil parameters.</li>
+<li><strong>cr_error</strong> (<em>float</em>) – Ellipse fit error for best fit.</li>
+<li><strong>pupil_error</strong> (<em>float</em>) – Ellipse fit error for best fit.</li>
 </ul>
 </td>
 </tr>
@@ -333,8 +370,11 @@ the frames.</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>pupil_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of corneal reflection parameters.</li>
-<li><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of pupil parameters.</li>
+<li><strong>cr_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of corneal reflection parameters.</li>
+<li><strong>pupil_parameters</strong> (<em>numpy.ndarray</em>) – [n_frames,5] array of pupil parameters.</li>
+<li><strong>cr_errors</strong> (<em>numpy.ndarray</em>) – [n_frames,] array of fit errors for corneal reflection
+ellipses.</li>
+<li><strong>pupil_errors</strong> (<em>numpy.ndarray</em>) – [n_frames,] array of fit errors for pupil ellipses.</li>
 </ul>
 </p>
 </td>
@@ -386,6 +426,37 @@ or None if not recoloring.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.update_fit_parameters">
+<code class="descname">update_fit_parameters</code><span class="sig-paren">(</span><em>starburst_params=None</em>, <em>ransac_params=None</em>, <em>pupil_bounding_box=None</em>, <em>cr_bounding_box=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker.update_fit_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.update_fit_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update EyeTracker fitting parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>starburst_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>PointGenerator</cite>.</li>
+<li><strong>ransac_params</strong> (<em>dict</em>) – Dictionary of keyword arguments for <cite>EllipseFitter</cite>.</li>
+<li><strong>pupil_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for pupil seed point search.</li>
+<li><strong>cr_bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin xmax ymin ymax] bounding box for cr seed point search.</li>
+<li><strong>generate_QC_output</strong> (<em>bool</em>) – Flag to compute extra QC data on frames.</li>
+<li><strong>**kwargs</strong> – pupil_min_value : int
+pupil_max_value : int
+cr_mask_radius : int
+pupil_mask_radius : int
+cr_recolor_scale_factor : float
+recolor_cr : bool
+adaptive_pupil: bool
+smoothing_kernel_size : int
+clip_pupil_values : bool
+average_iris_intensity : int</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="allensdk.eye_tracking.eye_tracking.EyeTracker.update_last_pupil_color">
 <code class="descname">update_last_pupil_color</code><span class="sig-paren">(</span><em>pupil_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#EyeTracker.update_last_pupil_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.EyeTracker.update_last_pupil_color" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update last pupil color with mean of fit.</p>
@@ -403,8 +474,8 @@ or None if not recoloring.</li>
 
 <dl class="class">
 <dt id="allensdk.eye_tracking.eye_tracking.PointGenerator">
-<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.eye_tracking.</code><code class="descname">PointGenerator</code><span class="sig-paren">(</span><em>index_length=100</em>, <em>n_rays=20</em>, <em>cr_threshold_factor=1.6</em>, <em>pupil_threshold_factor=1.6</em>, <em>cr_threshold_pixels=10</em>, <em>pupil_threshold_pixels=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#PointGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.eye_tracking.</code><code class="descname">PointGenerator</code><span class="sig-paren">(</span><em>index_length=150</em>, <em>n_rays=150</em>, <em>cr_threshold_factor=1.2</em>, <em>pupil_threshold_factor=1.2</em>, <em>cr_threshold_pixels=10</em>, <em>pupil_threshold_pixels=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#PointGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to find candidate points for ellipse fitting.</p>
 <p>Candidates points are found by drawing rays from a seed point and
 checking for the first threshold crossing of each ray.</p>
@@ -428,17 +499,17 @@ threshold of pupil.</li>
 </table>
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_INDEX_LENGTH">
-<code class="descname">DEFAULT_INDEX_LENGTH</code><em class="property"> = 100</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_INDEX_LENGTH" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_INDEX_LENGTH</code><em class="property"> = 150</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_INDEX_LENGTH" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_N_RAYS">
-<code class="descname">DEFAULT_N_RAYS</code><em class="property"> = 20</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_N_RAYS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_N_RAYS</code><em class="property"> = 150</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_N_RAYS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_THRESHOLD_FACTOR">
-<code class="descname">DEFAULT_THRESHOLD_FACTOR</code><em class="property"> = 1.6</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_THRESHOLD_FACTOR" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_THRESHOLD_FACTOR</code><em class="property"> = 1.2</em><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.DEFAULT_THRESHOLD_FACTOR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -448,7 +519,7 @@ threshold of pupil.</li>
 
 <dl class="method">
 <dt id="allensdk.eye_tracking.eye_tracking.PointGenerator.get_candidate_points">
-<code class="descname">get_candidate_points</code><span class="sig-paren">(</span><em>image</em>, <em>seed_point</em>, <em>point_type</em>, <em>filter_function=None</em>, <em>filter_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#PointGenerator.get_candidate_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.get_candidate_points" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_candidate_points</code><span class="sig-paren">(</span><em>image</em>, <em>seed_point</em>, <em>point_type</em>, <em>filter_function=None</em>, <em>filter_args=()</em>, <em>filter_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#PointGenerator.get_candidate_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.get_candidate_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get candidate points for ellipse fitting.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -521,13 +592,37 @@ high-to-low or low-to-high and which <cite>threshold_factor</cite> and
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
-<li><strong>x_index</strong> (<em>int</em>) – Y index of threshold crossing.</li>
-<li><strong>y_index</strong> (<em>int</em>) – X index of threshold crossing.</li>
+<li><strong>y_index</strong> (<em>int</em>) – Y index of threshold crossing.</li>
+<li><strong>x_index</strong> (<em>int</em>) – X index of threshold crossing.</li>
 </ul>
 </p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If no threshold crossing found.</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If no threshold crossing found.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="allensdk.eye_tracking.eye_tracking.PointGenerator.update_params">
+<code class="descname">update_params</code><span class="sig-paren">(</span><em>index_length=150</em>, <em>n_rays=150</em>, <em>cr_threshold_factor=1.2</em>, <em>pupil_threshold_factor=1.2</em>, <em>cr_threshold_pixels=10</em>, <em>pupil_threshold_pixels=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/eye_tracking.html#PointGenerator.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.eye_tracking.PointGenerator.update_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update starburst point generation parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index_length</strong> (<em>int</em>) – Initial default length for ray indices.</li>
+<li><strong>n_rays</strong> (<em>int</em>) – The number of rays to check.</li>
+<li><strong>cr_threshold_factor</strong> (<em>float</em>) – Multiplicative factor for thresholding corneal reflection.</li>
+<li><strong>pupil_threshold_factor</strong> (<em>float</em>) – Multiplicative factor for thresholding pupil.</li>
+<li><strong>cr_threshold_pixels</strong> (<em>int</em>) – Number of pixels (from beginning of ray) to use to determine
+threshold of corneal reflection.</li>
+<li><strong>pupil_threshold_pixels</strong> (<em>int</em>) – Number of pixels (from beginning of ray) to use to determine
+threshold of pupil.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -558,17 +653,17 @@ high-to-low or low-to-high and which <cite>threshold_factor</cite> and
 <div class="section" id="module-allensdk.eye_tracking.feature_extraction">
 <span id="allensdk-eye-tracking-feature-extraction-module"></span><h2>allensdk.eye_tracking.feature_extraction module<a class="headerlink" href="#module-allensdk.eye_tracking.feature_extraction" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="allensdk.eye_tracking.feature_extraction.get_circle_mask">
-<code class="descclassname">allensdk.eye_tracking.feature_extraction.</code><code class="descname">get_circle_mask</code><span class="sig-paren">(</span><em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/feature_extraction.html#get_circle_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.feature_extraction.get_circle_mask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get circular mask for estimating center point.</p>
-<p>Returns a cached mask if it has already been computed.</p>
+<dt id="allensdk.eye_tracking.feature_extraction.get_circle_template">
+<code class="descclassname">allensdk.eye_tracking.feature_extraction.</code><code class="descname">get_circle_template</code><span class="sig-paren">(</span><em>radius</em>, <em>fill=1</em>, <em>surround=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/feature_extraction.html#get_circle_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.feature_extraction.get_circle_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get circular template for estimating center point.</p>
+<p>Returns a cached template if it has already been computed.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>radius</strong> (<em>int</em>) – Radius in pixels of the circle to draw.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>mask</strong> – Circle mask.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>template</strong> – Circle template.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
 </tr>
@@ -577,10 +672,10 @@ high-to-low or low-to-high and which <cite>threshold_factor</cite> and
 </dd></dl>
 
 <dl class="function">
-<dt id="allensdk.eye_tracking.feature_extraction.max_convolution_positions">
-<code class="descclassname">allensdk.eye_tracking.feature_extraction.</code><code class="descname">max_convolution_positions</code><span class="sig-paren">(</span><em>image</em>, <em>kernel</em>, <em>bounding_box=None</em>, <em>mode='same'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/feature_extraction.html#max_convolution_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.feature_extraction.max_convolution_positions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convolve image with kernel and return the max location.</p>
-<p>Convolution is done using fftconvolve with mode set to <cite>mode</cite>. It
+<dt id="allensdk.eye_tracking.feature_extraction.max_correlation_positions">
+<code class="descclassname">allensdk.eye_tracking.feature_extraction.</code><code class="descname">max_correlation_positions</code><span class="sig-paren">(</span><em>image</em>, <em>template</em>, <em>bounding_box=None</em>, <em>reject_coords=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/feature_extraction.html#max_correlation_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.feature_extraction.max_correlation_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Correlate image with template and return the max location.</p>
+<p>Correlation is done with mode set to <cite>mode</cite> and method ‘fft’. It
 is only performed over the image region within <cite>bounding_box</cite> if it
 is provided. The resulting coordinates are provided in the context
 of the original image.</p>
@@ -590,9 +685,9 @@ of the original image.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>image</strong> (<em>numpy.ndarray</em>) – Image over which to convolve the kernel.</li>
-<li><strong>kernel</strong> (<em>numpy.ndarray</em>) – Kernel to convolve with the image.</li>
+<li><strong>template</strong> (<em>numpy.ndarray</em>) – Kernel to convolve with the image.</li>
 <li><strong>bounding_box</strong> (<em>numpy.ndarray</em>) – [xmin, xmax, ymin, ymax] bounding box on the image.</li>
-<li><strong>mode</strong> (<em>string</em>) – Mode to run fftconvolve with.</li>
+<li><strong>reject_coords</strong> (<em>tuple</em>) – (r, c) coordinates to disallow as best fit.</li>
 </ul>
 </td>
 </tr>
@@ -600,34 +695,7 @@ of the original image.</p>
 with the image.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">tuple</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If bounding box is provided but incorrectly defined.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="allensdk.eye_tracking.feature_extraction.max_image_at_value">
-<code class="descclassname">allensdk.eye_tracking.feature_extraction.</code><code class="descname">max_image_at_value</code><span class="sig-paren">(</span><em>image</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/feature_extraction.html#max_image_at_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.feature_extraction.max_image_at_value" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an image where pixels closest to <cite>value</cite> are brightest.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>image</strong> (<em>numpy.ndarray</em>) – Image to transform.</li>
-<li><strong>value</strong> (<em>int</em>) – Value to make brightest in the transformed image.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>image</strong> – Transformed image.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.ndarry</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
 </td>
 </tr>
 </tbody>
@@ -642,8 +710,8 @@ with the image.</p>
 <a class="reference external" href="http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html">http://nicky.vanforeest.com/misc/fitEllipse/fitEllipse.html</a>.</p>
 <dl class="class">
 <dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter">
-<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">EllipseFitter</code><span class="sig-paren">(</span><em>minimum_points_for_fit=10</em>, <em>number_of_close_points=4</em>, <em>threshold=0.0001</em>, <em>iterations=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#EllipseFitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<em class="property">class </em><code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">EllipseFitter</code><span class="sig-paren">(</span><em>minimum_points_for_fit=40</em>, <em>number_of_close_points=15</em>, <em>threshold=0.0001</em>, <em>iterations=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#EllipseFitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Wrapper class for performing ransac fitting of an ellipse.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -663,17 +731,17 @@ inlier.</li>
 </table>
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_ITERATIONS">
-<code class="descname">DEFAULT_ITERATIONS</code><em class="property"> = 10</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_ITERATIONS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_ITERATIONS</code><em class="property"> = 20</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_ITERATIONS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_MINIMUM_POINTS_FOR_FIT">
-<code class="descname">DEFAULT_MINIMUM_POINTS_FOR_FIT</code><em class="property"> = 10</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_MINIMUM_POINTS_FOR_FIT" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_MINIMUM_POINTS_FOR_FIT</code><em class="property"> = 40</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_MINIMUM_POINTS_FOR_FIT" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_NUMBER_OF_CLOSE_POINTS">
-<code class="descname">DEFAULT_NUMBER_OF_CLOSE_POINTS</code><em class="property"> = 4</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_NUMBER_OF_CLOSE_POINTS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DEFAULT_NUMBER_OF_CLOSE_POINTS</code><em class="property"> = 15</em><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.DEFAULT_NUMBER_OF_CLOSE_POINTS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -683,7 +751,7 @@ inlier.</li>
 
 <dl class="method">
 <dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>candidate_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#EllipseFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>candidate_points</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#EllipseFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform a fit on (y,x) points.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -691,14 +759,39 @@ inlier.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>candidate_points</strong> (<em>list</em>) – List of (y,x) points that may fit on the ellipse.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>ellipse_parameters</strong> – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>ellipse_parameters</strong> (<em>tuple</em>) – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</li>
+<li><strong>error</strong> (<em>float</em>) – Fit error for the ellipse.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="allensdk.eye_tracking.fit_ellipse.EllipseFitter.update_params">
+<code class="descname">update_params</code><span class="sig-paren">(</span><em>minimum_points_for_fit=40</em>, <em>number_of_close_points=15</em>, <em>threshold=0.0001</em>, <em>iterations=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#EllipseFitter.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.EllipseFitter.update_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="allensdk.eye_tracking.fit_ellipse.eccentricity">
+<code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">eccentricity</code><span class="sig-paren">(</span><em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#eccentricity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.eccentricity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the eccentricity of an ellipse from the conic parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parameters</strong> (<em>numpy.ndarray</em>) – Conic parameters of the ellipse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>eccentricity</strong> – Eccentricity of the ellipse.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -759,19 +852,58 @@ inlier.</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="allensdk.eye_tracking.fit_ellipse.ellipse_pass_filter">
+<code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">ellipse_pass_filter</code><span class="sig-paren">(</span><em>point</em>, <em>ellipse_params</em>, <em>tolerance</em>, <em>pupil_intensity_estimate=None</em>, <em>pupil_limits=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#ellipse_pass_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.ellipse_pass_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pass or reject an ellipse candidate point.</p>
+<p>Points are rejected if they fall on the border defined by
+<cite>ellipse_params</cite>. If <cite>pupil_limits</cite> is provided and
+<cite>pupil_intensity_limits</cite> falls outside it the point is
+rejected as well.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>point</strong> (<em>tuple</em>) – (y, x) point.</li>
+<li><strong>ellipse_params</strong> (<em>numpy.ndarray</em>) – Ellipse parameters to check against.</li>
+<li><strong>tolerance</strong> (<em>float</em>) – Tolerance for determining point is on ellipse.</li>
+<li><strong>pupil_intensity_estimage</strong> (<em>float</em>) – Estimated intensity of the pupil used for generating
+the point.</li>
+<li><strong>pupil_limits</strong> (<em>tuple</em>) – (min, max) valid intensities for the pupil.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>passed</strong> – True if the point passes the filter and is a good candidate
+for fitting.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="allensdk.eye_tracking.fit_ellipse.fit_ellipse">
-<code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">fit_ellipse</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#fit_ellipse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.fit_ellipse" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">allensdk.eye_tracking.fit_ellipse.</code><code class="descname">fit_ellipse</code><span class="sig-paren">(</span><em>data</em>, <em>max_radius=None</em>, <em>max_eccentricity=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/fit_ellipse.html#fit_ellipse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.fit_ellipse.fit_ellipse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit an ellipse to data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>numpy.ndarray</em>) – [n,2] array of (y,x) data points.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>numpy.ndarray</em>) – [n,2] array of (y,x) data points.</li>
+<li><strong>max_radius</strong> (<em>float</em>) – Maximum radius to allow.</li>
+<li><strong>max_eccentricity</strong> (<em>float</em>) – Maximum eccentricity to allow.</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
 <li><strong>ellipse_parameters</strong> (<em>tuple</em>) – (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.</li>
 <li><strong>error</strong> (<em>float</em>) – Mean error of the fit.</li>
 </ul>
+</p>
 </td>
 </tr>
 </tbody>
@@ -852,7 +984,7 @@ inlier.</li>
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.CvInputStream">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">CvInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvInputStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="allensdk.eye_tracking.frame_stream.FrameInputStream"><code class="xref py py-class docutils literal"><span class="pre">allensdk.eye_tracking.frame_stream.FrameInputStream</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="allensdk.eye_tracking.frame_stream.FrameInputStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">allensdk.eye_tracking.frame_stream.FrameInputStream</span></code></a></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.CvInputStream.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvInputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvInputStream.close" title="Permalink to this definition">¶</a></dt>
@@ -883,7 +1015,7 @@ inlier.</li>
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.CvOutputStream">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">CvOutputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>frame_shape</em>, <em>frame_rate=30.0</em>, <em>fourcc='H264'</em>, <em>is_color=True</em>, <em>block_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvOutputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvOutputStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#allensdk.eye_tracking.frame_stream.FrameOutputStream" title="allensdk.eye_tracking.frame_stream.FrameOutputStream"><code class="xref py py-class docutils literal"><span class="pre">allensdk.eye_tracking.frame_stream.FrameOutputStream</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#allensdk.eye_tracking.frame_stream.FrameOutputStream" title="allensdk.eye_tracking.frame_stream.FrameOutputStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">allensdk.eye_tracking.frame_stream.FrameOutputStream</span></code></a></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.CvOutputStream.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#CvOutputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.CvOutputStream.close" title="Permalink to this definition">¶</a></dt>
@@ -899,7 +1031,7 @@ inlier.</li>
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.FrameInputStream">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">FrameInputStream</code><span class="sig-paren">(</span><em>movie_path</em>, <em>num_frames=None</em>, <em>process_frame_cb=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.FrameInputStream.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameInputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameInputStream.close" title="Permalink to this definition">¶</a></dt>
@@ -935,7 +1067,7 @@ inlier.</li>
 <dl class="class">
 <dt id="allensdk.eye_tracking.frame_stream.FrameOutputStream">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.frame_stream.</code><code class="descname">FrameOutputStream</code><span class="sig-paren">(</span><em>block_size=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameOutputStream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameOutputStream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.frame_stream.FrameOutputStream.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/frame_stream.html#FrameOutputStream.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.frame_stream.FrameOutputStream.close" title="Permalink to this definition">¶</a></dt>
@@ -959,7 +1091,7 @@ inlier.</li>
 <dl class="class">
 <dt id="allensdk.eye_tracking.plotting.Annotator">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.plotting.</code><code class="descname">Annotator</code><span class="sig-paren">(</span><em>output_stream=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#Annotator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.Annotator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class for annotating frames with ellipses.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -977,7 +1109,7 @@ frames as well as <cite>open</cite> and <cite>close</cite> methods.</td>
 
 <dl class="method">
 <dt id="allensdk.eye_tracking.plotting.Annotator.annotate_frame">
-<code class="descname">annotate_frame</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#Annotator.annotate_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.Annotator.annotate_frame" title="Permalink to this definition">¶</a></dt>
+<code class="descname">annotate_frame</code><span class="sig-paren">(</span><em>frame</em>, <em>pupil_parameters</em>, <em>cr_parameters</em>, <em>seed=None</em>, <em>pupil_candidates=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/plotting.html#Annotator.annotate_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.plotting.Annotator.annotate_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Annotate an image with ellipses for cr and pupil.</p>
 <p>If the annotator was initialized with an output stream, the
 frame will be written to the stream.</p>
@@ -989,6 +1121,9 @@ frame will be written to the stream.</p>
 <li><strong>frame</strong> (<em>numpy.ndarray</em>) – Grayscale image to annotate.</li>
 <li><strong>pupil_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for pupil.</li>
 <li><strong>cr_parameters</strong> (<em>tuple</em>) – (x, y, r, a, b) ellipse parameters for corneal reflection.</li>
+<li><strong>seed</strong> (<em>tuple</em>) – (y, x) seed point of pupil.</li>
+<li><strong>pupil_candidates</strong> (<em>list</em>) – List of (y, x) candidate points used for the ellipse
+fit of the pupil.</li>
 </ul>
 </td>
 </tr>
@@ -1409,10 +1544,10 @@ plots.</p>
 <dl class="class">
 <dt id="allensdk.eye_tracking.ransac.RansacFitter">
 <em class="property">class </em><code class="descclassname">allensdk.eye_tracking.ransac.</code><code class="descname">RansacFitter</code><a class="reference internal" href="_modules/allensdk/eye_tracking/ransac.html#RansacFitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.ransac.RansacFitter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="allensdk.eye_tracking.ransac.RansacFitter.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em>, <em>iterations</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/ransac.html#RansacFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.ransac.RansacFitter.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em>, <em>iterations</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/ransac.html#RansacFitter.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.ransac.RansacFitter.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find a best fit to a model using ransac.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1430,16 +1565,19 @@ inlier.</li>
 <li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
 to consider a good fit.</li>
 <li><strong>iterations</strong> (<em>int</em>) – Number of iterations to run.</li>
+<li><strong>**kwargs</strong> – Additional constraint keyword arguments passed to
+<cite>fit_function</cite>.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><strong>best_params</strong> (<em>numpy.ndarray</em>) – Best parameters of the model.</li>
+<li><strong>best_error</strong> (<em>float</em>) – Best error in the fitting.</li>
+</ul>
+</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Best model parameters, or None if no good fit found.</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: – If there is less data than <cite>minimum_points_for_fit</cite>.</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">ValueError: – If there is less data than <cite>minimum_points_for_fit</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -1480,7 +1618,7 @@ inlier.</li>
 
 <dl class="function">
 <dt id="allensdk.eye_tracking.ransac.fit_iteration">
-<code class="descclassname">allensdk.eye_tracking.ransac.</code><code class="descname">fit_iteration</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/ransac.html#fit_iteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.ransac.fit_iteration" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">allensdk.eye_tracking.ransac.</code><code class="descname">fit_iteration</code><span class="sig-paren">(</span><em>fit_function</em>, <em>error_function</em>, <em>data</em>, <em>threshold</em>, <em>minimum_points_for_fit</em>, <em>number_of_close_points</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/allensdk/eye_tracking/ransac.html#fit_iteration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#allensdk.eye_tracking.ransac.fit_iteration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one iteration of ransac model fitting.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1497,6 +1635,8 @@ inlier.</li>
 <li><strong>minimum_points_for_fit</strong> (<em>int</em>) – Number of points required to fit data.</li>
 <li><strong>number_of_close_points</strong> (<em>int</em>) – Number of candidate outliers reselected as inliers required
 to consider a good fit.</li>
+<li><strong>**kwargs</strong> – Additional constraint keyword arguments passed to
+<cite>fit_function</cite>.</li>
 </ul>
 </td>
 </tr>
@@ -1687,7 +1827,7 @@ to consider a good fit.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

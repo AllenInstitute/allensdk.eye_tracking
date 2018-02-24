@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking.ransac &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>allensdk.eye_tracking.ransac &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -168,7 +168,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">best_params</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="RansacFitter.fit"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.ransac.RansacFitter.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_function</span><span class="p">,</span> <span class="n">error_function</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span>
-            <span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="n">number_of_close_points</span><span class="p">,</span> <span class="n">iterations</span><span class="p">):</span>
+            <span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="n">number_of_close_points</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a best fit to a model using ransac.</span>
 
 <span class="sd">        Parameters</span>
@@ -191,10 +192,16 @@
 <span class="sd">            to consider a good fit.</span>
 <span class="sd">        iterations : int</span>
 <span class="sd">            Number of iterations to run.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Additional constraint keyword arguments passed to</span>
+<span class="sd">            `fit_function`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        Best model parameters, or None if no good fit found.</span>
+<span class="sd">        best_params : numpy.ndarray</span>
+<span class="sd">            Best parameters of the model.</span>
+<span class="sd">        best_error : float</span>
+<span class="sd">            Best error in the fitting.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -209,15 +216,17 @@
             <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_iteration</span><span class="p">(</span><span class="n">fit_function</span><span class="p">,</span> <span class="n">error_function</span><span class="p">,</span>
                                               <span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span>
                                               <span class="n">minimum_points_for_fit</span><span class="p">,</span>
-                                              <span class="n">number_of_close_points</span><span class="p">)</span>
+                                              <span class="n">number_of_close_points</span><span class="p">,</span>
+                                              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">error</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_error</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">best_params</span> <span class="o">=</span> <span class="n">parameters</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">best_error</span> <span class="o">=</span> <span class="n">error</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_params</span></div></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">best_error</span> <span class="o">=</span> <span class="n">error</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_error</span>
 
 
 <div class="viewcode-block" id="fit_iteration"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.ransac.fit_iteration">[docs]</a><span class="k">def</span> <span class="nf">fit_iteration</span><span class="p">(</span><span class="n">fit_function</span><span class="p">,</span> <span class="n">error_function</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span>
-                  <span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="n">number_of_close_points</span><span class="p">):</span>
+                  <span class="n">minimum_points_for_fit</span><span class="p">,</span> <span class="n">number_of_close_points</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Perform one iteration of ransac model fitting.</span>
 
 <span class="sd">    Parameters</span>
@@ -238,6 +247,9 @@
 <span class="sd">    number_of_close_points : int</span>
 <span class="sd">        Number of candidate outliers reselected as inliers required</span>
 <span class="sd">        to consider a good fit.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional constraint keyword arguments passed to</span>
+<span class="sd">        `fit_function`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -246,15 +258,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">inlier_idx</span><span class="p">,</span> <span class="n">outlier_idx</span> <span class="o">=</span> <span class="n">partition_candidate_indices</span><span class="p">(</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">minimum_points_for_fit</span><span class="p">)</span>
-    <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">inlier_idx</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">inlier_idx</span><span class="p">,</span> <span class="p">:],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">also_inlier_idx</span> <span class="o">=</span> <span class="n">check_outliers</span><span class="p">(</span><span class="n">error_function</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
                                          <span class="n">outlier_idx</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">also_inlier_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">number_of_close_points</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">inlier_idx</span><span class="p">,</span> <span class="n">also_inlier_idx</span><span class="p">))</span>
-            <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:])</span>
-            <span class="k">return</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span>
-    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span></div>
+            <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">fit_function</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">error</span></div>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
 
 <div class="viewcode-block" id="check_outliers"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.ransac.check_outliers">[docs]</a><span class="k">def</span> <span class="nf">check_outliers</span><span class="p">(</span><span class="n">error_function</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">outlier_indices</span><span class="p">,</span>
@@ -284,8 +296,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">also_in_index</span> <span class="o">=</span> <span class="n">error_function</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span>
                                    <span class="n">data</span><span class="p">[</span><span class="n">outlier_indices</span><span class="p">,</span> <span class="p">:])</span> <span class="o">&lt;</span> <span class="n">threshold</span>
-
-    <span class="k">return</span> <span class="n">outlier_indices</span><span class="p">[</span><span class="n">also_in_index</span><span class="p">]</span></div>
+</div>
+    <span class="k">return</span> <span class="n">outlier_indices</span><span class="p">[</span><span class="n">also_in_index</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="partition_candidate_indices"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.ransac.partition_candidate_indices">[docs]</a><span class="k">def</span> <span class="nf">partition_candidate_indices</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">minimum_points_for_fit</span><span class="p">):</span>
@@ -307,8 +319,8 @@
 
     <span class="n">inliers</span> <span class="o">=</span> <span class="n">shuffled</span><span class="p">[:</span><span class="n">minimum_points_for_fit</span><span class="p">]</span>
     <span class="n">outliers</span> <span class="o">=</span> <span class="n">shuffled</span><span class="p">[</span><span class="n">minimum_points_for_fit</span><span class="p">:]</span>
-
-    <span class="k">return</span> <span class="n">inliers</span><span class="p">,</span> <span class="n">outliers</span></div>
+</div>
+    <span class="k">return</span> <span class="n">inliers</span><span class="p">,</span> <span class="n">outliers</span>
 </pre></div>
 
            </div>
@@ -345,7 +357,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

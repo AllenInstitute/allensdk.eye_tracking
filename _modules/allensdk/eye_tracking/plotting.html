@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>allensdk.eye_tracking.plotting &mdash; AllenSDK Eye Tracking 1.1.0 documentation</title>
+  <title>allensdk.eye_tracking.plotting &mdash; AllenSDK Eye Tracking 1.2.0 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="AllenSDK Eye Tracking 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="AllenSDK Eye Tracking 1.2.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.2.0
               </div>
             
           
@@ -196,15 +196,15 @@
 <span class="sd">        shape : tuple</span>
 <span class="sd">            (height, width) to make the density arrays.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Annotator.clear_rc"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.clear_rc">[docs]</a>    <span class="k">def</span> <span class="nf">clear_rc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Clear the cached row and column ellipse border points.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_r</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                    <span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                   <span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;pupil&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span></div>
+                   <span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
 
 <div class="viewcode-block" id="Annotator.update_rc"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.update_rc">[docs]</a>    <span class="k">def</span> <span class="nf">update_rc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ellipse_parameters</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Cache new row and column ellipse border points.</span>
@@ -229,15 +229,16 @@
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ellipse_perimeter_points</span><span class="p">(</span>
-                <span class="n">ellipse_parameters</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+                <span class="n">ellipse_parameters</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_annotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">rgb_frame</span><span class="p">,</span> <span class="n">ellipse_parameters</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_rc</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ellipse_parameters</span><span class="p">,</span> <span class="n">rgb_frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]):</span>
             <span class="n">color_by_points</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">COLORS</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Annotator.annotate_frame"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.annotate_frame">[docs]</a>    <span class="k">def</span> <span class="nf">annotate_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">):</span>
+<div class="viewcode-block" id="Annotator.annotate_frame"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.annotate_frame">[docs]</a>    <span class="k">def</span> <span class="nf">annotate_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">,</span>
+                       <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pupil_candidates</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Annotate an image with ellipses for cr and pupil.</span>
 
 <span class="sd">        If the annotator was initialized with an output stream, the</span>
@@ -251,6 +252,11 @@
 <span class="sd">            (x, y, r, a, b) ellipse parameters for pupil.</span>
 <span class="sd">        cr_parameters : tuple</span>
 <span class="sd">            (x, y, r, a, b) ellipse parameters for corneal reflection.</span>
+<span class="sd">        seed : tuple</span>
+<span class="sd">            (y, x) seed point of pupil.</span>
+<span class="sd">        pupil_candidates : list</span>
+<span class="sd">            List of (y, x) candidate points used for the ellipse</span>
+<span class="sd">            fit of the pupil.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -263,9 +269,16 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">cr_parameters</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_annotate</span><span class="p">(</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="n">rgb_frame</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">color_by_points</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">,</span> <span class="n">seed</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">seed</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">pupil_candidates</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pupil_candidates</span><span class="p">)</span>
+            <span class="n">color_by_points</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">,</span> <span class="n">arr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">arr</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">rgb_frame</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">rgb_frame</span>
 
     <span class="k">def</span> <span class="nf">_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">ellipse_parameters</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_rc</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">ellipse_parameters</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
@@ -286,8 +299,8 @@
         <span class="c1"># TODO: rename this to update_density</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">initiate_cumulative_data</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">(</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">(</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">(</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">pupil_parameters</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">(</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">cr_parameters</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Annotator.annotate_with_cumulative_pupil"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.annotate_with_cumulative_pupil">[docs]</a>    <span class="k">def</span> <span class="nf">annotate_with_cumulative_pupil</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Annotate frame with all pupil ellipses from the density map.</span>
@@ -304,8 +317,8 @@
 <span class="sd">        rgb_frame : numpy.ndarray</span>
 <span class="sd">            Annotated color frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">annotate_with_cumulative</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span>
-                                        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">annotate_with_cumulative</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span></div>
+                                        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Annotator.annotate_with_cumulative_cr"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.annotate_with_cumulative_cr">[docs]</a>    <span class="k">def</span> <span class="nf">annotate_with_cumulative_cr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Annotate frame with all cr ellipses from the density map.</span>
@@ -322,13 +335,13 @@
 <span class="sd">        rgb_frame : numpy.ndarray</span>
 <span class="sd">            Annotated color frame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">annotate_with_cumulative</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">],</span>
-                                        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">annotate_with_cumulative</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities</span><span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">],</span></div>
+                                        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Annotator.close"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.Annotator.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Close the output stream if it exists.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="get_rgb_frame"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.get_rgb_frame">[docs]</a><span class="k">def</span> <span class="nf">get_rgb_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
@@ -351,8 +364,8 @@
     <span class="k">elif</span> <span class="n">frame</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">rgb_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">([</span><span class="n">frame</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">frame</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frame of shape </span><span class="si">{}</span><span class="s2"> is not valid&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">rgb_frame</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frame of shape </span><span class="si">{}</span><span class="s2"> is not valid&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">rgb_frame</span>
 
 
 <div class="viewcode-block" id="annotate_with_cumulative"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.annotate_with_cumulative">[docs]</a><span class="k">def</span> <span class="nf">annotate_with_cumulative</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">rgb_vals</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
@@ -381,8 +394,8 @@
         <span class="n">mask</span> <span class="o">=</span> <span class="n">density</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="n">color_by_mask</span><span class="p">(</span><span class="n">rgb_frame</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">rgb_vals</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">rgb_frame</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rgb_frame</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">rgb_frame</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">rgb_frame</span>
 
 
 <div class="viewcode-block" id="annotate_with_box"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.annotate_with_box">[docs]</a><span class="k">def</span> <span class="nf">annotate_with_box</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">bounding_box</span><span class="p">,</span> <span class="n">rgb_vals</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
@@ -412,8 +425,8 @@
     <span class="n">rr</span><span class="p">,</span> <span class="n">cc</span> <span class="o">=</span> <span class="n">polygon_perimeter</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">rgb_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">color_by_points</span><span class="p">(</span><span class="n">rgb_image</span><span class="p">,</span> <span class="n">rr</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">rgb_vals</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">rgb_image</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rgb_image</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">rgb_image</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">rgb_image</span>
 
 
 <div class="viewcode-block" id="color_by_points"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.color_by_points">[docs]</a><span class="k">def</span> <span class="nf">color_by_points</span><span class="p">(</span><span class="n">rgb_image</span><span class="p">,</span> <span class="n">row_points</span><span class="p">,</span> <span class="n">column_points</span><span class="p">,</span>
@@ -433,8 +446,8 @@
 <span class="sd">    rgb_vals : tuple</span>
 <span class="sd">        (r, g, b) 0-255 color values for annotation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rgb_vals</span><span class="p">):</span>
-        <span class="n">rgb_image</span><span class="p">[</span><span class="n">row_points</span><span class="p">,</span> <span class="n">column_points</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rgb_vals</span><span class="p">):</span></div>
+        <span class="n">rgb_image</span><span class="p">[</span><span class="n">row_points</span><span class="p">,</span> <span class="n">column_points</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
 
 <div class="viewcode-block" id="color_by_mask"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.color_by_mask">[docs]</a><span class="k">def</span> <span class="nf">color_by_mask</span><span class="p">(</span><span class="n">rgb_image</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">rgb_vals</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
@@ -451,8 +464,8 @@
 <span class="sd">    rgb_vals : tuple</span>
 <span class="sd">        (r, g, b) 0-255 color values for annotation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rgb_vals</span><span class="p">):</span>
-        <span class="n">rgb_image</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rgb_vals</span><span class="p">):</span></div>
+        <span class="n">rgb_image</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
 
 <div class="viewcode-block" id="ellipse_points"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.ellipse_points">[docs]</a><span class="k">def</span> <span class="nf">ellipse_points</span><span class="p">(</span><span class="n">ellipse_params</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">):</span>
@@ -473,8 +486,8 @@
 <span class="sd">        Column indices for filled ellipse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">ellipse_params</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ellipse</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span></div>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">ellipse</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ellipse_perimeter_points"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.ellipse_perimeter_points">[docs]</a><span class="k">def</span> <span class="nf">ellipse_perimeter_points</span><span class="p">(</span><span class="n">ellipse_params</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">):</span>
@@ -495,8 +508,8 @@
 <span class="sd">        Column indices for ellipse perimeter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">ellipse_params</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ellipse_perimeter</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">)</span></div>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">r</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">ellipse_perimeter</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">r</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_filename"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.get_filename">[docs]</a><span class="k">def</span> <span class="nf">get_filename</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">image_type</span><span class="p">):</span>
@@ -518,8 +531,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">output_folder</span><span class="p">:</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">image_type</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="plot_cumulative"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.plot_cumulative">[docs]</a><span class="k">def</span> <span class="nf">plot_cumulative</span><span class="p">(</span><span class="n">pupil_density</span><span class="p">,</span> <span class="n">cr_density</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -551,8 +564,8 @@
     <span class="n">plot_density</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dens</span><span class="p">)</span> <span class="o">-</span> <span class="n">dens</span><span class="p">,</span>
                  <span class="n">filename</span><span class="o">=</span><span class="n">get_filename</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;cr_density&quot;</span><span class="p">,</span>
                                        <span class="n">image_type</span><span class="p">),</span>
-                 <span class="n">title</span><span class="o">=</span><span class="s2">&quot;cr density&quot;</span><span class="p">,</span>
-                 <span class="n">show</span><span class="o">=</span><span class="n">show</span><span class="p">)</span></div>
+                 <span class="n">title</span><span class="o">=</span><span class="s2">&quot;cr density&quot;</span><span class="p">,</span></div>
+                 <span class="n">show</span><span class="o">=</span><span class="n">show</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="plot_summary"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.plot_summary">[docs]</a><span class="k">def</span> <span class="nf">plot_summary</span><span class="p">(</span><span class="n">pupil_params</span><span class="p">,</span> <span class="n">cr_params</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -603,8 +616,8 @@
                     <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">plot_timeseries</span><span class="p">(</span><span class="n">cr_params</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;cr angle&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;cr angle&quot;</span><span class="p">,</span>
                     <span class="n">filename</span><span class="o">=</span><span class="n">get_filename</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;cr_angle&quot;</span><span class="p">,</span>
-                                          <span class="n">image_type</span><span class="p">),</span>
-                    <span class="n">show</span><span class="o">=</span><span class="n">show</span><span class="p">)</span></div>
+                                          <span class="n">image_type</span><span class="p">),</span></div>
+                    <span class="n">show</span><span class="o">=</span><span class="n">show</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="plot_timeseries"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.plot_timeseries">[docs]</a><span class="k">def</span> <span class="nf">plot_timeseries</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">label1</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -638,8 +651,8 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="plot_density"><a class="viewcode-back" href="../../../allensdk.eye_tracking.html#allensdk.eye_tracking.plotting.plot_density">[docs]</a><span class="k">def</span> <span class="nf">plot_density</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -662,8 +675,8 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
            </div>
@@ -700,7 +713,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
