@@ -254,7 +254,7 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
       "number_of_close_points": 3},
      None,
      None,
-     {"clip_pupil_values": True}),
+     {"clip_pupil_values": False, "adaptive_pupil": False}),
     (image(),
      None,
      None,
@@ -276,7 +276,7 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
       "number_of_close_points": 3},
      None,
      None,
-     {"recolor_cr": False, "adaptive_pupil": True})
+     {"recolor_cr": False, "adaptive_pupil": True, "clip_pupil_values": True})
 ])
 def test_process_image(image, input_stream, output_stream,
                        starburst_params, ransac_params, pupil_bounding_box,
