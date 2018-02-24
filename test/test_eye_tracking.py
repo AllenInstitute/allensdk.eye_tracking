@@ -3,7 +3,7 @@ from skimage.draw import circle
 import numpy as np
 import pytest
 from itertools import islice
-from mock import patch, MagicMock
+from mock import patch, MagicMock, ANY
 
 
 def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
@@ -19,6 +19,7 @@ def image(shape=(200, 200), cr_radius=10, cr_center=(100, 100),
 class InputStream(object):
     def __init__(self, n_frames=5):
         self.n_frames = n_frames
+        self.frame_shape = image().shape
         self._i = 0
 
     def __getitem__(self, key):
@@ -40,6 +41,9 @@ class InputStream(object):
     @property
     def num_frames(self):
         return self.n_frames
+
+    def close(self):
+        pass
 
 
 class OutputStream(object):
@@ -98,11 +102,10 @@ def test_get_candidate_points(image, seed, above):
     pg.get_candidate_points(image, seed, above)
 
 
-@pytest.mark.parametrize(("im_shape,input_stream,output_stream,"
+@pytest.mark.parametrize(("input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,kwargs"), [
-    ((200, 200),
-     None,
+    (None,
      None,
      {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
       "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
@@ -112,8 +115,7 @@ def test_get_candidate_points(image, seed, above):
      None,
      None,
      {}),
-    ((200, 200),
-     None,
+    (None,
      None,
      None,
      None,
@@ -121,19 +123,68 @@ def test_get_candidate_points(image, seed, above):
      [20, 40, 20, 40],
      {})
 ])
-def test_eye_tracker_init(im_shape, input_stream, output_stream,
-                          starburst_params, ransac_params, pupil_bounding_box,
+def test_eye_tracker_init(input_stream, output_stream, starburst_params,
+                          ransac_params, pupil_bounding_box,
                           cr_bounding_box, kwargs):
-    tracker = et.EyeTracker(im_shape, input_stream, output_stream,
+    tracker = et.EyeTracker(input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box, **kwargs)
-    assert(tracker.im_shape == im_shape)
+    assert(tracker.im_shape is None)
     if pupil_bounding_box is None:
-        test_pupil_bbox = et.default_bounding_box(im_shape)
+        test_pupil_bbox = et.default_bounding_box(None)
     else:
         test_pupil_bbox = pupil_bounding_box
     if cr_bounding_box is None:
-        test_cr_bbox = et.default_bounding_box(im_shape)
+        test_cr_bbox = et.default_bounding_box(None)
+    else:
+        test_cr_bbox = cr_bounding_box
+    assert(np.all(tracker.pupil_bounding_box == test_pupil_bbox))
+    assert(np.all(tracker.cr_bounding_box == test_cr_bbox))
+    assert(input_stream == tracker.input_stream)
+    if output_stream is None:
+        assert(tracker.annotator.output_stream is None)
+    else:
+        assert(tracker.annotator.output_stream is not None)
+
+
+@pytest.mark.parametrize(("input_stream,output_stream,"
+                          "starburst_params,ransac_params,pupil_bounding_box,"
+                          "cr_bounding_box,kwargs"), [
+    (InputStream(),
+     None,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
+     {}),
+    (None,
+     None,
+     None,
+     None,
+     [20, 40, 20, 40],
+     [20, 40, 20, 40],
+     {})
+])
+def test_update_fit_parameters(input_stream, output_stream, starburst_params,
+                               ransac_params, pupil_bounding_box,
+                               cr_bounding_box, kwargs):
+    tracker = et.EyeTracker(input_stream)
+    tracker.update_fit_parameters(starburst_params, ransac_params,
+                                  pupil_bounding_box, cr_bounding_box,
+                                  **kwargs)
+    if input_stream is None:
+        assert(tracker.im_shape is None)
+    else:
+        assert(tracker.im_shape == input_stream.frame_shape)
+    if pupil_bounding_box is None:
+        test_pupil_bbox = et.default_bounding_box(tracker.im_shape)
+    else:
+        test_pupil_bbox = pupil_bounding_box
+    if cr_bounding_box is None:
+        test_cr_bbox = et.default_bounding_box(tracker.im_shape)
     else:
         test_cr_bbox = cr_bounding_box
     assert(np.all(tracker.pupil_bounding_box == test_pupil_bbox))
@@ -155,11 +206,13 @@ def test_eye_tracker_init(im_shape, input_stream, output_stream,
        return_value=(5, 5))
 def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
                                  recolor_cr):
-    tracker = et.EyeTracker((10, 10), None, recolor_cr=recolor_cr)
+    input_stream = InputStream()
+    tracker = et.EyeTracker(input_stream, recolor_cr=recolor_cr)
+    shape = input_stream.frame_shape
     with patch.object(tracker, "blurred_image",
-                      MagicMock(return_value=np.zeros((10, 10)))) as blur:
+                      MagicMock(return_value=np.zeros(shape))) as blur:
         with patch.object(tracker, "cr_filled_image",
-                          MagicMock(return_value=np.ones((10, 10)))) as cr:
+                          MagicMock(return_value=np.ones(shape))) as cr:
             tracker.update_last_pupil_color(pupil_params)
             if np.any(np.isnan(pupil_params)):
                 assert cr.__getitem__.call_count == 0
@@ -168,12 +221,12 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
             elif recolor_cr:
                 cr.__getitem__.assert_called_once()
                 mock_ellipse_points.assert_called_once_with(pupil_params,
-                                                            (10, 10))
+                                                            ANY)
                 assert blur.__getitem__.call_count == 0
             else:
                 blur.__getitem__.assert_called_once()
                 mock_ellipse_points.assert_called_once_with(pupil_params,
-                                                            (10, 10))
+                                                            ANY)
                 assert cr.__getitem__.call_count == 0
 
 
@@ -201,6 +254,17 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
       "number_of_close_points": 3},
      None,
      None,
+     {"clip_pupil_values": False, "adaptive_pupil": False}),
+    (image(),
+     None,
+     None,
+     {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
+      "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
+      "index_length": 100},
+     {"iterations": 20, "threshold": 1, "minimum_points_for_fit": 10,
+      "number_of_close_points": 3},
+     None,
+     None,
      {"recolor_cr": False}),
     (image(cr_center=(85, 25), pupil_center=(70, 100)),
      None,
@@ -212,26 +276,24 @@ def test_update_last_pupil_color(mock_ellipse_points, pupil_params,
       "number_of_close_points": 3},
      None,
      None,
-     {"recolor_cr": False, "adaptive_pupil": False})
+     {"recolor_cr": False, "adaptive_pupil": True, "clip_pupil_values": True})
 ])
 def test_process_image(image, input_stream, output_stream,
                        starburst_params, ransac_params, pupil_bounding_box,
                        cr_bounding_box, kwargs):
-    im_shape = image.shape
-    tracker = et.EyeTracker(im_shape, input_stream, output_stream,
+    tracker = et.EyeTracker(input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box, **kwargs)
     with patch.object(tracker, "update_last_pupil_color") as mock_update:
-        cr, pupil = tracker.process_image(image)
+        cr, pupil, cr_err, pupil_err = tracker.process_image(image)
         if not kwargs.get("adaptive_pupil", True):
             assert mock_update.call_count == 0
 
 
-@pytest.mark.parametrize(("shape,input_stream,output_stream,"
+@pytest.mark.parametrize(("input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,generate_QC_output,kwargs"), [
-    ((200, 200),
-     InputStream(),
+    (InputStream(),
      None,
      {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
       "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
@@ -242,8 +304,7 @@ def test_process_image(image, input_stream, output_stream,
      None,
      False,
      {}),
-    ((200, 200),
-     InputStream(),
+    (InputStream(),
      OutputStream((200, 200)),
      {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
       "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
@@ -255,28 +316,28 @@ def test_process_image(image, input_stream, output_stream,
      True,
      {}),
 ])
-def test_process_stream(shape, input_stream, output_stream, starburst_params,
+def test_process_stream(input_stream, output_stream, starburst_params,
                         ransac_params, pupil_bounding_box,
                         cr_bounding_box, generate_QC_output, kwargs):
-    tracker = et.EyeTracker(shape, input_stream, output_stream,
+    tracker = et.EyeTracker(input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box,
                             generate_QC_output, **kwargs)
-    pupil, cr = tracker.process_stream(start=3)
+    cr, pupil, cr_err, pupil_err = tracker.process_stream(start=3)
     assert(pupil.shape == (input_stream.num_frames - 3, 5))
-    pupil, cr = tracker.process_stream(update_mean_frame=False)
+    cr, pupil, cr_err, pupil_err = tracker.process_stream(
+        update_mean_frame=False)
     assert(pupil.shape == (input_stream.num_frames, 5))
     tracker.input_stream = InputStream(0)
     with patch.object(tracker, "process_image") as mock_process:
-        pupil, cr = tracker.process_stream()
+        cr, pupil, cr_err, pupil_err = tracker.process_stream()
         assert mock_process.call_count == 0
 
 
-@pytest.mark.parametrize(("shape,input_stream,output_stream,"
+@pytest.mark.parametrize(("input_stream,output_stream,"
                           "starburst_params,ransac_params,pupil_bounding_box,"
                           "cr_bounding_box,generate_QC_output,kwargs"), [
-    ((200, 200),
-     InputStream(),
+    (InputStream(),
      None,
      {"n_rays": 20, "cr_threshold_factor": 1.4, "cr_threshold_pixels": 5,
       "pupil_threshold_factor": 1.4, "pupil_threshold_pixels": 5,
@@ -288,11 +349,11 @@ def test_process_stream(shape, input_stream, output_stream, starburst_params,
      False,
      {}),
 ])
-def test_mean_frame(shape, input_stream, output_stream, starburst_params,
+def test_mean_frame(input_stream, output_stream, starburst_params,
                     ransac_params, pupil_bounding_box,
                     cr_bounding_box, generate_QC_output, kwargs):
-    tracker = et.EyeTracker(shape, input_stream, output_stream,
+    tracker = et.EyeTracker(input_stream, output_stream,
                             starburst_params, ransac_params,
                             pupil_bounding_box, cr_bounding_box,
                             generate_QC_output, **kwargs)
-    assert(tracker.mean_frame.shape == shape)
+    assert(tracker.mean_frame.shape == input_stream.frame_shape)

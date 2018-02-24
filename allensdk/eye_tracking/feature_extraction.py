@@ -1,13 +1,13 @@
 import numpy as np
-from scipy.signal import fftconvolve
+import cv2
 
-_CIRCLE_MASKS = {}
+_CIRCLE_TEMPLATES = {}
 
 
-def get_circle_mask(radius):
-    """Get circular mask for estimating center point.
+def get_circle_template(radius, fill=1, surround=0):
+    """Get circular template for estimating center point.
 
-    Returns a cached mask if it has already been computed.
+    Returns a cached template if it has already been computed.
 
     Parameters
     ----------
@@ -16,45 +16,26 @@ def get_circle_mask(radius):
 
     Returns
     -------
-    mask : numpy.ndarray
-        Circle mask.
+    template : numpy.ndarray
+        Circle template.
     """
-    global _CIRCLE_MASKS
-    mask = _CIRCLE_MASKS.get(radius, None)
+    global _CIRCLE_TEMPLATES
+    mask = _CIRCLE_TEMPLATES.get((radius, int(fill), int(surround)), None)
     if mask is None:
-        Y, X = np.meshgrid(np.arange(-radius, radius+1),
-                           np.arange(-radius, radius+1))
-        mask = np.zeros([2*radius + 1, 2*radius + 1])
-        ones = X**2 + Y**2 < radius**2
-        mask[ones] = 1
-        _CIRCLE_MASKS[radius] = mask
+        Y, X = np.meshgrid(np.arange(-radius-3, radius+4),
+                           np.arange(-radius-3, radius+4))
+        mask = np.ones([2*radius + 7, 2*radius + 7], dtype=np.float)*surround
+        circle = X**2 + Y**2 < radius**2
+        mask[circle] = fill
+        _CIRCLE_TEMPLATES[(int(radius), int(fill), int(surround))] = mask
     return mask
 
 
-def max_image_at_value(image, value):
-    """Get an image where pixels closest to `value` are brightest.
+def max_correlation_positions(image, template, bounding_box=None,
+                              reject_coords=None):
+    """Correlate image with template and return the max location.
 
-    Parameters
-    ----------
-    image : numpy.ndarray
-        Image to transform.
-    value : int
-        Value to make brightest in the transformed image.
-
-    Returns
-    -------
-    image : numpy.ndarry
-        Transformed image.
-    """
-    min_at_value = np.abs(image.astype(float) - value)
-    return (min_at_value.max() - min_at_value).astype(np.uint8)
-
-
-def max_convolution_positions(image, kernel, bounding_box=None,
-                              mode="same"):
-    """Convolve image with kernel and return the max location.
-
-    Convolution is done using fftconvolve with mode set to `mode`. It
+    Correlation is done with mode set to `mode` and method 'fft'. It
     is only performed over the image region within `bounding_box` if it
     is provided. The resulting coordinates are provided in the context
     of the original image.
@@ -63,23 +44,18 @@ def max_convolution_positions(image, kernel, bounding_box=None,
     ----------
     image : numpy.ndarray
         Image over which to convolve the kernel.
-    kernel : numpy.ndarray
+    template : numpy.ndarray
         Kernel to convolve with the image.
     bounding_box : numpy.ndarray
         [xmin, xmax, ymin, ymax] bounding box on the image.
-    mode : string
-        Mode to run fftconvolve with.
+    reject_coords : tuple
+        (r, c) coordinates to disallow as best fit.
 
     Returns
     -------
     max_position : tuple
         (y, x) mean location maximum of the convolution of the kernel
         with the image.
-
-    Raises
-    ------
-    ValueError
-        If bounding box is provided but incorrectly defined.
     """
     if bounding_box is None:
         cropped_image = image
@@ -89,7 +65,19 @@ def max_convolution_positions(image, kernel, bounding_box=None,
         xmin, xmax, ymin, ymax = bounding_box
         cropped_image = image[ymin:ymax, xmin:xmax]
 
-    conv = fftconvolve(cropped_image, kernel, mode=mode)
-    y, x = np.where(conv == np.max(conv))
+    corr = cv2.matchTemplate(cropped_image.astype(np.float32),
+                             template.astype(np.float32),
+                             cv2.TM_CCORR_NORMED)
 
-    return (int(np.mean(y)+ymin), int(np.mean(x)+xmin))
+    if reject_coords:
+        r = reject_coords[0] - ymin - template.shape[0]
+        c = reject_coords[1] - xmin - template.shape[1]
+        idx = (r >= 0) & (c >= 0)
+        corr[r[idx], c[idx]] = -np.inf
+
+    _, _, _, max_loc = cv2.minMaxLoc(corr)
+
+    y = int(max_loc[1] + template.shape[0]/2.0 + ymin)
+    x = int(max_loc[0] + template.shape[1]/2.0 + xmin)
+
+    return y, x

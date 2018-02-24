@@ -14,7 +14,8 @@ from ._schemas import InputParameters, OutputParameters  # noqa: E402
 from .eye_tracking import EyeTracker  # noqa: E402
 from .frame_stream import CvInputStream, CvOutputStream  # noqa: E402
 from .plotting import (plot_summary, plot_cumulative,
-                       annotate_with_box)  # noqa: E402
+                       annotate_with_box, plot_timeseries)  # noqa: E402
+from allensdk.eye_tracking import __version__  # noqa E402
 
 
 def setup_annotation(im_shape, annotate_movie, output_file, fourcc="H264"):
@@ -30,16 +31,19 @@ def write_output(output_dir, cr_parameters, pupil_parameters, mean_frame):
     output = {
         "cr_parameter_file": os.path.join(output_dir, "cr_params.npy"),
         "pupil_parameter_file": os.path.join(output_dir, "pupil_params.npy"),
-        "mean_frame_file": os.path.join(output_dir, "mean_frame.png")
+        "mean_frame_file": os.path.join(output_dir, "mean_frame.png"),
+        "module_version": __version__
     }
     plt.imsave(output["mean_frame_file"], mean_frame, cmap="gray")
     np.save(output["cr_parameter_file"], cr_parameters)
     np.save(output["pupil_parameter_file"], pupil_parameters)
+
     return output
 
 
 def write_QC_output(annotator, cr_parameters, pupil_parameters,
-                    mean_frame, **kwargs):
+                    cr_errors, pupil_errors, mean_frame, pupil_intensity=None,
+                    **kwargs):
     output_dir = kwargs["qc"]["output_dir"]
     annotator.annotate_with_cumulative_cr(
         mean_frame, os.path.join(output_dir, "cr_all.png"))
@@ -57,6 +61,14 @@ def write_QC_output(annotator, cr_parameters, pupil_parameters,
         mean_frame = annotate_with_box(mean_frame, cr_bbox,
                                        (255, 0, 0))
     plt.imsave(os.path.join(output_dir, "mean_frame_bbox.png"), mean_frame)
+    plot_timeseries(pupil_errors, None, title="pupil ellipse fit errors",
+                    filename=os.path.join(output_dir, "pupil_ellipse_err.png"))
+    plot_timeseries(cr_errors, None, title="cr ellipse fit errors",
+                    filename=os.path.join(output_dir, "cr_ellipse_err.png"))
+    if pupil_intensity:
+        plot_timeseries(
+            pupil_intensity, None, title="estimated pupil intensity",
+            filename=os.path.join(output_dir, "pupil_intensity.png"))
 
 
 def get_starburst_args(kwargs):
@@ -87,11 +99,10 @@ def main():
 
         istream = CvInputStream(mod.args["input_source"])
 
-        im_shape = istream.frame_shape
+        ostream = setup_annotation(istream.frame_shape,
+                                   **mod.args["annotation"])
 
-        ostream = setup_annotation(im_shape, **mod.args["annotation"])
-
-        tracker = EyeTracker(im_shape, istream,
+        tracker = EyeTracker(istream,
                              ostream,
                              starburst_args,
                              mod.args["ransac"],
@@ -99,18 +110,22 @@ def main():
                              mod.args["cr_bounding_box"],
                              mod.args["qc"]["generate_plots"],
                              **mod.args["eye_params"])
-        pupil_parameters, cr_parameters = tracker.process_stream(
+        cr_params, pupil_params, cr_err, pupil_err = tracker.process_stream(
             start=mod.args.get("start_frame", 0),
             stop=mod.args.get("stop_frame", None),
             step=mod.args.get("frame_step", 1)
         )
 
-        output = write_output(mod.args["output_dir"], cr_parameters,
-                              pupil_parameters, tracker.mean_frame)
+        output = write_output(mod.args["output_dir"], cr_params,
+                              pupil_params, tracker.mean_frame)
 
+        pupil_intensity = None
+        if tracker.adaptive_pupil:
+            pupil_intensity = tracker.pupil_colors
         if mod.args["qc"]["generate_plots"]:
-            write_QC_output(tracker.annotator, cr_parameters, pupil_parameters,
-                            tracker.mean_frame, **mod.args)
+            write_QC_output(tracker.annotator, cr_params, pupil_params,
+                            cr_err, pupil_err, tracker.mean_frame,
+                            pupil_intensity=pupil_intensity, **mod.args)
 
         output["input_parameters"] = mod.args
         if "output_json" in mod.args:
