@@ -29,15 +29,20 @@ def ellipse_points(a, b, x0, y0, rotation):
 def test_ellipse_fit(a, b, x0, y0, rotation):
     data = ellipse_points(a, b, x0, y0, rotation)
     fitter = fe.EllipseFitter(40, 40, 0.01, 50)
-    x, y, angle, ax1, ax2 = fitter.fit(data)
+    p, err = fitter.fit(data)
+    x, y, angle, ax1, ax2 = p
     assert(np.abs(x - x0) < 0.0001)
     assert(np.abs(y - y0) < 0.0001)
     assert(np.abs(angle - np.degrees(rotation)) < 0.01)
     assert((np.abs(ax1-a) < 0.0001 and np.abs(ax2-b) < 0.0001) or
            (np.abs(ax1-b) < 0.0001 and np.abs(ax2-a) < 0.0001))
-    with patch.object(fitter._fitter, "fit", return_value=None):
-        res = fitter.fit(data)
+    with patch.object(fitter._fitter, "fit", return_value=(None, None)):
+        res, err = fitter.fit(data)
         assert(np.all(np.isnan(res)))
+    results, err = fitter.fit(data, max_radius=min(a, b))
+    assert(np.all(np.isnan(results)))
+    results, err = fitter.fit(data, max_eccentricity=-1)
+    assert(np.all(np.isnan(results)))
 
 
 @pytest.mark.parametrize("point,ellipse_params,tolerance,result", [

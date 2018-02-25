@@ -18,9 +18,13 @@ The video IO is done using OpenCV's video functionality. Unfortunately,
 OpenCV on pip seems to not be built with the necessary backend, as the
 methods fail silently. As a result, we have not included OpenCV in the
 requirements and it is necessary to get it seperately, built with the
-video capture and writing functional. The simplest way to accomplish
-that is to use conda:
+video capture and writing functional. Additionally, on some platforms
+scikit-image does not build easily from source and the developers don't
+have bindary distributions for all platforms yet. The simplest way to
+install these difficult dependencies is to use conda:
 
+    conda install scikit-image
+    conda install pyqt
     conda install -c conda-forge opencv
 
 The rest of the dependencies are all in the requirements, so to
@@ -50,7 +54,10 @@ convenient to store them in a JSON-formatted file which can be used like:
     allensdk.eye_tracking --input_json <path to the input json>
 
 The input json can be combined with other command line argument, which will
-take precedence over anything in the json.
+take precedence over anything in the json. There is a UI tool for adjusting
+and saving input parameters that can be used by running:
+
+    allensdk.eye_tracking_ui
 
 Description of algorithm
 ------------------------

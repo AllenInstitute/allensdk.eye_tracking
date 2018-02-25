@@ -7,7 +7,8 @@ class RansacFitter(object):
         self.best_params = None
 
     def fit(self, fit_function, error_function, data, threshold,
-            minimum_points_for_fit, number_of_close_points, iterations):
+            minimum_points_for_fit, number_of_close_points, iterations,
+            **kwargs):
         """Find a best fit to a model using ransac.
 
         Parameters
@@ -30,10 +31,16 @@ class RansacFitter(object):
             to consider a good fit.
         iterations : int
             Number of iterations to run.
+        **kwargs
+            Additional constraint keyword arguments passed to
+            `fit_function`.
 
         Returns
         -------
-        Best model parameters, or None if no good fit found.
+        best_params : numpy.ndarray
+            Best parameters of the model.
+        best_error : float
+            Best error in the fitting.
 
         Raises
         ------
@@ -48,15 +55,17 @@ class RansacFitter(object):
             parameters, error = fit_iteration(fit_function, error_function,
                                               data, threshold,
                                               minimum_points_for_fit,
-                                              number_of_close_points)
+                                              number_of_close_points,
+                                              **kwargs)
             if error < self.best_error:
                 self.best_params = parameters
                 self.best_error = error
-        return self.best_params
+        return self.best_params, self.best_error
 
 
 def fit_iteration(fit_function, error_function, data, threshold,
-                  minimum_points_for_fit, number_of_close_points):
+                  minimum_points_for_fit, number_of_close_points,
+                  **kwargs):
     """Perform one iteration of ransac model fitting.
 
     Parameters
@@ -77,6 +86,9 @@ def fit_iteration(fit_function, error_function, data, threshold,
     number_of_close_points : int
         Number of candidate outliers reselected as inliers required
         to consider a good fit.
+    **kwargs
+        Additional constraint keyword arguments passed to
+        `fit_function`.
 
     Returns
     -------
@@ -85,13 +97,13 @@ def fit_iteration(fit_function, error_function, data, threshold,
     """
     inlier_idx, outlier_idx = partition_candidate_indices(
         data, minimum_points_for_fit)
-    parameters, error = fit_function(data[inlier_idx, :])
+    parameters, error = fit_function(data[inlier_idx, :], **kwargs)
     if parameters is not None:
         also_inlier_idx = check_outliers(error_function, parameters, data,
                                          outlier_idx, threshold)
         if len(also_inlier_idx) > number_of_close_points:
             idx = np.concatenate((inlier_idx, also_inlier_idx))
-            parameters, error = fit_function(data[idx, :])
+            parameters, error = fit_function(data[idx, :], **kwargs)
             return parameters, error
     return None, np.inf
 

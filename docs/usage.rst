@@ -17,4 +17,7 @@ convenient to store them in a JSON-formatted file which can be used like::
     allensdk.eye_tracking --input_json <path to the json>
 
 The input json can be combined with other command line argument, which will
-take precedence over anything in the json.
+take precedence over anything in the json. There is a UI tool for adjusting
+and saving input parameters that can be used by running::
+
+    allensdk.eye_tracking_ui

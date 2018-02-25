@@ -28,23 +28,32 @@ class EllipseFitter(object):
         Error threshold below which data should be considered an
         inlier.
     iterations : int
-            Number of iterations to run.
+        Number of iterations to run.
     """
-    DEFAULT_MINIMUM_POINTS_FOR_FIT = 10
-    DEFAULT_NUMBER_OF_CLOSE_POINTS = 4
+    DEFAULT_MINIMUM_POINTS_FOR_FIT = 40
+    DEFAULT_NUMBER_OF_CLOSE_POINTS = 15
     DEFAULT_THRESHOLD = 0.0001
-    DEFAULT_ITERATIONS = 10
+    DEFAULT_ITERATIONS = 20
 
     def __init__(self, minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
                  number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
                  threshold=DEFAULT_THRESHOLD, iterations=DEFAULT_ITERATIONS):
+        self.update_params(minimum_points_for_fit=minimum_points_for_fit,
+                           number_of_close_points=number_of_close_points,
+                           iterations=iterations, threshold=threshold)
+        self._fitter = RansacFitter()
+
+    def update_params(self,
+                      minimum_points_for_fit=DEFAULT_MINIMUM_POINTS_FOR_FIT,
+                      number_of_close_points=DEFAULT_NUMBER_OF_CLOSE_POINTS,
+                      threshold=DEFAULT_THRESHOLD,
+                      iterations=DEFAULT_ITERATIONS):
         self.minimum_points_for_fit = minimum_points_for_fit
         self.number_of_close_points = number_of_close_points
         self.threshold = threshold
         self.iterations = iterations
-        self._fitter = RansacFitter()
 
-    def fit(self, candidate_points):
+    def fit(self, candidate_points, **kwargs):
         """Perform a fit on (y,x) points.
 
         Parameters
@@ -56,27 +65,34 @@ class EllipseFitter(object):
         -------
         ellipse_parameters : tuple
             (x, y, angle, semi_axis1, semi_axis2) ellipse parameters.
+        error : float
+            Fit error for the ellipse.
         """
         data = np.array(candidate_points)
-        params = self._fitter.fit(fit_ellipse, fit_errors, data,
-                                  self.threshold, self.minimum_points_for_fit,
-                                  self.number_of_close_points, self.iterations)
+        params, error = self._fitter.fit(
+            fit_ellipse, fit_errors, data, self.threshold,
+            self.minimum_points_for_fit, self.number_of_close_points,
+            self.iterations, **kwargs)
         if params is not None:
             x, y = ellipse_center(params)
             angle = ellipse_angle_of_rotation(params)*180/np.pi
             ax1, ax2 = ellipse_axis_length(params)
-            return (x, y, angle, ax1, ax2)
+            return (x, y, angle, ax1, ax2), error
         else:
-            return (np.nan, np.nan, np.nan, np.nan, np.nan)
+            return (np.nan, np.nan, np.nan, np.nan, np.nan), np.nan
 
 
-def fit_ellipse(data):
+def fit_ellipse(data, max_radius=None, max_eccentricity=None):
     """Fit an ellipse to data.
 
     Parameters
     ----------
     data : numpy.ndarray
         [n,2] array of (y,x) data points.
+    max_radius : float
+        Maximum radius to allow.
+    max_eccentricity : float
+        Maximum eccentricity to allow.
 
     Returns
     -------
@@ -96,6 +112,13 @@ def fit_ellipse(data):
 
         params = U.T[0]
         error = np.dot(params, np.dot(S, params))/len(y)
+        if max_radius is not None:
+            ax1, ax2 = ellipse_axis_length(params)
+            if ax1 > max_radius or ax2 > max_radius:
+                error = np.inf
+        if max_eccentricity is not None:
+            if eccentricity(params) > max_eccentricity:
+                error = np.inf
     except Exception as e:
         logging.debug(e)  # figure out which exception this is catching
         params = None
@@ -246,3 +269,60 @@ def not_on_ellipse(point, ellipse_params, tolerance):
     if err < tolerance:
         return False
     return True
+
+
+def ellipse_pass_filter(point, ellipse_params, tolerance,
+                        pupil_intensity_estimate=None,
+                        pupil_limits=None):
+    """Function to pass or reject an ellipse candidate point.
+
+    Points are rejected if they fall on the border defined by
+    `ellipse_params`. If `pupil_limits` is provided and
+    `pupil_intensity_limits` falls outside it the point is
+    rejected as well.
+
+    Parameters
+    ----------
+    point : tuple
+        (y, x) point.
+    ellipse_params : numpy.ndarray
+        Ellipse parameters to check against.
+    tolerance : float
+        Tolerance for determining point is on ellipse.
+    pupil_intensity_estimage : float
+        Estimated intensity of the pupil used for generating
+        the point.
+    pupil_limits : tuple
+        (min, max) valid intensities for the pupil.
+
+    Returns
+    ------
+    passed : bool
+        True if the point passes the filter and is a good candidate
+        for fitting.
+    """
+    passed = not_on_ellipse(point, ellipse_params, tolerance)
+    if (pupil_limits is not None) and passed:
+        in_range = (pupil_intensity_estimate >= pupil_limits[0]) and \
+                   (pupil_intensity_estimate <= pupil_limits[1])
+        passed = in_range
+    return passed
+
+
+def eccentricity(parameters):
+    """Get the eccentricity of an ellipse from the conic parameters.
+
+    Parameters
+    ----------
+    parameters : numpy.ndarray
+        Conic parameters of the ellipse.
+
+    Returns
+    -------
+    eccentricity : float
+        Eccentricity of the ellipse.
+    """
+    axes = ellipse_axis_length(parameters)
+    minor = np.min(axes)
+    major = np.max(axes)
+    return 1 - (minor/major)
