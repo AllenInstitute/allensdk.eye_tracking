@@ -19,7 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'allensdk.eye_tracking = allensdk.eye_tracking.__main__:main',
-            'allensdk.eye_tracking_ui = allensdk.eye_tracking.ui.qt:main'
+            'allensdk.eye_tracking_ui = allensdk.eye_tracking.ui.__main__:main'
         ]
     },
     setup_requires=['pytest-runner'],
