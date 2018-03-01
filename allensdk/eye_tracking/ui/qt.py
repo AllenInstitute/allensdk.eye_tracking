@@ -191,13 +191,35 @@ class BBoxCanvas(FigureCanvasQTAgg):
         Matplob figure to contain in the canvas.
     """
     box_updated = QtCore.Signal(int, int, int, int)
+    file_dropped = QtCore.Signal(str)
 
     def __init__(self, figure):
         super(BBoxCanvas, self).__init__(figure)
+        self.setAcceptDrops(True)
         self.rgba = (255, 255, 255, 20)
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.drawing = False
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+            filename = str(event.mimeData().urls()[0].toLocalFile())
+            self.file_dropped.emit(filename)
+        else:
+            event.ignore()
 
     def set_rgb(self, r, g, b):
         """Set the RGB values for the bounding box tool.
@@ -320,6 +342,7 @@ class ViewerWidget(QtWidgets.QWidget):
         self.slider.sliderReleased.connect(self.show_frame)
         self.rerun_button.clicked.connect(self.update_tracker)
         self.canvas.box_updated.connect(self.update_bbox)
+        self.canvas.file_dropped.connect(self.load_video)
         self.pupil_radio.clicked.connect(self._setup_bbox)
         self.cr_radio.clicked.connect(self._setup_bbox)
 
@@ -386,9 +409,10 @@ class ViewerWidget(QtWidgets.QWidget):
                 with open(filepath, "w") as f:
                     json.dump(json_data, f, indent=1)
 
-    def load_video(self):
-        filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video")
+    def load_video(self, filepath=None):
+        if filepath is None:
+            filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Select video")
         filepath = filepath.strip("'\" ")
         if os.path.exists(filepath):
             self.json_view.update_value("input_source",
