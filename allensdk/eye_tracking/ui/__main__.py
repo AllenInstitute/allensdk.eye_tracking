@@ -7,12 +7,12 @@ from allensdk.eye_tracking import _schemas
 
 
 def load_config(config_file):
+    config = None
     try:
         with open(config_file, "r") as f:
             config = json.load(f)
     except Exception as e:
         logging.error(e)
-        config = None
     return config
 
 

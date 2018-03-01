@@ -1,11 +1,12 @@
-from allensdk.eye_tracking.ui import qt
+from allensdk.eye_tracking.ui import qt, __main__
 from allensdk.eye_tracking._schemas import InputParameters
 from allensdk.eye_tracking.frame_stream import CvOutputStream
 import os
 import sys
 import numpy as np
+import json
 import pytest  # noqa: F401
-from mock import patch
+from mock import patch, MagicMock
 
 DEFAULT_CV_FRAMES = 20
 # H264 is not available by default on windows
@@ -34,12 +35,59 @@ def movie(tmpdir_factory, request):
     return filename
 
 
+@pytest.fixture(scope="module", params=[True, False])
+def config_file(tmpdir_factory, request):
+    if request.param:
+        filename = str(tmpdir_factory.mktemp("test").join('config.json'))
+        config = {"input_json": {"input_source": {"read_only": True}}}
+        with open(filename, "w") as f:
+            json.dump(config, f)
+    else:
+        filename = ""
+    return filename
+
+
 @pytest.fixture(params=[True, False])
 def json_file(tmpdir_factory, request):
     if request.param:
         return str(tmpdir_factory.mktemp("test").join("file.json"))
     else:
         return ""
+
+
+@pytest.fixture(params=[True, False])
+def mock_file_event(movie, request):
+    mock_event = MagicMock()
+    mock_data = MagicMock()
+    mock_urls = MagicMock(return_value=[movie])
+    mock_urls.toLocalFile = MagicMock(return_value=movie)
+    mock_data.hasUrls = MagicMock(return_value=request.param)
+    mock_data.urls = MagicMock(return_value=mock_urls)
+    mock_event.mimeData = MagicMock(return_value=mock_data)
+    return mock_event
+
+
+@patch.object(qt.DropFileMixin, "file_dropped")
+def test_drop_file_mixin(mock_signal, qtbot, mock_file_event):
+    w = qt.DropFileMixin()
+    w.dragEnterEvent(mock_file_event)
+    if mock_file_event.mimeData().hasUrls():
+        mock_file_event.accept.assert_called_once()
+    else:
+        mock_file_event.ignore.assert_called_once()
+    mock_file_event.reset_mock()
+    w.dragMoveEvent(mock_file_event)
+    if mock_file_event.mimeData().hasUrls():
+        mock_file_event.accept.assert_called_once()
+    else:
+        mock_file_event.ignore.assert_called_once()
+    mock_file_event.reset_mock()
+    w.dropEvent(mock_file_event)
+    if mock_file_event.mimeData().hasUrls():
+        mock_file_event.accept.assert_called_once()
+    else:
+        mock_file_event.ignore.assert_called_once()
+    mock_file_event.reset_mock()
 
 
 def test_field_widget(qtbot):
@@ -114,13 +162,14 @@ def test_bbox_canvas(qtbot):
     assert(box_updated.signal_triggered)
 
 
-@pytest.mark.parametrize("profile", [
-    True, False
+@pytest.mark.parametrize("profile,config", [
+    (True, {"input_json": {"cr_bounding_box": {"visible": False}}}),
+    (False, None)
 ])
 @patch.object(qt.QtWidgets.QMessageBox, "exec_")
-def test_viewer_window(mock_exec, qtbot, movie, json_file, profile):
+def test_viewer_window(mock_exec, qtbot, movie, json_file, profile, config):
     schema_type = InputParameters
-    w = qt.ViewerWindow(schema_type, profile_runs=profile)
+    w = qt.ViewerWindow(schema_type, profile_runs=profile, config=config)
     w.widget.json_view.update_value("cr_bounding_box", "[")
     qtbot.mouseClick(w.widget.rerun_button, qt.QtCore.Qt.LeftButton)
     mock_exec.assert_called_once()
@@ -151,11 +200,16 @@ def test_viewer_window(mock_exec, qtbot, movie, json_file, profile):
         with patch.object(w.widget.tracker, "update_fit_parameters") as update:
             w.widget.update_tracker()
             assert(update.call_count == 0)
+    if movie:
+        w.widget.load_video(movie)
 
 
-def test_main(qtbot):
-    with patch("sys.argv", ["allensdk.eye_tracking_ui"]):
+def test_main(qtbot, config_file):
+    args = ["allensdk.eye_tracking_ui"]
+    if config_file:
+        args.extend(["--config_file", config_file])
+    with patch("sys.argv", args):
         with patch.object(qt.QtWidgets.QApplication, "exec_",
                           return_value=0):
             with pytest.raises(SystemExit):
-                qt.main()
+                __main__.main()

@@ -17,6 +17,31 @@ from allensdk.eye_tracking.plotting import annotate_with_box
 LITERAL_EVAL_TYPES = {_schemas.NumpyArray, _schemas.Bool}
 
 
+class DropFileMixin(object):
+    """Mixin for accepting drag and drop of a file."""
+    file_dropped = QtCore.Signal(str)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+            filename = str(event.mimeData().urls()[0].toLocalFile())
+            self.file_dropped.emit(filename)
+        else:
+            event.ignore()
+
+
 class FieldWidget(QtWidgets.QLineEdit):
     """Widget for displaying and editing a schema field.
 
@@ -181,7 +206,7 @@ class InputJsonWidget(QtWidgets.QScrollArea):
         self.schema_widget.update_value(attribute, value)
 
 
-class BBoxCanvas(FigureCanvasQTAgg):
+class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
     """Matplotlib canvas widget with drawable box.
 
     Parameters
@@ -199,26 +224,6 @@ class BBoxCanvas(FigureCanvasQTAgg):
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.drawing = False
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.accept()
-            filename = str(event.mimeData().urls()[0].toLocalFile())
-            self.file_dropped.emit(filename)
-        else:
-            event.ignore()
 
     def set_rgb(self, r, g, b):
         """Set the RGB values for the bounding box tool.
