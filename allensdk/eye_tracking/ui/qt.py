@@ -305,20 +305,24 @@ class ViewerWidget(QtWidgets.QWidget):
         super(ViewerWidget, self).__init__(parent=parent)
         self.profile_runs = profile_runs
         self.layout = QtWidgets.QGridLayout()
+        self.config = config
+        if config is None:
+            self.config = {}
         self.schema_type = schema_type
         self.video = "./"
-        self._init_widgets(config)
+        self._init_widgets()
         self.tracker = EyeTracker(None, None)
         self.update_tracker()
         self.setLayout(self.layout)
 
-    def _init_widgets(self, config):
+    def _init_widgets(self):
         sp_params = SubplotParams(0, 0, 1, 1)
         self.figure = Figure(frameon=False, subplotpars=sp_params)
         self.axes = self.figure.add_subplot(111)
         self.canvas = BBoxCanvas(self.figure)
-        self.json_view = InputJsonWidget(self.schema_type(), parent=self,
-                                         config=config)
+        self.json_view = InputJsonWidget(
+            self.schema_type(), parent=self,
+            config=self.config.get("input_json", {}))
         self.rerun_button = QtWidgets.QPushButton("Reprocess Frame",
                                                   parent=self)
         self.pupil_radio = QtWidgets.QRadioButton("Pupil BBox", parent=self)
@@ -402,8 +406,12 @@ class ViewerWidget(QtWidgets.QWidget):
             return
         valid = self._parse_args(json_data)
         if valid:
+            path = self.config.get("json_save_path", "./")
+            base, _ = os.path.splitext(
+                os.path.basename(json_data["input_source"]))
+            default_filename = os.path.join(path, base + ".json")
             filepath, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self, "Json file")
+                self, "Json file", default_filename)
             if os.path.exists(os.path.dirname(filepath)):
                 with open(filepath, "w") as f:
                     json.dump(json_data, f, indent=1)
