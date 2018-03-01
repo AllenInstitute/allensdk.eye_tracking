@@ -4,6 +4,7 @@ from matplotlib.figure import Figure, SubplotParams
 import ast
 import os
 import json
+import logging
 import cProfile
 from argschema.schemas import mm
 from argschema import ArgSchemaParser
@@ -30,7 +31,7 @@ class FieldWidget(QtWidgets.QLineEdit):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, key, field, parent=None):
+    def __init__(self, key, field, parent=None, **kwargs):
         if field.default == mm.missing:
             default = ""
         else:
@@ -38,6 +39,9 @@ class FieldWidget(QtWidgets.QLineEdit):
         super(FieldWidget, self).__init__(default, parent=parent)
         self.field = field
         self.key = key
+        self.setEnabled(not kwargs.get("read_only", False))
+        self.displayed = kwargs.get("visible", True)
+        self.setVisible(self.displayed)
 
     def get_json(self):
         """Get the JSON serializable data from this field.
@@ -73,27 +77,37 @@ class SchemaWidget(QtWidgets.QWidget):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, key, schema, parent=None):
+    def __init__(self, key, schema, parent=None, config=None):
         super(SchemaWidget, self).__init__(parent=parent)
         self.key = key
         self.schema = schema
         self.fields = {}
+        self.config = config
+        if config is None:
+            self.config = {}
         self.layout = QtWidgets.QGridLayout()
-        self._init_widgets()
+        all_children_hidden = self._init_widgets()
         self.setLayout(self.layout)
+        self.displayed = not all_children_hidden
+        self.setVisible(self.displayed)
 
     def _init_widgets(self):
         fields = {}
         nested = {}
+        all_hidden = True
         for k, v in self.schema.fields.items():
             if isinstance(v, _schemas.Nested):
-                w = SchemaWidget(k, v.schema, self)
+                w = SchemaWidget(k, v.schema, self,
+                                 config=self.config.get(k, {}))
                 nested[k] = w
             else:
-                w = FieldWidget(k, v, self)
+                w = FieldWidget(k, v, self, **self.config.get(k, {}))
                 fields[k] = w
             self.fields[k] = w
+            if w.displayed:
+                all_hidden = False
         self._init_layout(fields, nested)
+        return all_hidden
 
     def _init_layout(self, fields, nested):
         i = 0
@@ -104,6 +118,7 @@ class SchemaWidget(QtWidgets.QWidget):
             i += 1
         for k, v in sorted(fields.items()):
             label = QtWidgets.QLabel("{}: ".format(k))
+            label.setVisible(v.displayed)
             self.layout.addWidget(label, i, 0)
             self.layout.addWidget(v, i, 1)
             i += 1
@@ -155,9 +170,9 @@ class InputJsonWidget(QtWidgets.QScrollArea):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, schema, parent=None):
+    def __init__(self, schema, parent=None, config=None):
         super(InputJsonWidget, self).__init__(parent=parent)
-        self.schema_widget = SchemaWidget(None, schema, self)
+        self.schema_widget = SchemaWidget(None, schema, self, config)
         self.setWidget(self.schema_widget)
 
     def get_json(self):
@@ -264,23 +279,25 @@ class ViewerWidget(QtWidgets.QWidget):
     schema_type : type(argschema.DefaultSchema)
         The input schema type.
     """
-    def __init__(self, schema_type, profile_runs=False, parent=None):
+    def __init__(self, schema_type, profile_runs=False, parent=None,
+                 config=None):
         super(ViewerWidget, self).__init__(parent=parent)
         self.profile_runs = profile_runs
         self.layout = QtWidgets.QGridLayout()
         self.schema_type = schema_type
         self.video = "./"
-        self._init_widgets()
+        self._init_widgets(config)
         self.tracker = EyeTracker(None, None)
         self.update_tracker()
         self.setLayout(self.layout)
 
-    def _init_widgets(self):
+    def _init_widgets(self, config):
         sp_params = SubplotParams(0, 0, 1, 1)
         self.figure = Figure(frameon=False, subplotpars=sp_params)
         self.axes = self.figure.add_subplot(111)
         self.canvas = BBoxCanvas(self.figure)
-        self.json_view = InputJsonWidget(self.schema_type(), parent=self)
+        self.json_view = InputJsonWidget(self.schema_type(), parent=self,
+                                         config=config)
         self.rerun_button = QtWidgets.QPushButton("Reprocess Frame",
                                                   parent=self)
         self.pupil_radio = QtWidgets.QRadioButton("Pupil BBox", parent=self)
@@ -417,11 +434,11 @@ class ViewerWidget(QtWidgets.QWidget):
 
 
 class ViewerWindow(QtWidgets.QMainWindow):
-    def __init__(self, schema_type, profile_runs=False):
+    def __init__(self, schema_type, profile_runs=False, config=None):
         super(ViewerWindow, self).__init__()
         self.setWindowTitle("Eye Tracking Configuration Tool")
         self.widget = ViewerWidget(schema_type, profile_runs=profile_runs,
-                                   parent=self)
+                                   parent=self, config=config)
         self.setCentralWidget(self.widget)
         self._init_menubar()
 
@@ -433,15 +450,29 @@ class ViewerWindow(QtWidgets.QMainWindow):
         save.triggered.connect(self.widget.save_json)
 
 
+def load_config(config_file):
+    try:
+        with open(config_file, "r") as f:
+            config = json.load(f)
+    except Exception as e:
+        logging.error(e)
+        config = None
+    return config
+
+
 def main():
     import sys
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--config_file", type=str, default="")
     args, left = parser.parse_known_args()
     sys.argv = sys.argv[:1] + left
+    config = None
+    if args.config_file:
+        config = load_config(args.config_file)
     app = QtWidgets.QApplication([])
-    w = ViewerWindow(_schemas.InputParameters, args.profile)
+    w = ViewerWindow(_schemas.InputParameters, args.profile, config)
     w.show()
     sys.exit(app.exec_())
 
