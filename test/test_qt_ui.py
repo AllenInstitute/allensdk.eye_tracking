@@ -204,12 +204,23 @@ def test_viewer_window(mock_exec, qtbot, movie, json_file, profile, config):
         w.widget.load_video(movie)
 
 
-def test_main(qtbot, config_file):
+@patch("allensdk.eye_tracking.ui.qt.QtWidgets.QApplication")
+def test_main(mock_app, qtbot, config_file):
+    mock_app.exec_ = MagicMock(return_value=0)
     args = ["allensdk.eye_tracking_ui"]
     if config_file:
         args.extend(["--config_file", config_file])
     with patch("sys.argv", args):
-        with patch.object(qt.QtWidgets.QApplication, "exec_",
-                          return_value=0):
-            with pytest.raises(SystemExit):
-                __main__.main()
+        with pytest.raises(SystemExit):
+            __main__.main()
+
+
+@patch("allensdk.eye_tracking.ui.qt.QtWidgets.QApplication")
+def test_main_invalid(mock_app, qtbot, movie):
+    mock_app.exec_ = MagicMock(return_value=0)
+    args = ["allensdk.eye_tracking_ui"]
+    if movie:
+        args.extend(["--config_file", movie])
+    with patch("sys.argv", args):
+        with pytest.raises(SystemExit):
+            __main__.main()
