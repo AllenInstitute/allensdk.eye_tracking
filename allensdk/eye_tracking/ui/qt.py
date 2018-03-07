@@ -254,6 +254,16 @@ class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
             painter.setBrush(brush)
             painter.drawRect(QtCore.QRect(self.begin, self.end))
 
+    def wheelEvent(self, event):
+        """Event override to stop crashing of wheelEvent in PyQt5.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The wheel event.
+        """
+        event.ignore()
+
     def mousePressEvent(self, event):
         """Event override for painting to initialize bounding box.
 
