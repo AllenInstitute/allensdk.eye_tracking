@@ -56,16 +56,24 @@ class FieldWidget(QtWidgets.QLineEdit):
         Parent widget.
     """
     def __init__(self, key, field, parent=None, **kwargs):
-        if field.default == mm.missing:
-            default = ""
-        else:
-            default = str(field.default)
-        super(FieldWidget, self).__init__(default, parent=parent)
         self.field = field
+        super(FieldWidget, self).__init__(self._get_default_string(),
+                                          parent=parent)
         self.key = key
         self.setEnabled(not kwargs.get("read_only", False))
         self.displayed = kwargs.get("visible", True)
         self.setVisible(self.displayed)
+
+    def _get_default_string(self):
+        if self.field.default == mm.missing:
+            default = ""
+        else:
+            default = str(self.field.default)
+        
+        return default
+
+    def reset(self):
+        self.setText(self._get_default_string())
 
     def get_json(self):
         """Get the JSON serializable data from this field.
@@ -150,6 +158,10 @@ class SchemaWidget(QtWidgets.QWidget):
             self.layout.addWidget(v, i, 0, 1, 2)
             i += 1
 
+    def reset(self):
+        for widget in self.fields.values():
+            widget.reset()
+
     def get_json(self):
         """Get the JSON serializable data from this schema.
 
@@ -204,6 +216,9 @@ class InputJsonWidget(QtWidgets.QScrollArea):
 
     def update_value(self, attribute, value):
         self.schema_widget.update_value(attribute, value)
+
+    def reset(self):
+        self.schema_widget.reset()
 
 
 class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
@@ -437,6 +452,7 @@ class ViewerWidget(QtWidgets.QWidget):
                 self, "Select video")
         filepath = filepath.strip("'\" ")
         if os.path.exists(filepath):
+            self.json_view.reset()
             self.json_view.update_value("input_source",
                                         os.path.normpath(filepath))
             self.update_tracker()
