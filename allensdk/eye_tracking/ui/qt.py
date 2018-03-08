@@ -235,10 +235,21 @@ class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
     def __init__(self, figure):
         super(BBoxCanvas, self).__init__(figure)
         self.setAcceptDrops(True)
+        self._im_shape = None
         self.rgba = (255, 255, 255, 20)
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.drawing = False
+
+    @property
+    def im_shape(self):
+        if self._im_shape is None:
+            return (self.height(), self.width())
+        return self._im_shape
+
+    @im_shape.setter
+    def im_shape(self, value):
+        self._im_shape = value
 
     def set_rgb(self, r, g, b):
         """Set the RGB values for the bounding box tool.
@@ -303,6 +314,23 @@ class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
         self.end = event.pos()
         self.update()
 
+    def _scale_and_offset(self):
+        h, w = self.im_shape
+        im_aspect = float(h) / w
+        aspect = float(self.height()) / self.width()
+        if aspect > im_aspect:
+            # taller than image, empty space padding bottom and top
+            scale = float(w) / self.width()
+            wimage_height = self.height() * scale
+            xoffset = 0
+            yoffset = int((wimage_height - h) / 2.0)
+        else:
+            scale = float(h) / self.height()
+            wimage_width = self.width() * scale
+            xoffset = int((wimage_width - w) / 2.0)
+            yoffset = 0
+        return scale, xoffset, yoffset
+
     def mouseReleaseEvent(self, event):
         """Event override for painting to finalize bounding box.
 
@@ -314,12 +342,15 @@ class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
         self.end = event.pos()
         self.update()
         self.drawing = False
-        x1 = self.begin.x()
-        x2 = self.end.x()
-        y1 = self.begin.y()
-        y2 = self.end.y()
-        self.box_updated.emit(min(x1, x2), max(x1, x2),
-                              min(y1, y2), max(y1, y2))
+        scale, xoffset, yoffset = self._scale_and_offset()
+        x1 = int(self.begin.x() * scale) - xoffset
+        x2 = int(self.end.x() * scale) - xoffset
+        y1 = int(self.begin.y() * scale) - yoffset
+        y2 = int(self.end.y() * scale) - yoffset
+        self.box_updated.emit(max(min(x1, x2), 1),
+                              min(max(x1, x2), self.im_shape[1] - 1),
+                              max(min(y1, y2), 1),
+                              min(max(y1, y2), self.im_shape[0] - 1))
 
 
 class ViewerWidget(QtWidgets.QWidget):
@@ -468,6 +499,7 @@ class ViewerWidget(QtWidgets.QWidget):
     def show_frame(self, n=None):
         self.axes.clear()
         frame = self.tracker.input_stream[self.slider.value()]
+        self.canvas.im_shape = self.tracker.im_shape
         if self.profile_runs:
             p = cProfile.Profile()
             p.enable()
