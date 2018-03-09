@@ -17,6 +17,31 @@ from allensdk.eye_tracking.plotting import annotate_with_box
 LITERAL_EVAL_TYPES = {_schemas.NumpyArray, _schemas.Bool}
 
 
+class DropFileMixin(object):
+    """Mixin for accepting drag and drop of a file."""
+    file_dropped = QtCore.Signal(str)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+            filename = str(event.mimeData().urls()[0].toLocalFile())
+            self.file_dropped.emit(filename)
+        else:
+            event.ignore()
+
+
 class FieldWidget(QtWidgets.QLineEdit):
     """Widget for displaying and editing a schema field.
 
@@ -30,14 +55,25 @@ class FieldWidget(QtWidgets.QLineEdit):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, key, field, parent=None):
-        if field.default == mm.missing:
+    def __init__(self, key, field, parent=None, **kwargs):
+        self.field = field
+        super(FieldWidget, self).__init__(self._get_default_string(),
+                                          parent=parent)
+        self.key = key
+        self.setEnabled(not kwargs.get("read_only", False))
+        self.displayed = kwargs.get("visible", True)
+        self.setVisible(self.displayed)
+
+    def _get_default_string(self):
+        if self.field.default == mm.missing:
             default = ""
         else:
-            default = str(field.default)
-        super(FieldWidget, self).__init__(default, parent=parent)
-        self.field = field
-        self.key = key
+            default = str(self.field.default)
+
+        return default
+
+    def reset(self):
+        self.setText(self._get_default_string())
 
     def get_json(self):
         """Get the JSON serializable data from this field.
@@ -73,27 +109,37 @@ class SchemaWidget(QtWidgets.QWidget):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, key, schema, parent=None):
+    def __init__(self, key, schema, parent=None, config=None):
         super(SchemaWidget, self).__init__(parent=parent)
         self.key = key
         self.schema = schema
         self.fields = {}
+        self.config = config
+        if config is None:
+            self.config = {}
         self.layout = QtWidgets.QGridLayout()
-        self._init_widgets()
+        all_children_hidden = self._init_widgets()
         self.setLayout(self.layout)
+        self.displayed = not all_children_hidden
+        self.setVisible(self.displayed)
 
     def _init_widgets(self):
         fields = {}
         nested = {}
+        all_hidden = True
         for k, v in self.schema.fields.items():
             if isinstance(v, _schemas.Nested):
-                w = SchemaWidget(k, v.schema, self)
+                w = SchemaWidget(k, v.schema, self,
+                                 config=self.config.get(k, {}))
                 nested[k] = w
             else:
-                w = FieldWidget(k, v, self)
+                w = FieldWidget(k, v, self, **self.config.get(k, {}))
                 fields[k] = w
             self.fields[k] = w
+            if w.displayed:
+                all_hidden = False
         self._init_layout(fields, nested)
+        return all_hidden
 
     def _init_layout(self, fields, nested):
         i = 0
@@ -104,12 +150,17 @@ class SchemaWidget(QtWidgets.QWidget):
             i += 1
         for k, v in sorted(fields.items()):
             label = QtWidgets.QLabel("{}: ".format(k))
+            label.setVisible(v.displayed)
             self.layout.addWidget(label, i, 0)
             self.layout.addWidget(v, i, 1)
             i += 1
         for k, v in sorted(nested.items()):
             self.layout.addWidget(v, i, 0, 1, 2)
             i += 1
+
+    def reset(self):
+        for widget in self.fields.values():
+            widget.reset()
 
     def get_json(self):
         """Get the JSON serializable data from this schema.
@@ -155,9 +206,9 @@ class InputJsonWidget(QtWidgets.QScrollArea):
     parent : QtWidgets.QWidget
         Parent widget.
     """
-    def __init__(self, schema, parent=None):
+    def __init__(self, schema, parent=None, config=None):
         super(InputJsonWidget, self).__init__(parent=parent)
-        self.schema_widget = SchemaWidget(None, schema, self)
+        self.schema_widget = SchemaWidget(None, schema, self, config)
         self.setWidget(self.schema_widget)
 
     def get_json(self):
@@ -166,8 +217,11 @@ class InputJsonWidget(QtWidgets.QScrollArea):
     def update_value(self, attribute, value):
         self.schema_widget.update_value(attribute, value)
 
+    def reset(self):
+        self.schema_widget.reset()
 
-class BBoxCanvas(FigureCanvasQTAgg):
+
+class BBoxCanvas(FigureCanvasQTAgg, DropFileMixin):
     """Matplotlib canvas widget with drawable box.
 
     Parameters
@@ -176,13 +230,26 @@ class BBoxCanvas(FigureCanvasQTAgg):
         Matplob figure to contain in the canvas.
     """
     box_updated = QtCore.Signal(int, int, int, int)
+    file_dropped = QtCore.Signal(str)
 
     def __init__(self, figure):
         super(BBoxCanvas, self).__init__(figure)
+        self.setAcceptDrops(True)
+        self._im_shape = None
         self.rgba = (255, 255, 255, 20)
         self.begin = QtCore.QPoint()
         self.end = QtCore.QPoint()
         self.drawing = False
+
+    @property
+    def im_shape(self):
+        if self._im_shape is None:
+            return (self.height(), self.width())
+        return self._im_shape
+
+    @im_shape.setter
+    def im_shape(self, value):
+        self._im_shape = value
 
     def set_rgb(self, r, g, b):
         """Set the RGB values for the bounding box tool.
@@ -213,6 +280,16 @@ class BBoxCanvas(FigureCanvasQTAgg):
             painter.setBrush(brush)
             painter.drawRect(QtCore.QRect(self.begin, self.end))
 
+    def wheelEvent(self, event):
+        """Event override to stop crashing of wheelEvent in PyQt5.
+
+        Parameters
+        ----------
+        event : QtCore.QEvent
+            The wheel event.
+        """
+        event.ignore()
+
     def mousePressEvent(self, event):
         """Event override for painting to initialize bounding box.
 
@@ -237,6 +314,23 @@ class BBoxCanvas(FigureCanvasQTAgg):
         self.end = event.pos()
         self.update()
 
+    def _scale_and_offset(self):
+        h, w = self.im_shape
+        im_aspect = float(h) / w
+        aspect = float(self.height()) / self.width()
+        if aspect > im_aspect:
+            # taller than image, empty space padding bottom and top
+            scale = float(w) / self.width()
+            wimage_height = self.height() * scale
+            xoffset = 0
+            yoffset = int((wimage_height - h) / 2.0)
+        else:
+            scale = float(h) / self.height()
+            wimage_width = self.width() * scale
+            xoffset = int((wimage_width - w) / 2.0)
+            yoffset = 0
+        return scale, xoffset, yoffset
+
     def mouseReleaseEvent(self, event):
         """Event override for painting to finalize bounding box.
 
@@ -248,12 +342,15 @@ class BBoxCanvas(FigureCanvasQTAgg):
         self.end = event.pos()
         self.update()
         self.drawing = False
-        x1 = self.begin.x()
-        x2 = self.end.x()
-        y1 = self.begin.y()
-        y2 = self.end.y()
-        self.box_updated.emit(min(x1, x2), max(x1, x2),
-                              min(y1, y2), max(y1, y2))
+        scale, xoffset, yoffset = self._scale_and_offset()
+        x1 = int(self.begin.x() * scale) - xoffset
+        x2 = int(self.end.x() * scale) - xoffset
+        y1 = int(self.begin.y() * scale) - yoffset
+        y2 = int(self.end.y() * scale) - yoffset
+        self.box_updated.emit(max(min(x1, x2), 1),
+                              min(max(x1, x2), self.im_shape[1] - 1),
+                              max(min(y1, y2), 1),
+                              min(max(y1, y2), self.im_shape[0] - 1))
 
 
 class ViewerWidget(QtWidgets.QWidget):
@@ -264,10 +361,14 @@ class ViewerWidget(QtWidgets.QWidget):
     schema_type : type(argschema.DefaultSchema)
         The input schema type.
     """
-    def __init__(self, schema_type, profile_runs=False, parent=None):
+    def __init__(self, schema_type, profile_runs=False, parent=None,
+                 config=None):
         super(ViewerWidget, self).__init__(parent=parent)
         self.profile_runs = profile_runs
         self.layout = QtWidgets.QGridLayout()
+        self.config = config
+        if config is None:
+            self.config = {}
         self.schema_type = schema_type
         self.video = "./"
         self._init_widgets()
@@ -280,7 +381,9 @@ class ViewerWidget(QtWidgets.QWidget):
         self.figure = Figure(frameon=False, subplotpars=sp_params)
         self.axes = self.figure.add_subplot(111)
         self.canvas = BBoxCanvas(self.figure)
-        self.json_view = InputJsonWidget(self.schema_type(), parent=self)
+        self.json_view = InputJsonWidget(
+            self.schema_type(), parent=self,
+            config=self.config.get("input_json", {}))
         self.rerun_button = QtWidgets.QPushButton("Reprocess Frame",
                                                   parent=self)
         self.pupil_radio = QtWidgets.QRadioButton("Pupil BBox", parent=self)
@@ -303,6 +406,7 @@ class ViewerWidget(QtWidgets.QWidget):
         self.slider.sliderReleased.connect(self.show_frame)
         self.rerun_button.clicked.connect(self.update_tracker)
         self.canvas.box_updated.connect(self.update_bbox)
+        self.canvas.file_dropped.connect(self.load_video)
         self.pupil_radio.clicked.connect(self._setup_bbox)
         self.cr_radio.clicked.connect(self._setup_bbox)
 
@@ -363,17 +467,23 @@ class ViewerWidget(QtWidgets.QWidget):
             return
         valid = self._parse_args(json_data)
         if valid:
+            path = self.config.get("json_save_path", "./")
+            base, _ = os.path.splitext(
+                os.path.basename(json_data["input_source"]))
+            default_filename = os.path.join(path, base + ".json")
             filepath, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self, "Json file")
+                self, "Json file", default_filename)
             if os.path.exists(os.path.dirname(filepath)):
                 with open(filepath, "w") as f:
                     json.dump(json_data, f, indent=1)
 
-    def load_video(self):
-        filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select video")
+    def load_video(self, filepath=None):
+        if filepath is None:
+            filepath, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Select video")
         filepath = filepath.strip("'\" ")
         if os.path.exists(filepath):
+            self.json_view.reset()
             self.json_view.update_value("input_source",
                                         os.path.normpath(filepath))
             self.update_tracker()
@@ -389,6 +499,7 @@ class ViewerWidget(QtWidgets.QWidget):
     def show_frame(self, n=None):
         self.axes.clear()
         frame = self.tracker.input_stream[self.slider.value()]
+        self.canvas.im_shape = self.tracker.im_shape
         if self.profile_runs:
             p = cProfile.Profile()
             p.enable()
@@ -417,11 +528,11 @@ class ViewerWidget(QtWidgets.QWidget):
 
 
 class ViewerWindow(QtWidgets.QMainWindow):
-    def __init__(self, schema_type, profile_runs=False):
+    def __init__(self, schema_type, profile_runs=False, config=None):
         super(ViewerWindow, self).__init__()
         self.setWindowTitle("Eye Tracking Configuration Tool")
         self.widget = ViewerWidget(schema_type, profile_runs=profile_runs,
-                                   parent=self)
+                                   parent=self, config=config)
         self.setCentralWidget(self.widget)
         self._init_menubar()
 
@@ -431,20 +542,3 @@ class ViewerWindow(QtWidgets.QMainWindow):
         save = file_menu.addAction("Save JSON")
         load.triggered.connect(self.widget.load_video)
         save.triggered.connect(self.widget.save_json)
-
-
-def main():
-    import sys
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--profile", action="store_true")
-    args, left = parser.parse_known_args()
-    sys.argv = sys.argv[:1] + left
-    app = QtWidgets.QApplication([])
-    w = ViewerWindow(_schemas.InputParameters, args.profile)
-    w.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    main()
