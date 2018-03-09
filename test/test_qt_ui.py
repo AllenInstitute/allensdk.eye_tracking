@@ -145,6 +145,9 @@ def test_bbox_canvas(qtbot):
     w.set_rgb(0, 0, 0)
     assert(w.rgba == (0, 0, 0, 20))
     assert(not w.drawing)
+    mock_wheel = MagicMock()
+    w.wheelEvent(mock_wheel)
+    mock_wheel.ignore.assert_called_once()
     w.show()
     w.move(0, 0)
     qtbot.addWidget(w)
@@ -160,6 +163,23 @@ def test_bbox_canvas(qtbot):
                            qt.QtCore.QPoint(50, 50))
     assert(not w.drawing)
     assert(box_updated.signal_triggered)
+
+
+@patch.object(qt.BBoxCanvas, "width", return_value=200)
+@patch.object(qt.BBoxCanvas, "height", return_value=100)
+def test_bbox_canvas_scaling(h, w, qtbot):
+    w = qt.BBoxCanvas(qt.Figure())
+    assert(w.im_shape == (100, 200))
+    w.im_shape = (100, 100)
+    assert(w.im_shape == (100, 100))
+    s, x, y = w._scale_and_offset()
+    assert(y == 0)
+    assert(np.allclose(s, 1.0))
+    w.im_shape = (100, 400)
+    assert(w.im_shape == (100, 400))
+    s, x, y = w._scale_and_offset()
+    assert(x == 0)
+    assert(np.allclose(s, 2.0))
 
 
 @pytest.mark.parametrize("profile,config", [

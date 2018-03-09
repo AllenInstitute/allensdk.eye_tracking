@@ -69,7 +69,7 @@ class FieldWidget(QtWidgets.QLineEdit):
             default = ""
         else:
             default = str(self.field.default)
-        
+
         return default
 
     def reset(self):
