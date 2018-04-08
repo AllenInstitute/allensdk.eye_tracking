@@ -42,7 +42,6 @@ install:
   - conda install pyqt
   - conda install -c conda-forge opencv
   - pip install codecov
-  - pip install -r requirements_dev.txt
   - pip install -r test_requirements.txt
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       pip install pytest-xvfb;

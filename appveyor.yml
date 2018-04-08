@@ -16,7 +16,6 @@ install:
   - conda install -c conda-forge opencv
   - conda install pyqt
   - if %PYTHON% == 2.7 conda install scikit-image
-  - pip install -r requirements_dev.txt
   - pip install -r test_requirements.txt
   - pip install .
 
