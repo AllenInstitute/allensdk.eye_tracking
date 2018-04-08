@@ -5,6 +5,9 @@ from argschema.fields import (Nested, OutputDir, InputFile, Bool, Float, Int,
 from .eye_tracking import PointGenerator, EyeTracker
 from .fit_ellipse import EllipseFitter
 
+DEFAULT_ANNOTATION = {"annotate_movie": False,
+                      "output_file": "./annotated.avi"}
+
 
 class RansacParameters(DefaultSchema):
     minimum_points_for_fit = Int(
@@ -25,9 +28,9 @@ class RansacParameters(DefaultSchema):
 
 class AnnotationParameters(DefaultSchema):
     annotate_movie = Bool(
-        default=False,
+        default=DEFAULT_ANNOTATION["annotate_movie"],
         description="Flag for whether or not to annotate")
-    output_file = OutputFile(default="./annotated.avi")
+    output_file = OutputFile(default=DEFAULT_ANNOTATION["output_file"])
     fourcc = Str(description=("FOURCC string for video encoding. On Windows "
                               "H264 is not available by default, so it will "
                               "need to be installed or a different codec "
@@ -112,7 +115,7 @@ class QCParameters(DefaultSchema):
         default=EyeTracker.DEFAULT_GENERATE_QC_OUTPUT,
         description="Flag for whether or not to output QC plots")
     output_dir = OutputDir(
-        default="./qc",
+        default="./",
         description="Folder to store QC outputs")
 
 
