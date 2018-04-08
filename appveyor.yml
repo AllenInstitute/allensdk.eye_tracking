@@ -13,9 +13,8 @@ install:
   - conda update -q conda
   - conda create -q -n test-environment python=%PYTHON% pip
   - activate test-environment
-  - conda install -c conda-forge opencv
-  - conda install pyqt
   - if %PYTHON% == 2.7 conda install scikit-image
+  - conda install -c conda-forge opencv
   - pip install -r test_requirements.txt
   - pip install .
 
