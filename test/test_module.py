@@ -113,7 +113,7 @@ def test_main_valid(input_source, input_json, tmpdir_factory):
     ("[]", "[]", False)
 ])
 def test_main_valid_json(input_source, input_json, pupil_bbox_str, cr_bbox_str,
-                    adaptive_pupil):
+                         adaptive_pupil):
     args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
     with open(input_json, "r") as f:
