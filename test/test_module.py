@@ -99,11 +99,20 @@ def assert_output(output_dir, annotation_file=None, qc_output_dir=None,
         assert(os.path.exists(os.path.join(output_dir, "cr_all.png")))
 
 
+def test_main_valid(input_source, input_json, tmpdir_factory):
+    output_dir = str(tmpdir_factory.mktemp("output"))
+    args = ["allensdk.eye_tracking", "--output_dir", output_dir,
+            "--input_source", input_source]
+    with mock.patch('sys.argv', args):
+        __main__.main()
+        assert_output(output_dir)
+
+
 @pytest.mark.parametrize("pupil_bbox_str,cr_bbox_str, adaptive_pupil", [
     ("[20,50,40,70]", "[40,70,20,50]", True),
     ("[]", "[]", False)
 ])
-def test_main_valid(input_source, input_json, pupil_bbox_str, cr_bbox_str,
+def test_main_valid_json(input_source, input_json, pupil_bbox_str, cr_bbox_str,
                     adaptive_pupil):
     args = ["allensdk.eye_tracking", "--input_json", input_json,
             "--input_source", input_source]
