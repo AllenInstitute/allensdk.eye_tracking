@@ -15,6 +15,8 @@ install these difficult dependencies is to use conda::
     conda install -c conda-forge opencv=3.3.0
     conda install -c conda-forge pyqt
 
+Pinning the version of opencv does not seem to be required for Windows,
+but is for linux, as the latest seems to have a bug with VideoCapture.
 The rest of the dependencies are all in the requirements, so to install
 just clone or download the repository and then from inside the top
 level directory either run::
