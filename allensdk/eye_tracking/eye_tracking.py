@@ -34,14 +34,15 @@ class PointGenerator(object):
     DEFAULT_INDEX_LENGTH = 150
     DEFAULT_N_RAYS = 150
     DEFAULT_THRESHOLD_FACTOR = 1.2
-    DEFAULT_THRESHOLD_PIXELS = 10
+    DEFAULT_CR_THRESHOLD_PIXELS = 10
+    DEFAULT_PUPIL_THRESHOLD_PIXELS = 22
 
     def __init__(self, index_length=DEFAULT_INDEX_LENGTH,
                  n_rays=DEFAULT_N_RAYS,
                  cr_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
                  pupil_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
-                 cr_threshold_pixels=DEFAULT_THRESHOLD_PIXELS,
-                 pupil_threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
+                 cr_threshold_pixels=DEFAULT_CR_THRESHOLD_PIXELS,
+                 pupil_threshold_pixels=DEFAULT_PUPIL_THRESHOLD_PIXELS):
         self.update_params(index_length=index_length, n_rays=n_rays,
                            cr_threshold_factor=cr_threshold_factor,
                            pupil_threshold_factor=pupil_threshold_factor,
@@ -55,8 +56,8 @@ class PointGenerator(object):
                       n_rays=DEFAULT_N_RAYS,
                       cr_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
                       pupil_threshold_factor=DEFAULT_THRESHOLD_FACTOR,
-                      cr_threshold_pixels=DEFAULT_THRESHOLD_PIXELS,
-                      pupil_threshold_pixels=DEFAULT_THRESHOLD_PIXELS):
+                      cr_threshold_pixels=DEFAULT_CR_THRESHOLD_PIXELS,
+                      pupil_threshold_pixels=DEFAULT_PUPIL_THRESHOLD_PIXELS):
         """Update starburst point generation parameters.
 
         Parameters
@@ -245,12 +246,12 @@ class EyeTracker(object):
         average_iris_intensity : int
     """
     DEFAULT_MIN_PUPIL_VALUE = 0
-    DEFAULT_MAX_PUPIL_VALUE = 30
+    DEFAULT_MAX_PUPIL_VALUE = 40
     DEFAULT_CR_RECOLOR_SCALE_FACTOR = 1.7
     DEFAULT_RECOLOR_CR = True
     DEFAULT_ADAPTIVE_PUPIL = False
     DEFAULT_CR_MASK_RADIUS = 10
-    DEFAULT_PUPIL_MASK_RADIUS = 40
+    DEFAULT_PUPIL_MASK_RADIUS = 35
     DEFAULT_GENERATE_QC_OUTPUT = False
     DEFAULT_SMOOTHING_KERNEL_SIZE = 7
     DEFAULT_CLIP_PUPIL_VALUES = True

@@ -10,7 +10,6 @@ from argschema import ArgSchemaParser
 from allensdk.eye_tracking import _schemas
 from allensdk.eye_tracking.frame_stream import CvInputStream
 from allensdk.eye_tracking.eye_tracking import EyeTracker
-from allensdk.eye_tracking.__main__ import get_starburst_args
 from allensdk.eye_tracking.plotting import annotate_with_box
 
 
@@ -453,7 +452,7 @@ class ViewerWidget(QtWidgets.QWidget):
         args = self._parse_args(json_data)
         if args:
             self.tracker.update_fit_parameters(
-                get_starburst_args(args["starburst"]), args["ransac"],
+                args["starburst"], args["ransac"],
                 args["pupil_bounding_box"], args["cr_bounding_box"],
                 **args["eye_params"])
         if load:

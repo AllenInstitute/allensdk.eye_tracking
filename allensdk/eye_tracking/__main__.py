@@ -71,33 +71,11 @@ def write_QC_output(annotator, cr_parameters, pupil_parameters,
             filename=os.path.join(output_dir, "pupil_intensity.png"))
 
 
-def get_starburst_args(kwargs):
-    starburst_args = kwargs.copy()
-    threshold_factor = starburst_args.pop(
-        "threshold_factor", PointGenerator.DEFAULT_THRESHOLD_FACTOR)
-    threshold_pixels = starburst_args.pop(
-        "threshold_pixels", PointGenerator.DEFAULT_THRESHOLD_PIXELS)
-
-    if starburst_args.get("cr_threshold_factor", None) is None:
-        starburst_args["cr_threshold_factor"] = threshold_factor
-    if starburst_args.get("pupil_threshold_factor", None) is None:
-        starburst_args["pupil_threshold_factor"] = threshold_factor
-
-    if starburst_args.get("cr_threshold_pixels", None) is None:
-        starburst_args["cr_threshold_pixels"] = threshold_pixels
-    if starburst_args.get("pupil_threshold_pixels", None) is None:
-        starburst_args["pupil_threshold_pixels"] = threshold_pixels
-
-    return starburst_args
-
-
 def main():
     """Main entry point for running AllenSDK Eye Tracking."""
     try:
         mod = ArgSchemaParser(schema_type=InputParameters,
                               output_schema_type=OutputParameters)
-
-        starburst_args = get_starburst_args(mod.args.get("starburst", {}))
 
         istream = CvInputStream(mod.args["input_source"])
 
@@ -111,7 +89,7 @@ def main():
 
         tracker = EyeTracker(istream,
                              ostream,
-                             starburst_args,
+                             mod.args.get("starburst", {}),
                              mod.args.get("ransac", {}),
                              mod.args["pupil_bounding_box"],
                              mod.args["cr_bounding_box"],

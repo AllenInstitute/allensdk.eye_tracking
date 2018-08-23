@@ -44,30 +44,24 @@ class StarburstParameters(DefaultSchema):
     n_rays = Int(
         default=PointGenerator.DEFAULT_N_RAYS,
         description="Number of rays to draw")
-    threshold_factor = Float(
-        default=PointGenerator.DEFAULT_THRESHOLD_FACTOR,
-        description="Threshold factor for ellipse edges")
     cr_threshold_factor = Float(
+        default=PointGenerator.DEFAULT_THRESHOLD_FACTOR,
         description=("Threshold factor for corneal reflection ellipse edges, "
                      "will supercede `threshold_factor` for corneal "
                      "reflection if specified"))
     pupil_threshold_factor = Float(
+        default=PointGenerator.DEFAULT_THRESHOLD_FACTOR,
         description=("Threshold factor for pupil ellipse edges, will "
                      "supercede `threshold_factor` for pupil if specified"))
-    threshold_pixels = Int(
-        default=PointGenerator.DEFAULT_THRESHOLD_PIXELS,
-        description=("Number of pixels from start of ray to use for adaptive "
-                     "threshold, also serves as a minimum cutoff for point "
-                     "detection"))
     cr_threshold_pixels = Int(
+        default=PointGenerator.DEFAULT_CR_THRESHOLD_PIXELS,
         description=("Number of pixels from start of ray to use for adaptive "
-                     "threshold of the corneal reflection, will supercede "
-                     "`threshold_pixels` for corneal reflection if specified. "
-                     "Also serves as a minimum cutoff for point detection"))
+                     "threshold of the corneal reflection. Also serves as a "
+                     "minimum cutoff for point detection"))
     pupil_threshold_pixels = Int(
+        default=PointGenerator.DEFAULT_PUPIL_THRESHOLD_PIXELS,
         description=("Number of pixels from start of ray to use for adaptive "
-                     "threshold of the pupil, will supercede `threshold_pixels"
-                     "` for pupil if specified. Also serves as a minimum "
+                     "threshold of the pupil. Also serves as a minimum "
                      "cutoff for point detection"))
 
 
