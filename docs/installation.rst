@@ -12,7 +12,7 @@ have bindary distributions for all platforms yet. The simplest way to
 install these difficult dependencies is to use conda::
 
     conda install scikit-image
-    conda install -c conda-forge opencv
+    conda install -c conda-forge opencv=3.3.0
     conda install -c conda-forge pyqt
 
 The rest of the dependencies are all in the requirements, so to install
