@@ -2,6 +2,12 @@
 History
 =======
 
+1.2.1 (2018-08-23)
+------------------
+* Update defaults based on internal user overrides for Allen Institute videos.
+* Remove generic threshold_factor and threshold_pixels settings for starburst.
+* Fix argument parsing to not error out if nested values aren't provided.
+
 1.2.0 (2018-02-24)
 ------------------
 * Rework median filtering and correlation functions to use OpenCV instead of
