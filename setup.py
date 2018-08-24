@@ -8,7 +8,7 @@ with open('test_requirements.txt', 'r') as f:
 
 setup(
     name='allensdk_eye_tracking',
-    version='1.2.0',
+    version='1.2.1',
     description="""Allen Institute package for mouse eye tracking.""",
     author="Jed Perkins",
     author_email="jedp@alleninstitute.org",
@@ -19,7 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'allensdk.eye_tracking = allensdk.eye_tracking.__main__:main',
-            'allensdk.eye_tracking_ui = allensdk.eye_tracking.ui.qt:main'
+            'allensdk.eye_tracking_ui = allensdk.eye_tracking.ui.__main__:main'
         ]
     },
     setup_requires=['pytest-runner'],

@@ -1,6 +1,13 @@
 allensdk\.eye\_tracking package
 ===============================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    allensdk.eye_tracking.ui
+
 Submodules
 ----------
 
