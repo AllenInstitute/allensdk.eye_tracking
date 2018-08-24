@@ -8,10 +8,9 @@ export CONDA_PS1_BACKUP=${CONDA_PS1_BACKUP:-}
 conda create -y -${bamboo_VERBOSITY} --clone ${bamboo_BASE_ENVIRONMENT} --prefix ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT}
 source activate ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT}
 conda install -y -${bamboo_VERBOSITY} -c defaults scikit-image
-conda install -y -${bamboo_VERBOSITY} -c conda-forge opencv
+conda install -y -${bamboo_VERBOSITY} -c conda-forge opencv=3.3.0
 cd ${bamboo_build_working_directory}/${bamboo_CHECKOUT_DIRECTORY}
 pip install -r requirements.txt
-pip install -r requirements_dev.txt
 pip install -r test_requirements.txt
 pip install .
 pytest --junitxml=test-reports/tests.xml
