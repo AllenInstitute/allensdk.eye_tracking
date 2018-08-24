@@ -20,16 +20,19 @@ methods fail silently. As a result, we have not included OpenCV in the
 requirements and it is necessary to get it seperately, built with the
 video capture and writing functional. Additionally, on some platforms
 scikit-image does not build easily from source and the developers don't
-have bindary distributions for all platforms yet. The simplest way to
+have binary distributions for all platforms yet. The simplest way to
 install these difficult dependencies is to use conda:
 
     conda install scikit-image
-    conda install pyqt
-    conda install -c conda-forge opencv
+    conda install -c conda-forge opencv=3.3.0
+    conda install -c conda-forge pyqt
 
-The rest of the dependencies are all in the requirements, so to
-install just clone or download the repository and then from inside the
-top level directory either run:
+The version of opencv is pinned because the latest (3.4.1 as of this 
+writing) seems to have a bug with the VideoCapture code which causes
+errors reading videos on linux. Latest does seem to work on Windows.
+The rest of the dependencies are all in the requirements, so to install
+just clone or download the repository and then from inside the top
+level directory either run:
 
     pip install .
 
