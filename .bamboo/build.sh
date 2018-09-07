@@ -1,5 +1,5 @@
 set -eu
-export PATH=/shared/utils.x86_64/anaconda2-4.3.1/bin:$PATH
+export PATH=${bamboo_build_working_directory}/miniconda/bin:$PATH
 export TMPDIR=${bamboo_build_working_directory}/.tmp
 export CONDA_PATH_BACKUP=${CONDA_PATH_BACKUP:-$PATH}
 export CONDA_PREFIX=${CONDA_PREFIX:-}

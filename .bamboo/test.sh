@@ -1,11 +1,13 @@
 set -eu
-export PATH=/shared/utils.x86_64/anaconda2-4.3.1/bin:$PATH
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+bash miniconda.sh -b -p ${bamboo_build_working_directory}/miniconda
+export PATH=${bamboo_build_working_directory}/miniconda/bin:$PATH
 export HOME=${bamboo_build_working_directory}/.home
 export TMPDIR=${bamboo_build_working_directory}
 export CONDA_PATH_BACKUP=${CONDA_PATH_BACKUP:-$PATH}
 export CONDA_PREFIX=${CONDA_PREFIX:-}
 export CONDA_PS1_BACKUP=${CONDA_PS1_BACKUP:-}
-conda create -y -${bamboo_VERBOSITY} --clone ${bamboo_BASE_ENVIRONMENT} --prefix ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT}
+conda create -y -${bamboo_VERBOSITY} --prefix ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT} python=3.6
 source activate ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT}
 conda install -y -${bamboo_VERBOSITY} -c defaults scikit-image
 conda install -y -${bamboo_VERBOSITY} -c conda-forge opencv=3.3.0
