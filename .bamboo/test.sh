@@ -9,8 +9,8 @@ export CONDA_PREFIX=${CONDA_PREFIX:-}
 export CONDA_PS1_BACKUP=${CONDA_PS1_BACKUP:-}
 conda create -y -${bamboo_VERBOSITY} --prefix ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT} python=3.6
 source activate ${bamboo_build_working_directory}/.conda/${bamboo_TEST_ENVIRONMENT}
-conda install -y -${bamboo_VERBOSITY} -c defaults scikit-image
-conda install -y -${bamboo_VERBOSITY} -c conda-forge opencv=3.3.0
+conda install -y -${bamboo_VERBOSITY} -c defaults scikit-image --clobber
+conda install -y -${bamboo_VERBOSITY} -c conda-forge opencv=3.3.0 --clobber
 cd ${bamboo_build_working_directory}/${bamboo_CHECKOUT_DIRECTORY}
 pip install -r requirements.txt
 pip install -r test_requirements.txt
